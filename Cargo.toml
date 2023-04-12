@@ -1,0 +1,14 @@
+[package]
+name = "hello-bevy" # [CHANGE]: Set your project name.
+version = "0.1.0"
+edition = "2021"
+exclude = ["build", "assets", "graphs"]
+
+[profile.dev.package."*"]
+# opt-level = 3 # [CHANGE]: Improves performance when developing, but slows down first compilation significantly
+
+[dependencies]
+bevy = { git = "https://github.com/bevyengine/bevy" } # The bevy engine <3
+bevy_tweening = { git = "https://github.com/harrisonmg/bevy_tweening" } # Tweening (updated branch to main)
+bevy-inspector-egui = { git = "https://github.com/josekoalas/bevy-inspector-egui", branch = "bevy-main" } # Inspector
+bevy_mod_debugdump = { git = "https://github.com/jakobhellermann/bevy_mod_debugdump", branch = "bevy-main" } # Get dependency graphs for systems
