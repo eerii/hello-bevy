@@ -14,7 +14,8 @@ fn main() {
                 title: "Title".to_string(),
                 resolution: WindowResolution::new(800., 800.),
                 present_mode: PresentMode::AutoVsync,
-                fit_canvas_to_parent: true,
+                resizable: false, // or use fit_canvas_to_parent: true for resizing on the web
+                canvas: Some("#bevy".to_string()),
                 ..default()
             }),
             ..default()

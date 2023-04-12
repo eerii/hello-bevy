@@ -1,11 +1,39 @@
 <!doctype html>
 <html lang="en">
 
-<body style="margin: 0px;">
-  <script type="module">
-    import './audip.js'
-    import init from './bevy_game.js'
-    init()
+<head>
+  <meta charset="utf-8"/>
+  <meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no" />
+  
+  <title>Game</title> <!-- [CHANGE]: Write your game name -->
+
+  <link data-trunk rel="copy-dir" href="../../assets"/>
+  <link data-trunk rel="inline" href="style.css"/>
+  <link data-trunk rel="rust" href="../../Cargo.toml"/>
+</head>
+
+<body>
+  <link data-trunk rel="inline" href="audio.js"/>
+
+  <div class="game-container">
+    <canvas id="bevy">
+      Javascript and support for canvas is required
+    </canvas>
+    <div id="loading">
+      <h1 class="text-loading">loading</h1>
+      <span class="loader"></span>
+    </div>
+  </div>
+
+  <script>
+    const bevy = document.getElementById('bevy');
+    const loadingTitle = document.getElementById('loading');
+    const observer = new MutationObserver(() => {
+      if (bevy.height > 1) {
+        loadingTitle.style.display = 'none';
+      }
+    });
+    observer.observe(bevy, { attributes: true });
   </script>
 </body>
 

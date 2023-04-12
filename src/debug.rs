@@ -10,7 +10,8 @@ mod only_in_debug {
         WorldInspectorPlugin::new()
     }
 
-    // Save the scheduling graphs for system stages
+    // Save the scheduling graphs for system stages (disabled for wasm)
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn save_schedule(app: &mut App, stages: &[&'static str]) {
         use bevy_mod_debugdump::*;
 
@@ -31,7 +32,10 @@ mod only_in_debug {
             .unwrap();
         }
     }
+    #[cfg(target_arch = "wasm32")]
+    pub fn save_schedule(_: &mut App, _: &[&'static str]) {}
 
+    #[allow(dead_code)]
     fn name_to_stage(name: &'static str) -> &dyn ScheduleLabel {
         match name {
             "PreStartup" => &PreStartup,

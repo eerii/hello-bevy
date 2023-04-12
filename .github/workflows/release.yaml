@@ -41,23 +41,33 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
-      - name: install wasm-bindgen-cli
+      
+      - name: Install wasm-bindgen-cli
         run: |
           cargo install wasm-bindgen-cli
+      - name: Install trunk
+        uses: jetli/trunk-action@v0.1.0
+        with:
+          version: latest
 
       - name: Build
         run: |
-          cargo build --release --target wasm32-unknown-unknown
+          trunk build --release
 
-      - name: Prepare package
+      - name: Optimize Wasm
+        uses: NiklasEi/wasm-opt-action@v2
+        with:
+          file: build/wasm/dist/*.wasm
+
+      - name: Make paths relative
         run: |
-          wasm-bindgen --no-typescript --out-name bevy_game --out-dir build/wasm --target web target/wasm32-unknown-unknown/release/${{ env.binary }}.wasm
-          cp -r assets build/wasm/
+          sed -i 's/\/index/.\/index/g' build/wasm/dist/index.html
+          sed -i 's/\/${{ env.GAME_EXECUTABLE_NAME }}/.\/${{ env.GAME_EXECUTABLE_NAME }}/g' build/wasm/dist/index.html
 
       - name: Package as a zip
-        working-directory: ./build/wasm
+        working-directory: ./build/wasm/dist
         run: |
-          zip --recurse-paths ../${{ env.binary }}.zip .
+          zip --recurse-paths ../../../${{ env.binary }}.zip .
 
       - name: Upload binaries to artifacts
         uses: actions/upload-artifact@v3

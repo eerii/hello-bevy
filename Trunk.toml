@@ -1,0 +1,2 @@
+[build]
+target = "build/wasm/index.html"
