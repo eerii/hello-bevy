@@ -1,3 +1,17 @@
+use bevy::prelude::*;
+
 fn main() {
-    println!("Hello, world!");
+    App::new()
+        // Plugins
+        .add_plugins(DefaultPlugins)
+        //.add_plugin(bevy_inspector_egui::quick::WorldInspectorPlugin::new())
+        
+        // Resources
+
+        // Startup systems
+
+        // Update systems
+
+        // Run
+        .run();
 }

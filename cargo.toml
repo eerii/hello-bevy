@@ -4,3 +4,34 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# The bevy engine <3
+bevy = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+
+# Inspector
+# bevy_egui = { git = "https://github.com/josekoalas/bevy_egui", branch = "bevy-main" }
+bevy-inspector-egui = { git = "https://github.com/josekoalas/bevy-inspector-egui", branch = "bevy-main" }
+
+# Tweening
+# bevy_tweening
+
+# Get dependency graphs for systems
+# bevy_mod_debugdump
+
+[patch."https://github.com/bevyengine/bevy"]
+bevy = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_app = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_asset = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_core = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_ecs = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_hierarchy = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_log = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_math = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_reflect = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_utils = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_window = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_core_pipeline = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_pbr = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+bevy_render = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
+
+# [profile.dev.package."*"]
+# opt-level = 3
