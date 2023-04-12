@@ -1,0 +1,36 @@
+digraph "" {
+	"compound"="true";
+	"splines"="spline";
+	"rankdir"="LR";
+	"bgcolor"="#0d1117";
+	"fontname"="Helvetica";
+	"nodesep"="0.15";
+	edge ["penwidth"="2"];
+	node ["shape"="box", "style"="filled"];
+	"node_System(0)" ["label"="close_when_requested", "tooltip"="bevy_window::system::close_when_requested"]
+	"node_System(1)" ["label"="scene_spawner_system", "tooltip"="bevy_scene::scene_spawner::scene_spawner_system"]
+	"node_System(2)" ["label"="handle_window_focus", "tooltip"="bevy_winit::accessibility::handle_window_focus"]
+	"node_System(3)" ["label"="window_closed", "tooltip"="bevy_winit::accessibility::window_closed"]
+	"node_System(4)" ["label"="poll_receivers", "tooltip"="bevy_winit::accessibility::poll_receivers"]
+	"node_System(5)" ["label"="update_accessibility_nodes", "tooltip"="bevy_winit::accessibility::update_accessibility_nodes"]
+	"node_System(6)" ["label"="calc_bounds", "tooltip"="bevy_ui::accessibility::calc_bounds"]
+	"node_System(7)" ["label"="button_changed", "tooltip"="bevy_ui::accessibility::button_changed"]
+	"node_System(8)" ["label"="image_changed", "tooltip"="bevy_ui::accessibility::image_changed"]
+	"node_System(9)" ["label"="label_changed", "tooltip"="bevy_ui::accessibility::label_changed"]
+	"node_System(10)" ["label"="update_previous_view_projections", "tooltip"="bevy_pbr::prepass::update_previous_view_projections"]
+	"node_System(11)" ["label"="world_inspector_ui", "tooltip"="bevy_inspector_egui::quick::world_inspector_ui"]
+	"node_System(12)" ["label"="update", "tooltip"="hello_bevy::update"]
+	"node_System(3)" -> "node_System(2)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessKitAdapters</td></tr></table>>, "labeltooltip"="window_closed — handle_window_focus"]
+	"node_System(4)" -> "node_System(3)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">WinitActionHandlers</td></tr></table>>, "labeltooltip"="poll_receivers — window_closed"]
+	"node_System(5)" -> "node_System(3)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessKitAdapters</td></tr></table>>, "labeltooltip"="update_accessibility_nodes — window_closed"]
+	"node_System(5)" -> "node_System(8)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="update_accessibility_nodes — image_changed"]
+	"node_System(5)" -> "node_System(9)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="update_accessibility_nodes — label_changed"]
+	"node_System(6)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="calc_bounds — update_accessibility_nodes"]
+	"node_System(6)" -> "node_System(7)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="calc_bounds — button_changed"]
+	"node_System(6)" -> "node_System(8)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="calc_bounds — image_changed"]
+	"node_System(6)" -> "node_System(9)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="calc_bounds — label_changed"]
+	"node_System(7)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="button_changed — update_accessibility_nodes"]
+	"node_System(7)" -> "node_System(8)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="button_changed — image_changed"]
+	"node_System(7)" -> "node_System(9)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="button_changed — label_changed"]
+	"node_System(8)" -> "node_System(9)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="image_changed — label_changed"]
+}

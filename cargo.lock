@@ -711,6 +711,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_mod_debugdump"
+version = "0.7.0"
+source = "git+https://github.com/jakobhellermann/bevy_mod_debugdump?branch=bevy-main#d4a2ebcf134c271e20411ffb7972a7238f9ef54e"
+dependencies = [
+ "bevy_app",
+ "bevy_ecs",
+ "bevy_render",
+ "bevy_utils",
+ "once_cell",
+ "petgraph",
+ "pretty-type-name",
+]
+
+[[package]]
 name = "bevy_pbr"
 version = "0.11.0-dev"
 source = "git+https://github.com/bevyengine/bevy?rev=d623731#d623731e2c0f4c5ce4213a30685e73e190db60b4"
@@ -1873,6 +1887,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy-inspector-egui",
+ "bevy_mod_debugdump",
 ]
 
 [[package]]

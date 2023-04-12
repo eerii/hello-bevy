@@ -7,16 +7,16 @@ edition = "2021"
 # The bevy engine <3
 bevy = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
 
+# Tweening (updated branch to main)
+# bevy_tweening = { git = "https://github.com/harrisonmg/bevy_tweening" }
+
 # Inspector
-# bevy_egui = { git = "https://github.com/josekoalas/bevy_egui", branch = "bevy-main" }
 bevy-inspector-egui = { git = "https://github.com/josekoalas/bevy-inspector-egui", branch = "bevy-main" }
 
-# Tweening
-# bevy_tweening
-
 # Get dependency graphs for systems
-# bevy_mod_debugdump
+bevy_mod_debugdump = { git = "https://github.com/jakobhellermann/bevy_mod_debugdump", branch = "bevy-main" }
 
+# Patches for bevy main
 [patch."https://github.com/bevyengine/bevy"]
 bevy = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
 bevy_app = { git = "https://github.com/bevyengine/bevy?rev=d623731" }
