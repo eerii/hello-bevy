@@ -15,7 +15,7 @@ on:
 env:
   binary: hello-bevy # [CHANGE]: This needs to match the project name in cargo.toml
   add_binaries_to_github_release: true
-  # itch_target: josekoalas/hello-bevy # [CHANGE]: If you want to deploy to itch, set this as your username/project-url
+  itch_target: josekoalas/hello-bevy # [CHANGE]: If you want to deploy to itch, set this as your username/project-url
 
 jobs:
   get-version:

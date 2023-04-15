@@ -6,14 +6,14 @@ use bevy::{
 use hello_bevy::{save_schedule, GamePlugin, DEBUG};
 
 fn main() {
-    let mut game = App::new();
+    let mut app = App::new();
     // Plugins
-    game.insert_resource(ClearColor(Color::rgb(0.6, 0.7, 1.0)))
+    app.insert_resource(ClearColor(Color::rgb(0.6, 0.7, 1.0)))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        title: "Title".to_string(),
+                        title: "Hello Bevy!".to_string(),
                         resolution: WindowResolution::new(800., 800.),
                         present_mode: PresentMode::AutoVsync,
                         resizable: false, // or use fit_canvas_to_parent: true for resizing on the web
@@ -34,29 +34,10 @@ fn main() {
         )
         .add_plugin(GamePlugin);
 
-    // Systems
-    game.add_systems(Startup, init).add_systems(Update, update);
-
     // Get debug schedule graphs
     #[cfg(debug_assertions)]
-    save_schedule(&mut game, &["Startup", "Update"]);
+    save_schedule(&mut app, &["Startup", "Update"]);
 
     // Run
-    game.run();
+    app.run();
 }
-
-// Components
-// ...
-
-// Resources
-// ...
-
-// Startup systems
-
-fn init(mut cmd: Commands) {
-    cmd.spawn(Camera2dBundle::default());
-}
-
-// Update systems
-
-fn update() {}

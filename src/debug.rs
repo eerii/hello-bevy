@@ -22,8 +22,8 @@ mod only_in_debug {
 
     // Add useful debug systems
     impl Plugin for super::DebugPlugin {
-        fn build(&self, game: &mut App) {
-            game.add_plugin(FrameTimeDiagnosticsPlugin::default())
+        fn build(&self, app: &mut App) {
+            app.add_plugin(FrameTimeDiagnosticsPlugin::default())
                 .add_plugin(LogDiagnosticsPlugin {
                     wait_duration: std::time::Duration::from_secs(5),
                     ..default()
@@ -75,3 +75,7 @@ mod only_in_debug {
 
 #[cfg(debug_assertions)]
 pub use only_in_debug::*;
+
+// Save schedule disabled function when not in debug
+#[cfg(not(debug_assertions))]
+pub fn save_schedule(_: &mut bevy::app::App, _: &[&'static str]) {}

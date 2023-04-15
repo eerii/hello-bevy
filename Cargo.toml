@@ -10,5 +10,6 @@ exclude = ["build", "assets", "graphs"]
 [dependencies]
 bevy = { git = "https://github.com/bevyengine/bevy" } # The bevy engine <3
 bevy_tweening = { git = "https://github.com/harrisonmg/bevy_tweening" } # Tweening (updated branch to main)
+bevy_asset_loader = { git = "https://github.com/josekoalas/bevy_asset_loader", branch = "bevy_main" } # Better asset loader
 bevy-inspector-egui = { git = "https://github.com/josekoalas/bevy-inspector-egui", branch = "bevy-main" } # Inspector
 bevy_mod_debugdump = { git = "https://github.com/jakobhellermann/bevy_mod_debugdump", branch = "bevy-main" } # Get dependency graphs for systems

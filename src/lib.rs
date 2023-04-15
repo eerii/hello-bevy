@@ -19,10 +19,18 @@ enum GameState {
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
-    fn build(&self, game: &mut App) {
-        game.add_state::<GameState>().add_plugin(load::LoadPlugin);
+    fn build(&self, app: &mut App) {
+        app.add_state::<GameState>().add_plugin(load::LoadPlugin);
 
         #[cfg(debug_assertions)]
-        game.add_plugin(debug::DebugPlugin);
+        app.add_plugin(debug::DebugPlugin);
+
+        app.add_systems(Startup, init).add_systems(Update, update);
     }
 }
+
+// TODO: Move
+fn init(mut cmd: Commands) {
+    cmd.spawn(Camera2dBundle::default());
+}
+fn update() {}
