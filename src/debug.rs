@@ -12,9 +12,9 @@ pub struct DebugPlugin;
 // Only debug implementation
 #[cfg(debug_assertions)]
 mod only_in_debug {
-    use crate::GameState;
+    use crate::{FontAssets, GameState};
     use bevy::{
-        diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+        diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
         ecs::schedule::ScheduleLabel,
         prelude::*,
     };
@@ -28,7 +28,9 @@ mod only_in_debug {
                     wait_duration: std::time::Duration::from_secs(5),
                     ..default()
                 })
-                .add_plugin(WorldInspectorPlugin::default().run_if(in_state(GameState::Play)));
+                .add_plugin(WorldInspectorPlugin::default().run_if(in_state(GameState::Play)))
+                .add_systems(OnEnter(GameState::Play), setup_fps)
+                .add_systems(Update, update_fps.run_if(in_state(GameState::Play)));
         }
     }
 
@@ -69,6 +71,46 @@ mod only_in_debug {
             "PostUpdate" => &PostUpdate,
             "FixedUpdate" => &FixedUpdate,
             _ => panic!("Unknown stage name: {}", name),
+        }
+    }
+
+    // FPS counter
+    #[derive(Component)]
+    struct FpsText;
+
+    #[derive(Component)]
+    struct DebugUiCam;
+
+    fn setup_fps(mut cmd: Commands, fonts: Res<FontAssets>) {
+        cmd.spawn((Camera2dBundle::default(), DebugUiCam));
+
+        cmd.spawn((
+            TextBundle::from_sections([
+                TextSection::new(
+                    "FPS: ",
+                    TextStyle {
+                        font: fonts.gameboy.clone(),
+                        font_size: 24.0,
+                        color: Color::WHITE,
+                    },
+                ),
+                TextSection::from_style(TextStyle {
+                    font: fonts.gameboy.clone(),
+                    font_size: 24.0,
+                    color: Color::GOLD,
+                }),
+            ]),
+            FpsText,
+        ));
+    }
+
+    fn update_fps(diagnostics: Res<Diagnostics>, mut text: Query<&mut Text, With<FpsText>>) {
+        if let Ok(mut text) = text.get_single_mut() {
+            if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+                if let Some(fps) = fps.smoothed() {
+                    text.sections[1].value = format!("{fps:.0}");
+                }
+            }
         }
     }
 }

@@ -23,7 +23,7 @@ impl Plugin for LoadPlugin {
         app.add_loading_state(LoadingState::new(GameState::Loading))
             .init_collection::<SplashAssets>()
             .add_collection_to_loading_state::<_, FontAssets>(GameState::Loading)
-            .add_plugin(ProgressPlugin::new(GameState::Loading).continue_to(GameState::Menu))
+            .add_plugin(ProgressPlugin::new(GameState::Loading).continue_to(GameState::Play))
             .add_systems(OnEnter(GameState::Loading), splash_init)
             .add_systems(OnExit(GameState::Loading), load_clear)
             .add_systems(

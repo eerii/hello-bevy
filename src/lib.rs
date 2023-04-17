@@ -2,6 +2,7 @@ mod debug;
 mod load;
 
 pub use debug::{save_schedule, DEBUG};
+pub use load::FontAssets;
 
 use bevy::prelude::*;
 use bevy_tweening::TweeningPlugin;
