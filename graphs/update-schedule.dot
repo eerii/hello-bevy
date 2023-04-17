@@ -9,45 +9,69 @@ digraph "" {
 	node ["shape"="box", "style"="filled"];
 	subgraph "clusternode_Set(12)" {
 		"style"="rounded,filled";
+		"label"="AnimationUpdate";
+		"tooltip"="AnimationUpdate";
+		"fillcolor"="#ffffff44";
+		"color"="#ffffff50";
+		"penwidth"="2";
+		"set_marker_node_Set(12)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+		"node_System(11)" ["label"="component_animator_system<Transform>", "tooltip"="bevy_tweening::plugin::component_animator_system<bevy_transform::components::transform::Transform>", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
+		"node_System(12)" ["label"="component_animator_system<Style>", "tooltip"="bevy_tweening::plugin::component_animator_system<bevy_ui::ui_node::Style>", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
+		"node_System(13)" ["label"="component_animator_system<Sprite>", "tooltip"="bevy_tweening::plugin::component_animator_system<bevy_sprite::sprite::Sprite>", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
+		"node_System(14)" ["label"="asset_animator_system<ColorMaterial>", "tooltip"="bevy_tweening::plugin::asset_animator_system<bevy_sprite::mesh2d::color_material::ColorMaterial>", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
+		"node_System(15)" ["label"="component_animator_system<Text>", "tooltip"="bevy_tweening::plugin::component_animator_system<bevy_text::text::Text>", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
+	}
+	
+	subgraph "clusternode_Set(18)" {
+		"style"="rounded,filled";
 		"label"="TrackedProgressSet";
 		"tooltip"="TrackedProgressSet";
 		"fillcolor"="#ffffff44";
 		"color"="#ffffff50";
 		"penwidth"="2";
-		"set_marker_node_Set(12)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
-		"node_System(11)" ["label"="run_loading_state<GameState>", "tooltip"="bevy_asset_loader::loading_state::systems::run_loading_state<hello_bevy::GameState>", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
-		"node_System(14)" ["label"="Pipe(check_splash_finished, <ProgressSystem<(IsFunctionSystem, fn(Res<Time>, Query<SplashScreenTimer>) ->Progress), Progress>>{{closure}})", "tooltip"="Pipe(hello_bevy::load::check_splash_finished, <hello_bevy::load::check_splash_finished as iyes_progress::ProgressSystem<(bevy_ecs::system::function_system::IsFunctionSystem, fn(bevy_ecs::change_detection::Res<bevy_time::time::Time>, bevy_ecs::system::query::Query<&mut hello_bevy::load::SplashScreenTimer>) -> iyes_progress::Progress), iyes_progress::Progress>>::track_progress::{{closure}})", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
-		"node_System(16)" ["label"="Pipe(fake_load, <ProgressSystem<(IsFunctionSystem, fn(Res<Time>) ->Progress), Progress>>{{closure}})", "tooltip"="Pipe(hello_bevy::load::fake_load, <hello_bevy::load::fake_load as iyes_progress::ProgressSystem<(bevy_ecs::system::function_system::IsFunctionSystem, fn(bevy_ecs::change_detection::Res<bevy_time::time::Time>) -> iyes_progress::Progress), iyes_progress::Progress>>::track_progress::{{closure}})", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
+		"set_marker_node_Set(18)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+		"node_System(16)" ["label"="run_loading_state<GameState>", "tooltip"="bevy_asset_loader::loading_state::systems::run_loading_state<hello_bevy::GameState>", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
 	}
 	
-	subgraph "clusternode_Set(13)" {
+	subgraph "clusternode_Set(19)" {
 		"style"="rounded,filled";
 		"label"="AnonymousSet(0)";
 		"tooltip"="AnonymousSet(0)";
 		"fillcolor"="#ffffff44";
 		"color"="#ffffff50";
 		"penwidth"="2";
-		"set_marker_node_Set(13)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+		"set_marker_node_Set(19)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
 	}
 	
-	subgraph "clusternode_Set(15)" {
+	subgraph "clusternode_Set(21)" {
 		"style"="rounded,filled";
 		"label"="Preparation";
 		"tooltip"="Preparation";
 		"fillcolor"="#ffffff44";
 		"color"="#ffffff50";
 		"penwidth"="2";
-		"set_marker_node_Set(15)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+		"set_marker_node_Set(21)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
 	}
 	
-	subgraph "clusternode_Set(17)" {
+	subgraph "clusternode_Set(23)" {
 		"style"="rounded,filled";
 		"label"="CheckProgress";
 		"tooltip"="CheckProgress";
 		"fillcolor"="#ffffff44";
 		"color"="#ffffff50";
 		"penwidth"="2";
-		"set_marker_node_Set(17)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+		"set_marker_node_Set(23)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+	}
+	
+	subgraph "clusternode_Set(24)" {
+		"style"="rounded,filled";
+		"label"="AnonymousSet(1)";
+		"tooltip"="AnonymousSet(1)";
+		"fillcolor"="#ffffff44";
+		"color"="#ffffff50";
+		"penwidth"="2";
+		"set_marker_node_Set(24)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+		"node_System(20)" ["label"="check_progress", "tooltip"="hello_bevy::load::check_progress", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
 	}
 	
 	"node_System(0)" ["label"="close_when_requested", "tooltip"="bevy_window::system::close_when_requested"]
@@ -61,31 +85,56 @@ digraph "" {
 	"node_System(8)" ["label"="image_changed", "tooltip"="bevy_ui::accessibility::image_changed"]
 	"node_System(9)" ["label"="label_changed", "tooltip"="bevy_ui::accessibility::label_changed"]
 	"node_System(10)" ["label"="update_previous_view_projections", "tooltip"="bevy_pbr::prepass::update_previous_view_projections"]
-	"node_System(15)" ["label"="check_progress", "tooltip"="hello_bevy::load::check_progress"]
-	"node_System(17)" ["label"="diagnostic_system", "tooltip"="bevy_diagnostic::frame_time_diagnostics_plugin::FrameTimeDiagnosticsPlugin::diagnostic_system"]
-	"node_System(18)" ["label"="world_inspector_ui", "tooltip"="bevy_inspector_egui::quick::world_inspector_ui"]
-	"node_System(12)" -> "set_marker_node_Set(13)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(13)"]
-	"node_System(12)" -> "set_marker_node_Set(15)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(15)"]
-	"node_System(12)" ["label"="next_frame
+	"node_System(23)" ["label"="diagnostic_system", "tooltip"="bevy_diagnostic::frame_time_diagnostics_plugin::FrameTimeDiagnosticsPlugin::diagnostic_system"]
+	"node_System(24)" ["label"="world_inspector_ui", "tooltip"="bevy_inspector_egui::quick::world_inspector_ui"]
+	"node_System(17)" -> "set_marker_node_Set(19)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(19)"]
+	"node_System(17)" -> "set_marker_node_Set(21)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(21)"]
+	"node_System(17)" ["label"="next_frame
 In multiple sets, AnonymousSet(0), Preparation", "tooltip"="iyes_progress::next_frame"]
-	"node_System(13)" -> "set_marker_node_Set(13)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(13)"]
-	"node_System(13)" -> "set_marker_node_Set(17)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(17)"]
-	"node_System(13)" ["label"="check_progress<GameState>::{{closure}}
+	"node_System(18)" -> "set_marker_node_Set(19)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(19)"]
+	"node_System(18)" -> "set_marker_node_Set(23)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(23)"]
+	"node_System(18)" ["label"="check_progress<GameState>::{{closure}}
 In multiple sets, AnonymousSet(0), CheckProgress", "tooltip"="iyes_progress::check_progress<hello_bevy::GameState>::{{closure}}"]
-	"node_System(12)" -> "set_marker_node_Set(12)" ["lhead"="clusternode_Set(12)", "ltail"="", "tooltip"="next_frame → TrackedProgressSet", "color"="#eede00"]
-	"set_marker_node_Set(12)" -> "node_System(13)" ["lhead"="", "ltail"="clusternode_Set(12)", "tooltip"="TrackedProgressSet → check_progress<GameState>::{{closure}}", "color"="#881877"]
-	"set_marker_node_Set(17)" -> "node_System(15)" ["lhead"="", "ltail"="clusternode_Set(17)", "tooltip"="CheckProgress → check_progress", "color"="#00b0cc"]
+	"node_System(19)" -> "set_marker_node_Set(18)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(18)"]
+	"node_System(19)" -> "set_marker_node_Set(24)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(24)"]
+	"node_System(19)" ["label"="Pipe(check_splash_finished, <ProgressSystem<(IsFunctionSystem, fn(Res<Time>, Query<SplashTimer>) ->Progress), Progress>>{{closure}})
+In multiple sets, TrackedProgressSet, AnonymousSet(1)", "tooltip"="Pipe(hello_bevy::load::check_splash_finished, <hello_bevy::load::check_splash_finished as iyes_progress::ProgressSystem<(bevy_ecs::system::function_system::IsFunctionSystem, fn(bevy_ecs::change_detection::Res<bevy_time::time::Time>, bevy_ecs::system::query::Query<&mut hello_bevy::load::SplashTimer>) -> iyes_progress::Progress), iyes_progress::Progress>>::track_progress::{{closure}})"]
+	"node_System(21)" -> "set_marker_node_Set(18)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(18)"]
+	"node_System(21)" -> "set_marker_node_Set(24)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(24)"]
+	"node_System(21)" ["label"="Pipe(fake_load, <ProgressSystem<(IsFunctionSystem, fn(Res<Time>) ->Progress), Progress>>{{closure}})
+In multiple sets, TrackedProgressSet, AnonymousSet(1)", "tooltip"="Pipe(hello_bevy::load::fake_load, <hello_bevy::load::fake_load as iyes_progress::ProgressSystem<(bevy_ecs::system::function_system::IsFunctionSystem, fn(bevy_ecs::change_detection::Res<bevy_time::time::Time>) -> iyes_progress::Progress), iyes_progress::Progress>>::track_progress::{{closure}})"]
+	"node_System(22)" -> "set_marker_node_Set(18)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(18)"]
+	"node_System(22)" -> "set_marker_node_Set(24)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(24)"]
+	"node_System(22)" ["label"="Pipe(fake_load2, <ProgressSystem<(IsFunctionSystem, fn(Res<Time>) ->Progress), Progress>>{{closure}})
+In multiple sets, TrackedProgressSet, AnonymousSet(1)", "tooltip"="Pipe(hello_bevy::load::fake_load2, <hello_bevy::load::fake_load2 as iyes_progress::ProgressSystem<(bevy_ecs::system::function_system::IsFunctionSystem, fn(bevy_ecs::change_detection::Res<bevy_time::time::Time>) -> iyes_progress::Progress), iyes_progress::Progress>>::track_progress::{{closure}})"]
+	"node_System(17)" -> "set_marker_node_Set(18)" ["lhead"="clusternode_Set(18)", "ltail"="", "tooltip"="next_frame → TrackedProgressSet", "color"="#eede00"]
+	"set_marker_node_Set(18)" -> "node_System(18)" ["lhead"="", "ltail"="clusternode_Set(18)", "tooltip"="TrackedProgressSet → check_progress<GameState>::{{closure}}", "color"="#881877"]
+	"set_marker_node_Set(23)" -> "node_System(20)" ["lhead"="", "ltail"="clusternode_Set(23)", "tooltip"="CheckProgress → check_progress", "color"="#00b0cc"]
 	"node_System(3)" -> "node_System(2)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessKitAdapters</td></tr></table>>, "labeltooltip"="window_closed — handle_window_focus"]
 	"node_System(4)" -> "node_System(3)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">WinitActionHandlers</td></tr></table>>, "labeltooltip"="poll_receivers — window_closed"]
 	"node_System(5)" -> "node_System(3)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessKitAdapters</td></tr></table>>, "labeltooltip"="update_accessibility_nodes — window_closed"]
 	"node_System(6)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="calc_bounds — update_accessibility_nodes"]
 	"node_System(7)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="button_changed — update_accessibility_nodes"]
 	"node_System(7)" -> "node_System(6)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="button_changed — calc_bounds"]
+	"node_System(7)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="button_changed — component_animator_system<Text>"]
 	"node_System(8)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="image_changed — update_accessibility_nodes"]
 	"node_System(8)" -> "node_System(6)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="image_changed — calc_bounds"]
 	"node_System(8)" -> "node_System(7)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="image_changed — button_changed"]
+	"node_System(8)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="image_changed — component_animator_system<Text>"]
 	"node_System(9)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — update_accessibility_nodes"]
 	"node_System(9)" -> "node_System(6)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — calc_bounds"]
 	"node_System(9)" -> "node_System(7)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — button_changed"]
 	"node_System(9)" -> "node_System(8)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — image_changed"]
+	"node_System(9)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="label_changed — component_animator_system<Text>"]
+	"node_System(11)" -> "node_System(12)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Transform> — component_animator_system<Style>"]
+	"node_System(11)" -> "node_System(14)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Transform> — asset_animator_system<ColorMaterial>"]
+	"node_System(11)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Transform> — component_animator_system<Text>"]
+	"node_System(13)" -> "node_System(11)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Sprite> — component_animator_system<Transform>"]
+	"node_System(13)" -> "node_System(12)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Sprite> — component_animator_system<Style>"]
+	"node_System(13)" -> "node_System(14)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Sprite> — asset_animator_system<ColorMaterial>"]
+	"node_System(13)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Sprite> — component_animator_system<Text>"]
+	"node_System(14)" -> "node_System(12)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="asset_animator_system<ColorMaterial> — component_animator_system<Style>"]
+	"node_System(15)" -> "node_System(12)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Text> — component_animator_system<Style>"]
+	"node_System(15)" -> "node_System(14)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Text> — asset_animator_system<ColorMaterial>"]
+	"node_System(20)" -> "node_System(12)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Style</td></tr></table>>, "labeltooltip"="check_progress — component_animator_system<Style>"]
 }

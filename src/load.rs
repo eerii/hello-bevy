@@ -1,9 +1,19 @@
+// Loading screen and asset plugin configuration
+
+#![allow(clippy::too_many_arguments)]
+
 use crate::GameState;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
+use bevy_tweening::*;
 use iyes_progress::prelude::*;
+use std::time::Duration;
 
 const SPLASH_TIME: f32 = 2.;
+
+const COLOR_LIGHT: Color = Color::rgb(1.0, 0.96, 0.97);
+const COLOR_MID: Color = Color::rgb(0.65, 0.74, 0.76);
+const COLOR_DARK: Color = Color::rgb(0.27, 0.42, 0.45);
 
 // Loading assets plugin
 pub struct LoadPlugin;
@@ -15,25 +25,17 @@ impl Plugin for LoadPlugin {
             .add_collection_to_loading_state::<_, FontAssets>(GameState::Loading)
             .add_plugin(ProgressPlugin::new(GameState::Loading).continue_to(GameState::Menu))
             .add_systems(OnEnter(GameState::Loading), splash_init)
+            .add_systems(OnExit(GameState::Loading), load_clear)
             .add_systems(
                 Update,
-                check_splash_finished
-                    .track_progress()
+                (
+                    check_splash_finished.track_progress(),
+                    check_progress.after(ProgressSystemSet::CheckProgress),
+                    fake_load.track_progress(),
+                    fake_load2.track_progress(),
+                )
                     .run_if(in_state(GameState::Loading)),
-            )
-            .add_systems(
-                Update,
-                check_progress
-                    .run_if(in_state(GameState::Loading))
-                    .after(ProgressSystemSet::CheckProgress),
-            )
-            .add_systems(
-                Update,
-                fake_load
-                    .track_progress()
-                    .run_if(in_state(GameState::Loading)),
-            )
-            .add_systems(OnExit(GameState::Loading), load_clear);
+            );
     }
 }
 
@@ -52,7 +54,7 @@ struct SplashScreen;
 struct SplashNode;
 
 #[derive(Component)]
-struct SplashScreenTimer(Timer);
+struct SplashTimer(Timer);
 
 #[derive(AssetCollection, Resource)] // this is loaded inmediately after the app is fired, has no effect on state
 struct SplashAssets {
@@ -66,6 +68,7 @@ struct SplashAssets {
 fn splash_init(mut cmd: Commands, assets: Res<SplashAssets>) {
     cmd.spawn((Camera2dBundle::default(), SplashScreen));
 
+    // Main ui node for the loading screen
     cmd.spawn((
         NodeBundle {
             style: Style {
@@ -82,49 +85,75 @@ fn splash_init(mut cmd: Commands, assets: Res<SplashAssets>) {
             background_color: BackgroundColor(Color::BLACK),
             ..default()
         },
-        SplashScreen,
         SplashNode,
+        SplashScreen,
     ))
+    // Bevy pixel logo
     .with_children(|parent| {
-        parent.spawn(ImageBundle {
-            image: UiImage {
-                texture: assets.bevy_icon.clone(),
+        parent.spawn((
+            ImageBundle {
+                image: UiImage {
+                    texture: assets.bevy_icon.clone(),
+                    ..default()
+                },
+                style: Style {
+                    size: Size::width(Val::Px(240.0)),
+                    ..default()
+                },
                 ..default()
             },
-            style: Style {
-                size: Size::width(Val::Px(240.0)),
-                ..default()
-            },
-            ..default()
-        });
+            Animator::new(
+                Tween::new(
+                    EaseFunction::CubicInOut,
+                    Duration::from_secs(2),
+                    lens::TransformScaleLens {
+                        start: Vec3::splat(1.),
+                        end: Vec3::splat(0.95),
+                    },
+                )
+                .with_repeat_strategy(RepeatStrategy::MirroredRepeat)
+                .with_repeat_count(RepeatCount::Infinite),
+            ),
+        ));
     });
 
     cmd.spawn((
-        SplashScreenTimer(Timer::from_seconds(SPLASH_TIME, TimerMode::Once)),
+        SplashTimer(Timer::from_seconds(SPLASH_TIME, TimerMode::Once)),
         SplashScreen,
     ));
 }
 
-fn check_splash_finished(time: Res<Time>, mut timer: Query<&mut SplashScreenTimer>) -> Progress {
+fn check_splash_finished(time: Res<Time>, mut timer: Query<&mut SplashTimer>) -> Progress {
     if let Ok(mut timer) = timer.get_single_mut() {
-        return (timer.0.tick(time.delta()).just_finished()).into();
+        return (timer.0.tick(time.delta()).finished()).into();
     }
     false.into()
 }
 
 // Check the loading progress
+#[derive(Component)]
+struct ProgressBar;
+
 fn check_progress(
     mut cmd: Commands,
     progress: Option<Res<ProgressCounter>>,
     assets: Res<SplashAssets>,
-    timer: Query<&SplashScreenTimer>,
+    timer: Query<&SplashTimer>,
     node: Query<Entity, With<SplashNode>>,
-    mut last_progress: Local<u32>,
+    mut bar: Query<&mut Style, With<ProgressBar>>,
+    mut last_progress: Local<(u32, u32)>,
 ) {
     if let Some(progress) = progress.map(|counter| counter.progress()) {
-        if progress.done > *last_progress {
+        if progress.done == progress.total {
+            return;
+        }
+
+        if progress.done > last_progress.0 {
             debug!("Loading progress: {}/{}", progress.done, progress.total);
-            *last_progress = progress.done;
+            *last_progress = (progress.done, progress.total);
+            if let Ok(mut bar) = bar.get_single_mut() {
+                bar.size.width = Val::Percent(progress.done as f32 / progress.total as f32 * 100.);
+            }
         }
     }
 
@@ -139,21 +168,41 @@ fn check_progress(
                             TextStyle {
                                 font: assets.font.clone(),
                                 font_size: 48.,
-                                color: Color::WHITE,
+                                color: COLOR_MID,
                             },
                         ),
                         ..default()
                     });
 
                     // Progress bar
-                    parent.spawn(NodeBundle {
-                        style: Style {
-                            size: Size::new(Val::Percent(70.), Val::Px(32.)),
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                size: Size::new(Val::Percent(70.), Val::Px(32.)),
+                                ..default()
+                            },
+                            background_color: COLOR_DARK.into(),
                             ..default()
-                        },
-                        background_color: Color::ALICE_BLUE.into(),
-                        ..default()
-                    });
+                        })
+                        .with_children(|parent| {
+                            parent.spawn((
+                                NodeBundle {
+                                    style: Style {
+                                        size: Size::new(
+                                            Val::Percent(
+                                                last_progress.0 as f32 / last_progress.1 as f32
+                                                    * 100.,
+                                            ),
+                                            Val::Px(32.),
+                                        ),
+                                        ..default()
+                                    },
+                                    background_color: COLOR_LIGHT.into(),
+                                    ..default()
+                                },
+                                ProgressBar,
+                            ));
+                        });
                 });
             }
         }
@@ -164,15 +213,13 @@ fn fake_load(time: Res<Time>) -> Progress {
     (time.elapsed_seconds() > 4.).into()
 }
 
-// Finish the loading, clear all resources and transition to next state
-fn load_clear(
-    mut cmd: Commands,
-    splash_entities: Query<Entity, With<SplashScreen>>,
-    mut next_state: ResMut<NextState<GameState>>,
-) {
+fn fake_load2(time: Res<Time>) -> Progress {
+    (time.elapsed_seconds() > 6.).into()
+}
+
+// Finish the loading and clear all resources
+fn load_clear(mut cmd: Commands, splash_entities: Query<Entity, With<SplashScreen>>) {
     for entity in splash_entities.iter() {
         cmd.entity(entity).despawn_recursive();
     }
-
-    next_state.set(GameState::Menu);
 }
