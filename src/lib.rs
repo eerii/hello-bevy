@@ -24,13 +24,5 @@ impl Plugin for GamePlugin {
 
         #[cfg(debug_assertions)]
         app.add_plugin(debug::DebugPlugin);
-
-        app.add_systems(Startup, init).add_systems(Update, update);
     }
 }
-
-// TODO: Move
-fn init(mut cmd: Commands) {
-    cmd.spawn(Camera2dBundle::default());
-}
-fn update() {}

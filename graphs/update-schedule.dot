@@ -7,6 +7,49 @@ digraph "" {
 	"nodesep"="0.15";
 	edge ["penwidth"="2"];
 	node ["shape"="box", "style"="filled"];
+	subgraph "clusternode_Set(12)" {
+		"style"="rounded,filled";
+		"label"="TrackedProgressSet";
+		"tooltip"="TrackedProgressSet";
+		"fillcolor"="#ffffff44";
+		"color"="#ffffff50";
+		"penwidth"="2";
+		"set_marker_node_Set(12)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+		"node_System(11)" ["label"="run_loading_state<GameState>", "tooltip"="bevy_asset_loader::loading_state::systems::run_loading_state<hello_bevy::GameState>", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
+		"node_System(14)" ["label"="Pipe(check_splash_finished, <ProgressSystem<(IsFunctionSystem, fn(Res<Time>, Query<SplashScreenTimer>) ->Progress), Progress>>{{closure}})", "tooltip"="Pipe(hello_bevy::load::check_splash_finished, <hello_bevy::load::check_splash_finished as iyes_progress::ProgressSystem<(bevy_ecs::system::function_system::IsFunctionSystem, fn(bevy_ecs::change_detection::Res<bevy_time::time::Time>, bevy_ecs::system::query::Query<&mut hello_bevy::load::SplashScreenTimer>) -> iyes_progress::Progress), iyes_progress::Progress>>::track_progress::{{closure}})", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
+		"node_System(16)" ["label"="Pipe(fake_load, <ProgressSystem<(IsFunctionSystem, fn(Res<Time>) ->Progress), Progress>>{{closure}})", "tooltip"="Pipe(hello_bevy::load::fake_load, <hello_bevy::load::fake_load as iyes_progress::ProgressSystem<(bevy_ecs::system::function_system::IsFunctionSystem, fn(bevy_ecs::change_detection::Res<bevy_time::time::Time>) -> iyes_progress::Progress), iyes_progress::Progress>>::track_progress::{{closure}})", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
+	}
+	
+	subgraph "clusternode_Set(13)" {
+		"style"="rounded,filled";
+		"label"="AnonymousSet(0)";
+		"tooltip"="AnonymousSet(0)";
+		"fillcolor"="#ffffff44";
+		"color"="#ffffff50";
+		"penwidth"="2";
+		"set_marker_node_Set(13)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+	}
+	
+	subgraph "clusternode_Set(15)" {
+		"style"="rounded,filled";
+		"label"="Preparation";
+		"tooltip"="Preparation";
+		"fillcolor"="#ffffff44";
+		"color"="#ffffff50";
+		"penwidth"="2";
+		"set_marker_node_Set(15)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+	}
+	
+	subgraph "clusternode_Set(17)" {
+		"style"="rounded,filled";
+		"label"="CheckProgress";
+		"tooltip"="CheckProgress";
+		"fillcolor"="#ffffff44";
+		"color"="#ffffff50";
+		"penwidth"="2";
+		"set_marker_node_Set(17)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+	}
+	
 	"node_System(0)" ["label"="close_when_requested", "tooltip"="bevy_window::system::close_when_requested"]
 	"node_System(1)" ["label"="scene_spawner_system", "tooltip"="bevy_scene::scene_spawner::scene_spawner_system"]
 	"node_System(2)" ["label"="handle_window_focus", "tooltip"="bevy_winit::accessibility::handle_window_focus"]
@@ -18,21 +61,31 @@ digraph "" {
 	"node_System(8)" ["label"="image_changed", "tooltip"="bevy_ui::accessibility::image_changed"]
 	"node_System(9)" ["label"="label_changed", "tooltip"="bevy_ui::accessibility::label_changed"]
 	"node_System(10)" ["label"="update_previous_view_projections", "tooltip"="bevy_pbr::prepass::update_previous_view_projections"]
-	"node_System(11)" ["label"="run_loading_state<GameState>", "tooltip"="bevy_asset_loader::loading_state::systems::run_loading_state<hello_bevy::GameState>"]
-	"node_System(12)" ["label"="diagnostic_system", "tooltip"="bevy_diagnostic::frame_time_diagnostics_plugin::FrameTimeDiagnosticsPlugin::diagnostic_system"]
-	"node_System(13)" ["label"="world_inspector_ui", "tooltip"="bevy_inspector_egui::quick::world_inspector_ui"]
-	"node_System(14)" ["label"="update", "tooltip"="hello_bevy::update"]
+	"node_System(15)" ["label"="check_progress", "tooltip"="hello_bevy::load::check_progress"]
+	"node_System(17)" ["label"="diagnostic_system", "tooltip"="bevy_diagnostic::frame_time_diagnostics_plugin::FrameTimeDiagnosticsPlugin::diagnostic_system"]
+	"node_System(18)" ["label"="world_inspector_ui", "tooltip"="bevy_inspector_egui::quick::world_inspector_ui"]
+	"node_System(12)" -> "set_marker_node_Set(13)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(13)"]
+	"node_System(12)" -> "set_marker_node_Set(15)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(15)"]
+	"node_System(12)" ["label"="next_frame
+In multiple sets, AnonymousSet(0), Preparation", "tooltip"="iyes_progress::next_frame"]
+	"node_System(13)" -> "set_marker_node_Set(13)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(13)"]
+	"node_System(13)" -> "set_marker_node_Set(17)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(17)"]
+	"node_System(13)" ["label"="check_progress<GameState>::{{closure}}
+In multiple sets, AnonymousSet(0), CheckProgress", "tooltip"="iyes_progress::check_progress<hello_bevy::GameState>::{{closure}}"]
+	"node_System(12)" -> "set_marker_node_Set(12)" ["lhead"="clusternode_Set(12)", "ltail"="", "tooltip"="next_frame → TrackedProgressSet", "color"="#eede00"]
+	"set_marker_node_Set(12)" -> "node_System(13)" ["lhead"="", "ltail"="clusternode_Set(12)", "tooltip"="TrackedProgressSet → check_progress<GameState>::{{closure}}", "color"="#881877"]
+	"set_marker_node_Set(17)" -> "node_System(15)" ["lhead"="", "ltail"="clusternode_Set(17)", "tooltip"="CheckProgress → check_progress", "color"="#00b0cc"]
 	"node_System(3)" -> "node_System(2)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessKitAdapters</td></tr></table>>, "labeltooltip"="window_closed — handle_window_focus"]
 	"node_System(4)" -> "node_System(3)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">WinitActionHandlers</td></tr></table>>, "labeltooltip"="poll_receivers — window_closed"]
 	"node_System(5)" -> "node_System(3)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessKitAdapters</td></tr></table>>, "labeltooltip"="update_accessibility_nodes — window_closed"]
-	"node_System(5)" -> "node_System(8)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="update_accessibility_nodes — image_changed"]
-	"node_System(5)" -> "node_System(9)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="update_accessibility_nodes — label_changed"]
 	"node_System(6)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="calc_bounds — update_accessibility_nodes"]
-	"node_System(6)" -> "node_System(8)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="calc_bounds — image_changed"]
-	"node_System(6)" -> "node_System(9)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="calc_bounds — label_changed"]
 	"node_System(7)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="button_changed — update_accessibility_nodes"]
 	"node_System(7)" -> "node_System(6)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="button_changed — calc_bounds"]
-	"node_System(7)" -> "node_System(8)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="button_changed — image_changed"]
-	"node_System(7)" -> "node_System(9)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="button_changed — label_changed"]
+	"node_System(8)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="image_changed — update_accessibility_nodes"]
+	"node_System(8)" -> "node_System(6)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="image_changed — calc_bounds"]
+	"node_System(8)" -> "node_System(7)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="image_changed — button_changed"]
+	"node_System(9)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — update_accessibility_nodes"]
+	"node_System(9)" -> "node_System(6)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — calc_bounds"]
+	"node_System(9)" -> "node_System(7)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — button_changed"]
 	"node_System(9)" -> "node_System(8)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — image_changed"]
 }

@@ -1,5 +1,5 @@
 use bevy::{
-    log::LogPlugin,
+    log::{Level, LogPlugin},
     prelude::*,
     window::{PresentMode, WindowResolution},
 };
@@ -27,10 +27,12 @@ fn main() {
                     ..default()
                 })
                 .set(LogPlugin {
+                    level: Level::INFO,
                     // todo: enable when #8374 is merged
                     // layer: Box::new(|| Box::new(bevy::log::tracing_subscriber::fmt::Layer::default())),
                     ..default()
-                }),
+                })
+                .set(ImagePlugin::default_nearest()),
         )
         .add_plugin(GamePlugin);
 

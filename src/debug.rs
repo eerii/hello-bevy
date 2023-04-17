@@ -12,7 +12,7 @@ pub struct DebugPlugin;
 // Only debug implementation
 #[cfg(debug_assertions)]
 mod only_in_debug {
-
+    use crate::GameState;
     use bevy::{
         diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
         ecs::schedule::ScheduleLabel,
@@ -28,7 +28,7 @@ mod only_in_debug {
                     wait_duration: std::time::Duration::from_secs(5),
                     ..default()
                 })
-                .add_plugin(WorldInspectorPlugin::default());
+                .add_plugin(WorldInspectorPlugin::default().run_if(in_state(GameState::Play)));
         }
     }
 
