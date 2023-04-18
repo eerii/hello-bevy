@@ -1,5 +1,6 @@
 mod debug;
 mod load;
+mod save;
 mod menu;
 
 pub use debug::{save_schedule, DEBUG};
@@ -25,6 +26,7 @@ impl Plugin for GamePlugin {
         app.add_state::<GameState>()
             .add_plugin(TweeningPlugin)
             .add_plugin(load::LoadPlugin)
+            .add_plugin(save::SavePlugin)
             .add_plugin(menu::MenuPlugin);
 
         #[cfg(debug_assertions)]

@@ -15,7 +15,7 @@ mod only_in_debug {
     use crate::{load::FontAssets, GameState};
     use bevy::{
         core_pipeline::clear_color::ClearColorConfig,
-        diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+        diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
         ecs::schedule::ScheduleLabel,
         prelude::*,
     };
@@ -25,10 +25,6 @@ mod only_in_debug {
     impl Plugin for super::DebugPlugin {
         fn build(&self, app: &mut App) {
             app.add_plugin(FrameTimeDiagnosticsPlugin::default())
-                .add_plugin(LogDiagnosticsPlugin {
-                    wait_duration: std::time::Duration::from_secs(5),
-                    ..default()
-                })
                 .add_plugin(
                     WorldInspectorPlugin::default().run_if(
                         resource_exists::<DebugState>()

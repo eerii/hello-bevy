@@ -8,5 +8,6 @@ digraph "" {
 	edge ["penwidth"="2"];
 	node ["shape"="box", "style"="filled"];
 	"node_System(0)" ["label"="log_system_info", "tooltip"="bevy_diagnostic::system_information_diagnostics_plugin::internal::log_system_info"]
-	"node_System(1)" ["label"="setup_system", "tooltip"="bevy_diagnostic::frame_time_diagnostics_plugin::FrameTimeDiagnosticsPlugin::setup_system"]
+	"node_System(1)" ["label"="_load", "tooltip"="hello_bevy::save::_load"]
+	"node_System(2)" ["label"="setup_system", "tooltip"="bevy_diagnostic::frame_time_diagnostics_plugin::FrameTimeDiagnosticsPlugin::setup_system"]
 }
