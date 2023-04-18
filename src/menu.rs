@@ -1,7 +1,7 @@
 // Main game menu with play and options
 #![allow(clippy::type_complexity)]
 
-use crate::{load::FontAssets, GameState};
+use crate::{load::SplashAssets, GameState};
 use bevy::prelude::*;
 
 const COLOR_LIGHT: Color = Color::rgb(1.0, 0.96, 0.97);
@@ -33,7 +33,7 @@ enum Button {
 }
 
 // Create the menu
-fn init_menu(mut cmd: Commands, fonts: Res<FontAssets>) {
+fn init_menu(mut cmd: Commands, assets: Res<SplashAssets>) {
     cmd.spawn((Camera2dBundle::default(), MenuCam));
 
     // Main UI node for the menu
@@ -59,18 +59,18 @@ fn init_menu(mut cmd: Commands, fonts: Res<FontAssets>) {
         parent.spawn(TextBundle::from_section(
             "Hello Bevy",
             TextStyle {
-                font: fonts.gameboy.clone(),
+                font: assets.font.clone(),
                 font_size: 64.,
                 color: COLOR_MID,
             },
         ));
 
-        create_button(parent, &fonts, "Play", Button::Play);
-        create_button(parent, &fonts, "Options", Button::Options);
+        create_button(parent, assets.font.clone(), "Play", Button::Play);
+        create_button(parent, assets.font.clone(), "Options", Button::Options);
     });
 }
 
-fn create_button(parent: &mut ChildBuilder, fonts: &Res<FontAssets>, text: &str, button: Button) {
+fn create_button(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, button: Button) {
     parent
         .spawn((
             ButtonBundle {
@@ -89,7 +89,7 @@ fn create_button(parent: &mut ChildBuilder, fonts: &Res<FontAssets>, text: &str,
             parent.spawn(TextBundle::from_section(
                 text,
                 TextStyle {
-                    font: fonts.gameboy.clone(),
+                    font,
                     font_size: 32.,
                     color: COLOR_DARK,
                 },

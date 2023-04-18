@@ -12,7 +12,7 @@ pub struct DebugPlugin;
 // Only debug implementation
 #[cfg(debug_assertions)]
 mod only_in_debug {
-    use crate::{load::FontAssets, GameState};
+    use crate::{load::SplashAssets, GameState};
     use bevy::{
         core_pipeline::clear_color::ClearColorConfig,
         diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
@@ -87,14 +87,14 @@ mod only_in_debug {
     #[derive(Component)]
     struct DebugUiCam;
 
-    fn init_fps(mut cmd: Commands, fonts: Res<FontAssets>) {
+    fn init_fps(mut cmd: Commands, assets: Res<SplashAssets>) {
         cmd.spawn((
             Camera2dBundle {
                 camera_2d: Camera2d {
                     clear_color: ClearColorConfig::Custom(Color::rgba(0., 0., 0., 0.)),
                 },
                 camera: Camera {
-                    order: 10,
+                    order: -10,
                     ..default()
                 },
                 ..default()
@@ -107,13 +107,13 @@ mod only_in_debug {
                 TextSection::new(
                     "FPS: ",
                     TextStyle {
-                        font: fonts.gameboy.clone(),
+                        font: assets.font.clone(),
                         font_size: 24.0,
                         color: Color::WHITE,
                     },
                 ),
                 TextSection::from_style(TextStyle {
-                    font: fonts.gameboy.clone(),
+                    font: assets.font.clone(),
                     font_size: 24.0,
                     color: Color::GOLD,
                 }),

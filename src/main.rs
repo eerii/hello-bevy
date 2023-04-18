@@ -8,7 +8,7 @@ use hello_bevy::{save_schedule, GamePlugin, DEBUG};
 fn main() {
     let mut app = App::new();
     // Plugins
-    app.insert_resource(ClearColor(Color::rgb(0.6, 0.7, 1.0)))
+    app.insert_resource(ClearColor(Color::rgb(0.2, 0.3, 0.5)))
         .add_plugins(
             DefaultPlugins
                 .set(WindowPlugin {

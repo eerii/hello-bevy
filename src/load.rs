@@ -5,9 +5,7 @@
 use crate::GameState;
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
-use bevy_tweening::*;
 use iyes_progress::prelude::*;
-use std::time::Duration;
 
 #[cfg(debug_assertions)]
 pub const SPLASH_TIME: f32 = 0.;
@@ -25,7 +23,7 @@ impl Plugin for LoadPlugin {
     fn build(&self, app: &mut App) {
         app.add_loading_state(LoadingState::new(GameState::Loading))
             .init_collection::<SplashAssets>()
-            .add_collection_to_loading_state::<_, FontAssets>(GameState::Loading)
+            .add_collection_to_loading_state::<_, OtherAssets>(GameState::Loading)
             .add_plugin(ProgressPlugin::new(GameState::Loading).continue_to(GameState::Menu))
             .add_systems(OnEnter(GameState::Loading), init_splash)
             .add_systems(OnExit(GameState::Loading), clear_loading)
@@ -42,9 +40,8 @@ impl Plugin for LoadPlugin {
 
 // Test assets
 #[derive(AssetCollection, Resource)]
-pub struct FontAssets {
-    #[asset(path = "fonts/gb.ttf")]
-    pub gameboy: Handle<Font>,
+pub struct OtherAssets {
+    // Add assets here
 }
 
 // Splash screen setup
@@ -58,7 +55,7 @@ struct SplashNode;
 struct SplashTimer(Timer);
 
 #[derive(AssetCollection, Resource)] // this is loaded inmediately after the app is fired, has no effect on state
-struct SplashAssets {
+pub struct SplashAssets {
     #[asset(path = "icons/pixelbevy.png")]
     pub bevy_icon: Handle<Image>,
 
@@ -90,31 +87,17 @@ fn init_splash(mut cmd: Commands, assets: Res<SplashAssets>) {
     ))
     .with_children(|parent| {
         // Bevy pixel logo
-        parent.spawn((
-            ImageBundle {
-                image: UiImage {
-                    texture: assets.bevy_icon.clone(),
-                    ..default()
-                },
-                style: Style {
-                    size: Size::width(Val::Px(240.0)),
-                    ..default()
-                },
+        parent.spawn(ImageBundle {
+            image: UiImage {
+                texture: assets.bevy_icon.clone(),
                 ..default()
             },
-            Animator::new(
-                Tween::new(
-                    EaseFunction::CubicInOut,
-                    Duration::from_secs(2),
-                    lens::TransformScaleLens {
-                        start: Vec3::splat(1.),
-                        end: Vec3::splat(0.95),
-                    },
-                )
-                .with_repeat_strategy(RepeatStrategy::MirroredRepeat)
-                .with_repeat_count(RepeatCount::Infinite),
-            ),
-        ));
+            style: Style {
+                size: Size::width(Val::Px(240.0)),
+                ..default()
+            },
+            ..default()
+        });
     });
 
     cmd.spawn(SplashTimer(Timer::from_seconds(
