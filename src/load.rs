@@ -1,6 +1,6 @@
 // Loading screen and asset plugin configuration
-
 #![allow(clippy::too_many_arguments)]
+#![allow(clippy::type_complexity)]
 
 use crate::GameState;
 use bevy::prelude::*;
@@ -9,7 +9,10 @@ use bevy_tweening::*;
 use iyes_progress::prelude::*;
 use std::time::Duration;
 
-const SPLASH_TIME: f32 = 2.;
+#[cfg(debug_assertions)]
+pub const SPLASH_TIME: f32 = 0.;
+#[cfg(not(debug_assertions))]
+pub const SPLASH_TIME: f32 = 2.;
 
 const COLOR_LIGHT: Color = Color::rgb(1.0, 0.96, 0.97);
 const COLOR_MID: Color = Color::rgb(0.65, 0.74, 0.76);
@@ -23,16 +26,14 @@ impl Plugin for LoadPlugin {
         app.add_loading_state(LoadingState::new(GameState::Loading))
             .init_collection::<SplashAssets>()
             .add_collection_to_loading_state::<_, FontAssets>(GameState::Loading)
-            .add_plugin(ProgressPlugin::new(GameState::Loading).continue_to(GameState::Play))
-            .add_systems(OnEnter(GameState::Loading), splash_init)
-            .add_systems(OnExit(GameState::Loading), load_clear)
+            .add_plugin(ProgressPlugin::new(GameState::Loading).continue_to(GameState::Menu))
+            .add_systems(OnEnter(GameState::Loading), init_splash)
+            .add_systems(OnExit(GameState::Loading), clear_loading)
             .add_systems(
                 Update,
                 (
                     check_splash_finished.track_progress(),
                     check_progress.after(ProgressSystemSet::CheckProgress),
-                    fake_load.track_progress(),
-                    fake_load2.track_progress(),
                 )
                     .run_if(in_state(GameState::Loading)),
             );
@@ -48,7 +49,7 @@ pub struct FontAssets {
 
 // Splash screen setup
 #[derive(Component)]
-struct SplashScreen;
+struct SplashCam;
 
 #[derive(Component)]
 struct SplashNode;
@@ -65,8 +66,8 @@ struct SplashAssets {
     pub font: Handle<Font>,
 }
 
-fn splash_init(mut cmd: Commands, assets: Res<SplashAssets>) {
-    cmd.spawn((Camera2dBundle::default(), SplashScreen));
+fn init_splash(mut cmd: Commands, assets: Res<SplashAssets>) {
+    cmd.spawn((Camera2dBundle::default(), SplashCam));
 
     // Main ui node for the loading screen
     cmd.spawn((
@@ -86,10 +87,9 @@ fn splash_init(mut cmd: Commands, assets: Res<SplashAssets>) {
             ..default()
         },
         SplashNode,
-        SplashScreen,
     ))
-    // Bevy pixel logo
     .with_children(|parent| {
+        // Bevy pixel logo
         parent.spawn((
             ImageBundle {
                 image: UiImage {
@@ -117,10 +117,10 @@ fn splash_init(mut cmd: Commands, assets: Res<SplashAssets>) {
         ));
     });
 
-    cmd.spawn((
-        SplashTimer(Timer::from_seconds(SPLASH_TIME, TimerMode::Once)),
-        SplashScreen,
-    ));
+    cmd.spawn(SplashTimer(Timer::from_seconds(
+        SPLASH_TIME,
+        TimerMode::Once,
+    )));
 }
 
 fn check_splash_finished(time: Res<Time>, mut timer: Query<&mut SplashTimer>) -> Progress {
@@ -209,16 +209,11 @@ fn check_progress(
     }
 }
 
-fn fake_load(time: Res<Time>) -> Progress {
-    (time.elapsed_seconds() > 4.).into()
-}
-
-fn fake_load2(time: Res<Time>) -> Progress {
-    (time.elapsed_seconds() > 6.).into()
-}
-
 // Finish the loading and clear all resources
-fn load_clear(mut cmd: Commands, splash_entities: Query<Entity, With<SplashScreen>>) {
+fn clear_loading(
+    mut cmd: Commands,
+    splash_entities: Query<Entity, Or<(With<SplashCam>, With<SplashNode>, With<SplashTimer>)>>,
+) {
     for entity in splash_entities.iter() {
         cmd.entity(entity).despawn_recursive();
     }

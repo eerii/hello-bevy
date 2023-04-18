@@ -12,8 +12,9 @@ pub struct DebugPlugin;
 // Only debug implementation
 #[cfg(debug_assertions)]
 mod only_in_debug {
-    use crate::{FontAssets, GameState};
+    use crate::{load::FontAssets, GameState};
     use bevy::{
+        core_pipeline::clear_color::ClearColorConfig,
         diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
         ecs::schedule::ScheduleLabel,
         prelude::*,
@@ -28,9 +29,18 @@ mod only_in_debug {
                     wait_duration: std::time::Duration::from_secs(5),
                     ..default()
                 })
-                .add_plugin(WorldInspectorPlugin::default().run_if(in_state(GameState::Play)))
-                .add_systems(OnEnter(GameState::Play), setup_fps)
-                .add_systems(Update, update_fps.run_if(in_state(GameState::Play)));
+                .add_plugin(
+                    WorldInspectorPlugin::default().run_if(
+                        resource_exists::<DebugState>()
+                            .and_then(|state: Res<DebugState>| state.inspector),
+                    ),
+                )
+                .init_resource::<DebugState>()
+                .add_systems(OnEnter(GameState::Play), init_fps)
+                .add_systems(
+                    Update,
+                    (update_fps, handle_keys).run_if(in_state(GameState::Play)),
+                );
         }
     }
 
@@ -81,8 +91,20 @@ mod only_in_debug {
     #[derive(Component)]
     struct DebugUiCam;
 
-    fn setup_fps(mut cmd: Commands, fonts: Res<FontAssets>) {
-        cmd.spawn((Camera2dBundle::default(), DebugUiCam));
+    fn init_fps(mut cmd: Commands, fonts: Res<FontAssets>) {
+        cmd.spawn((
+            Camera2dBundle {
+                camera_2d: Camera2d {
+                    clear_color: ClearColorConfig::Custom(Color::rgba(0., 0., 0., 0.)),
+                },
+                camera: Camera {
+                    order: 10,
+                    ..default()
+                },
+                ..default()
+            },
+            DebugUiCam,
+        ));
 
         cmd.spawn((
             TextBundle::from_sections([
@@ -111,6 +133,19 @@ mod only_in_debug {
                     text.sections[1].value = format!("{fps:.0}");
                 }
             }
+        }
+    }
+
+    // State for debug
+    #[derive(Resource, Default)]
+    struct DebugState {
+        inspector: bool,
+    }
+
+    // Handle keys
+    fn handle_keys(mut state: ResMut<DebugState>, keyboard: Res<Input<KeyCode>>) {
+        if keyboard.just_pressed(KeyCode::I) {
+            state.inspector = !state.inspector;
         }
     }
 }

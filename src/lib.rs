@@ -1,8 +1,8 @@
 mod debug;
 mod load;
+mod menu;
 
 pub use debug::{save_schedule, DEBUG};
-pub use load::FontAssets;
 
 use bevy::prelude::*;
 use bevy_tweening::TweeningPlugin;
@@ -24,7 +24,8 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_state::<GameState>()
             .add_plugin(TweeningPlugin)
-            .add_plugin(load::LoadPlugin);
+            .add_plugin(load::LoadPlugin)
+            .add_plugin(menu::MenuPlugin);
 
         #[cfg(debug_assertions)]
         app.add_plugin(debug::DebugPlugin);

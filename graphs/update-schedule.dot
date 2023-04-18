@@ -74,6 +74,18 @@ digraph "" {
 		"node_System(20)" ["label"="check_progress", "tooltip"="hello_bevy::load::check_progress", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
 	}
 	
+	subgraph "clusternode_Set(31)" {
+		"style"="rounded,filled";
+		"label"="AnonymousSet(2)";
+		"tooltip"="AnonymousSet(2)";
+		"fillcolor"="#ffffff44";
+		"color"="#ffffff50";
+		"penwidth"="2";
+		"set_marker_node_Set(31)" ["style"="invis", "label"="", "height"="0", "shape"="point"]
+		"node_System(24)" ["label"="update_fps", "tooltip"="hello_bevy::debug::only_in_debug::update_fps", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
+		"node_System(25)" ["label"="handle_keys", "tooltip"="hello_bevy::debug::only_in_debug::handle_keys", "fillcolor"="#eff1f3", "fontname"="Helvetica", "fontcolor"="#15191d", "color"="#b4bec7", "penwidth"="1"]
+	}
+	
 	"node_System(0)" ["label"="close_when_requested", "tooltip"="bevy_window::system::close_when_requested"]
 	"node_System(1)" ["label"="scene_spawner_system", "tooltip"="bevy_scene::scene_spawner::scene_spawner_system"]
 	"node_System(2)" ["label"="handle_window_focus", "tooltip"="bevy_winit::accessibility::handle_window_focus"]
@@ -85,9 +97,9 @@ digraph "" {
 	"node_System(8)" ["label"="image_changed", "tooltip"="bevy_ui::accessibility::image_changed"]
 	"node_System(9)" ["label"="label_changed", "tooltip"="bevy_ui::accessibility::label_changed"]
 	"node_System(10)" ["label"="update_previous_view_projections", "tooltip"="bevy_pbr::prepass::update_previous_view_projections"]
-	"node_System(23)" ["label"="diagnostic_system", "tooltip"="bevy_diagnostic::frame_time_diagnostics_plugin::FrameTimeDiagnosticsPlugin::diagnostic_system"]
-	"node_System(24)" ["label"="world_inspector_ui", "tooltip"="bevy_inspector_egui::quick::world_inspector_ui"]
-	"node_System(25)" ["label"="update_fps", "tooltip"="hello_bevy::debug::only_in_debug::update_fps"]
+	"node_System(21)" ["label"="handle_buttons", "tooltip"="hello_bevy::menu::handle_buttons"]
+	"node_System(22)" ["label"="diagnostic_system", "tooltip"="bevy_diagnostic::frame_time_diagnostics_plugin::FrameTimeDiagnosticsPlugin::diagnostic_system"]
+	"node_System(23)" ["label"="world_inspector_ui", "tooltip"="bevy_inspector_egui::quick::world_inspector_ui"]
 	"node_System(17)" -> "set_marker_node_Set(19)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(19)"]
 	"node_System(17)" -> "set_marker_node_Set(21)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(21)"]
 	"node_System(17)" ["label"="next_frame
@@ -100,14 +112,6 @@ In multiple sets, AnonymousSet(0), CheckProgress", "tooltip"="iyes_progress::che
 	"node_System(19)" -> "set_marker_node_Set(24)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(24)"]
 	"node_System(19)" ["label"="Pipe(check_splash_finished, <ProgressSystem<(IsFunctionSystem, fn(Res<Time>, Query<SplashTimer>) ->Progress), Progress>>{{closure}})
 In multiple sets, TrackedProgressSet, AnonymousSet(1)", "tooltip"="Pipe(hello_bevy::load::check_splash_finished, <hello_bevy::load::check_splash_finished as iyes_progress::ProgressSystem<(bevy_ecs::system::function_system::IsFunctionSystem, fn(bevy_ecs::change_detection::Res<bevy_time::time::Time>, bevy_ecs::system::query::Query<&mut hello_bevy::load::SplashTimer>) -> iyes_progress::Progress), iyes_progress::Progress>>::track_progress::{{closure}})"]
-	"node_System(21)" -> "set_marker_node_Set(18)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(18)"]
-	"node_System(21)" -> "set_marker_node_Set(24)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(24)"]
-	"node_System(21)" ["label"="Pipe(fake_load, <ProgressSystem<(IsFunctionSystem, fn(Res<Time>) ->Progress), Progress>>{{closure}})
-In multiple sets, TrackedProgressSet, AnonymousSet(1)", "tooltip"="Pipe(hello_bevy::load::fake_load, <hello_bevy::load::fake_load as iyes_progress::ProgressSystem<(bevy_ecs::system::function_system::IsFunctionSystem, fn(bevy_ecs::change_detection::Res<bevy_time::time::Time>) -> iyes_progress::Progress), iyes_progress::Progress>>::track_progress::{{closure}})"]
-	"node_System(22)" -> "set_marker_node_Set(18)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(18)"]
-	"node_System(22)" -> "set_marker_node_Set(24)" ["dir"="none", "color"="blue", "lhead"="clusternode_Set(24)"]
-	"node_System(22)" ["label"="Pipe(fake_load2, <ProgressSystem<(IsFunctionSystem, fn(Res<Time>) ->Progress), Progress>>{{closure}})
-In multiple sets, TrackedProgressSet, AnonymousSet(1)", "tooltip"="Pipe(hello_bevy::load::fake_load2, <hello_bevy::load::fake_load2 as iyes_progress::ProgressSystem<(bevy_ecs::system::function_system::IsFunctionSystem, fn(bevy_ecs::change_detection::Res<bevy_time::time::Time>) -> iyes_progress::Progress), iyes_progress::Progress>>::track_progress::{{closure}})"]
 	"node_System(17)" -> "set_marker_node_Set(18)" ["lhead"="clusternode_Set(18)", "ltail"="", "tooltip"="next_frame → TrackedProgressSet", "color"="#eede00"]
 	"set_marker_node_Set(18)" -> "node_System(18)" ["lhead"="", "ltail"="clusternode_Set(18)", "tooltip"="TrackedProgressSet → check_progress<GameState>::{{closure}}", "color"="#881877"]
 	"set_marker_node_Set(23)" -> "node_System(20)" ["lhead"="", "ltail"="clusternode_Set(23)", "tooltip"="CheckProgress → check_progress", "color"="#00b0cc"]
@@ -118,29 +122,35 @@ In multiple sets, TrackedProgressSet, AnonymousSet(1)", "tooltip"="Pipe(hello_be
 	"node_System(7)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="button_changed — update_accessibility_nodes"]
 	"node_System(7)" -> "node_System(6)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="button_changed — calc_bounds"]
 	"node_System(7)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="button_changed — component_animator_system<Text>"]
+	"node_System(7)" -> "node_System(21)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="button_changed — handle_buttons"]
 	"node_System(8)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="image_changed — update_accessibility_nodes"]
 	"node_System(8)" -> "node_System(6)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="image_changed — calc_bounds"]
 	"node_System(8)" -> "node_System(7)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="image_changed — button_changed"]
 	"node_System(8)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="image_changed — component_animator_system<Text>"]
+	"node_System(8)" -> "node_System(21)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="image_changed — handle_buttons"]
 	"node_System(9)" -> "node_System(5)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — update_accessibility_nodes"]
 	"node_System(9)" -> "node_System(6)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — calc_bounds"]
 	"node_System(9)" -> "node_System(7)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — button_changed"]
 	"node_System(9)" -> "node_System(8)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">AccessibilityNode</td></tr></table>>, "labeltooltip"="label_changed — image_changed"]
 	"node_System(9)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="label_changed — component_animator_system<Text>"]
-	"node_System(11)" -> "node_System(13)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Transform> — component_animator_system<Sprite>"]
+	"node_System(9)" -> "node_System(21)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="label_changed — handle_buttons"]
+	"node_System(11)" -> "node_System(14)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Transform> — asset_animator_system<ColorMaterial>"]
 	"node_System(11)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Transform> — component_animator_system<Text>"]
 	"node_System(12)" -> "node_System(11)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Style> — component_animator_system<Transform>"]
 	"node_System(12)" -> "node_System(13)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Style> — component_animator_system<Sprite>"]
 	"node_System(12)" -> "node_System(14)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Style> — asset_animator_system<ColorMaterial>"]
 	"node_System(12)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Style> — component_animator_system<Text>"]
 	"node_System(12)" -> "node_System(20)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Style</td></tr></table>>, "labeltooltip"="component_animator_system<Style> — check_progress"]
+	"node_System(13)" -> "node_System(11)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Sprite> — component_animator_system<Transform>"]
+	"node_System(13)" -> "node_System(14)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Sprite> — asset_animator_system<ColorMaterial>"]
 	"node_System(13)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="component_animator_system<Sprite> — component_animator_system<Text>"]
-	"node_System(14)" -> "node_System(11)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="asset_animator_system<ColorMaterial> — component_animator_system<Transform>"]
-	"node_System(14)" -> "node_System(13)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="asset_animator_system<ColorMaterial> — component_animator_system<Sprite>"]
 	"node_System(14)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Events&lt;TweenCompleted&gt;</td></tr></table>>, "labeltooltip"="asset_animator_system<ColorMaterial> — component_animator_system<Text>"]
-	"node_System(25)" -> "node_System(7)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="update_fps — button_changed"]
-	"node_System(25)" -> "node_System(8)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="update_fps — image_changed"]
-	"node_System(25)" -> "node_System(9)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="update_fps — label_changed"]
-	"node_System(25)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="update_fps — component_animator_system<Text>"]
-	"node_System(25)" -> "node_System(23)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Diagnostics</td></tr></table>>, "labeltooltip"="update_fps — diagnostic_system"]
+	"node_System(15)" -> "node_System(21)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="component_animator_system<Text> — handle_buttons"]
+	"node_System(18)" -> "node_System(21)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">NextState&lt;GameState&gt;</td></tr></table>>, "labeltooltip"="check_progress<GameState>::{{closure}} — handle_buttons"]
+	"node_System(24)" -> "node_System(7)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="update_fps — button_changed"]
+	"node_System(24)" -> "node_System(8)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="update_fps — image_changed"]
+	"node_System(24)" -> "node_System(9)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="update_fps — label_changed"]
+	"node_System(24)" -> "node_System(15)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="update_fps — component_animator_system<Text>"]
+	"node_System(24)" -> "node_System(21)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Text</td></tr></table>>, "labeltooltip"="update_fps — handle_buttons"]
+	"node_System(24)" -> "node_System(22)" ["dir"="none", "constraint"="false", "color"="#c93526", "fontcolor"="#c93526", "label"=<<table border="0" cellborder="0"><tr><td bgcolor="#c6e6ff">Diagnostics</td></tr></table>>, "labeltooltip"="update_fps — diagnostic_system"]
 }
