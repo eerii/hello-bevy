@@ -1,12 +1,12 @@
 [package]
-name = "hello-bevy" # [CHANGE]: Set your project name.
+name = "hello_bevy" # [CHANGE]: Set your project name.
 version = "0.12.0"
 edition = "2021"
 description = "a bevy game template"
 exclude = ["build", "assets", "graphs"]
 
 [profile.dev.package."*"]
-# opt-level = 3 # [CHANGE]: Improves performance when developing, but slows down first compilation significantly
+opt-level = 3 # [CHANGE]: Improves performance when developing, but slows down first compilation significantly
 
 [dependencies]
 bevy = "0.12" # The bevy engine <3
@@ -16,3 +16,4 @@ bevy-inspector-egui = "0.21" # Inspector
 bevy-persistent = { version = "0.4", features = ["all"] } # Persistent values (for saving)
 bevy_mod_debugdump = "0.9" # Debug graphs
 rand = "0.8"
+serde = { version = "1.0", features = ["derive"] }

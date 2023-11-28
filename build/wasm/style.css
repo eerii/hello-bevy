@@ -15,8 +15,8 @@ body {
 }
 
 @font-face {
-    font-family: 'gameboy';
-    src: url('assets/fonts/gb.ttf');
+    font-family: 'atkinson';
+    src: url('assets/fonts/at.ttf');
 }
 
 .game-container {
@@ -42,7 +42,7 @@ body {
 
 .text-loading {
     color: #ffdb81;
-    font-family: 'gameboy', monospace;
+    font-family: 'atkinson', monospace;
     animation: opacity_in_out 1s ease-in-out infinite alternate;
 }
 

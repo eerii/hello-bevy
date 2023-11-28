@@ -2184,7 +2184,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "hello-bevy"
+name = "hello_bevy"
 version = "0.12.0"
 dependencies = [
  "bevy",
@@ -2194,6 +2194,7 @@ dependencies = [
  "bevy_mod_debugdump",
  "iyes_progress",
  "rand",
+ "serde",
 ]
 
 [[package]]

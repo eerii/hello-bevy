@@ -1,24 +1,20 @@
-// Loading screen and asset plugin configuration
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
 
-use crate::GameState;
+use crate::{GameState, COLOR_DARK, COLOR_DARKER, COLOR_LIGHT, COLOR_MID};
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use iyes_progress::prelude::*;
 
 #[cfg(debug_assertions)]
-pub const SPLASH_TIME: f32 = 0.;
+pub const SPLASH_TIME: f32 = 2.;
 #[cfg(not(debug_assertions))]
 pub const SPLASH_TIME: f32 = 2.;
 
-// TODO: What happened to Size in UI?
+// ······
+// Plugin
+// ······
 
-const COLOR_LIGHT: Color = Color::rgb(1.0, 0.96, 0.97);
-const COLOR_MID: Color = Color::rgb(0.65, 0.74, 0.76);
-const COLOR_DARK: Color = Color::rgb(0.27, 0.42, 0.45);
-
-// Loading assets plugin
 pub struct LoadPlugin;
 
 impl Plugin for LoadPlugin {
@@ -40,13 +36,29 @@ impl Plugin for LoadPlugin {
     }
 }
 
+// ·········
+// Resources
+// ·········
+
 // Sample assets
 #[derive(AssetCollection, Resource)]
 pub struct SampleAssets {
     // Add assets here
 }
 
-// Splash screen setup
+#[derive(AssetCollection, Resource)] // this is loaded inmediately after the app is fired, has no effect on state
+pub struct SplashAssets {
+    #[asset(path = "icons/bevy.png")]
+    pub bevy_icon: Handle<Image>,
+
+    #[asset(path = "fonts/at.ttf")]
+    pub font: Handle<Font>,
+}
+
+// ··········
+// Components
+// ··········
+
 #[derive(Component)]
 struct SplashCam;
 
@@ -56,14 +68,12 @@ struct SplashNode;
 #[derive(Component)]
 struct SplashTimer(Timer);
 
-#[derive(AssetCollection, Resource)] // this is loaded inmediately after the app is fired, has no effect on state
-pub struct SplashAssets {
-    #[asset(path = "icons/pixelbevy.png")]
-    pub bevy_icon: Handle<Image>,
+#[derive(Component)]
+struct ProgressBar;
 
-    #[asset(path = "fonts/gb.ttf")]
-    pub font: Handle<Font>,
-}
+// ·······
+// Systems
+// ·······
 
 fn init_splash(mut cmd: Commands, assets: Res<SplashAssets>) {
     cmd.spawn((Camera2dBundle::default(), SplashCam));
@@ -72,13 +82,15 @@ fn init_splash(mut cmd: Commands, assets: Res<SplashAssets>) {
     cmd.spawn((
         NodeBundle {
             style: Style {
-                // TODO: Figure out size
+                width: Val::Percent(100.),
+                height: Val::Percent(100.),
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
+                row_gap: Val::Px(12.),
                 ..default()
             },
-            background_color: BackgroundColor(Color::BLACK),
+            background_color: BackgroundColor(COLOR_DARKER),
             ..default()
         },
         SplashNode,
@@ -90,7 +102,10 @@ fn init_splash(mut cmd: Commands, assets: Res<SplashAssets>) {
                 texture: assets.bevy_icon.clone(),
                 ..default()
             },
-            style: Style { ..default() },
+            style: Style {
+                width: Val::Px(240.),
+                ..default()
+            },
             ..default()
         });
     });
@@ -107,10 +122,6 @@ fn check_splash_finished(time: Res<Time>, mut timer: Query<&mut SplashTimer>) ->
     }
     false.into()
 }
-
-// Check the loading progress
-#[derive(Component)]
-struct ProgressBar;
 
 fn check_progress(
     mut cmd: Commands,
@@ -130,7 +141,7 @@ fn check_progress(
             debug!("Loading progress: {}/{}", progress.done, progress.total);
             *last_progress = (progress.done, progress.total);
             if let Ok(mut bar) = bar.get_single_mut() {
-                //bar.size.width = Val::Percent(progress.done as f32 / progress.total as f32 * 100.);
+                bar.width = Val::Percent(progress.done as f32 / progress.total as f32 * 100.);
             }
         }
     }
@@ -155,14 +166,24 @@ fn check_progress(
                     // Progress bar
                     parent
                         .spawn(NodeBundle {
-                            style: Style { ..default() },
+                            style: Style {
+                                width: Val::Percent(70.),
+                                height: Val::Px(32.),
+                                ..default()
+                            },
                             background_color: COLOR_DARK.into(),
                             ..default()
                         })
                         .with_children(|parent| {
                             parent.spawn((
                                 NodeBundle {
-                                    style: Style { ..default() },
+                                    style: Style {
+                                        width: Val::Percent(
+                                            last_progress.0 as f32 / last_progress.1 as f32 * 100.,
+                                        ),
+                                        height: Val::Px(32.),
+                                        ..default()
+                                    },
                                     background_color: COLOR_LIGHT.into(),
                                     ..default()
                                 },

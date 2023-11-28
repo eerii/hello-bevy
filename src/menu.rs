@@ -1,13 +1,15 @@
-// Main game menu with play and options
 #![allow(clippy::type_complexity)]
 
-use crate::{load::SplashAssets, GameState};
+use crate::{
+    config::{GameOptions, Persistent},
+    load::SplashAssets,
+    GameState, COLOR_DARK, COLOR_DARKER, COLOR_LIGHT, COLOR_MID,
+};
 use bevy::prelude::*;
 
-const COLOR_LIGHT: Color = Color::rgb(1.0, 0.96, 0.97);
-const COLOR_MID: Color = Color::rgb(0.65, 0.74, 0.76);
-const COLOR_DARK: Color = Color::rgb(0.27, 0.42, 0.45);
-const COLOR_DARKER: Color = Color::rgb(0.05, 0.1, 0.12);
+// ······
+// Plugin
+// ······
 
 pub struct MenuPlugin;
 
@@ -19,7 +21,10 @@ impl Plugin for MenuPlugin {
     }
 }
 
+// ··········
 // Components
+// ··········
+
 #[derive(Component)]
 struct MenuCam;
 
@@ -32,6 +37,10 @@ enum Button {
     Options,
 }
 
+// ·······
+// Systems
+// ·······
+
 // Create the menu
 fn init_menu(mut cmd: Commands, assets: Res<SplashAssets>) {
     cmd.spawn((Camera2dBundle::default(), MenuCam));
@@ -40,9 +49,12 @@ fn init_menu(mut cmd: Commands, assets: Res<SplashAssets>) {
     cmd.spawn((
         NodeBundle {
             style: Style {
+                width: Val::Percent(100.),
+                height: Val::Percent(100.),
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
+                row_gap: Val::Px(24.),
                 ..default()
             },
             background_color: COLOR_DARKER.into(),
@@ -70,6 +82,8 @@ fn create_button(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, butt
         .spawn((
             ButtonBundle {
                 style: Style {
+                    width: Val::Px(256.),
+                    height: Val::Px(64.),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     ..default()
@@ -99,6 +113,7 @@ fn handle_buttons(
         (&Interaction, &Button, &Children, &mut BackgroundColor),
         Changed<Interaction>,
     >,
+    mut opts: ResMut<Persistent<GameOptions>>,
 ) {
     for (inter, button, child, mut bg) in &mut buttons {
         let child = child.iter().next();
@@ -115,7 +130,12 @@ fn handle_buttons(
                     Button::Play => {
                         state.set(GameState::Play);
                     }
-                    Button::Options => {}
+                    Button::Options => {
+                        opts.update(|opts| {
+                            opts.test = !opts.test;
+                        })
+                        .expect("failed to update game options");
+                    }
                 }
             }
             Interaction::Hovered => {
