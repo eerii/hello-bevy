@@ -3,7 +3,7 @@ mod load;
 mod menu;
 mod save;
 
-pub use debug::{save_schedule, DEBUG};
+pub use debug::DEBUG;
 
 use bevy::prelude::*;
 
@@ -14,7 +14,6 @@ enum GameState {
     Loading,
     Menu,
     Play,
-    Fail,
 }
 
 // Main game plugin
@@ -22,13 +21,14 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<GameState>()
-            .add_plugin(load::LoadPlugin)
-            .add_plugin(save::SavePlugin)
-            .add_plugin(menu::MenuPlugin);
+        app.add_state::<GameState>().add_plugins((
+            load::LoadPlugin,
+            save::SavePlugin,
+            menu::MenuPlugin,
+        ));
 
         #[cfg(debug_assertions)]
-        app.add_plugin(debug::DebugPlugin);
+        app.add_plugins(debug::DebugPlugin);
 
         // Sample systems
         app.add_systems(OnEnter(GameState::Play), init_sample)

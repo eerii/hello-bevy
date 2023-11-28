@@ -9,14 +9,14 @@ pub const DEBUG: bool = false;
 // Debug plugin
 pub struct DebugPlugin;
 
+// TODO: Add back save schedule
+
 // Only debug implementation
 #[cfg(debug_assertions)]
 mod only_in_debug {
     use crate::{load::SplashAssets, GameState};
     use bevy::{
-        core_pipeline::clear_color::ClearColorConfig,
-        diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
-        ecs::schedule::ScheduleLabel,
+        core_pipeline::clear_color::ClearColorConfig, diagnostic::FrameTimeDiagnosticsPlugin,
         prelude::*,
     };
     use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -24,59 +24,19 @@ mod only_in_debug {
     // Add useful debug systems
     impl Plugin for super::DebugPlugin {
         fn build(&self, app: &mut App) {
-            app.add_plugin(FrameTimeDiagnosticsPlugin::default())
-                .add_plugin(
-                    WorldInspectorPlugin::default().run_if(
-                        resource_exists::<DebugState>()
-                            .and_then(|state: Res<DebugState>| state.inspector),
-                    ),
-                )
-                .init_resource::<DebugState>()
-                .add_systems(OnEnter(GameState::Play), init_fps)
-                .add_systems(
-                    Update,
-                    (update_fps, handle_keys).run_if(in_state(GameState::Play)),
-                );
-        }
-    }
-
-    // Save the scheduling graphs for system stages (disabled for wasm)
-    #[cfg(not(target_arch = "wasm32"))]
-    #[allow(dead_code)]
-    pub fn save_schedule(app: &mut App, stages: &[&'static str]) {
-        use bevy_mod_debugdump::*;
-
-        if !std::path::Path::new("graphs").exists() {
-            std::fs::create_dir("graphs").unwrap();
-        }
-
-        for &name in stages {
-            let graph = schedule_graph_dot(
-                app,
-                name_to_stage(name),
-                &schedule_graph::Settings::default(),
+            app.add_plugins((
+                FrameTimeDiagnosticsPlugin::default(),
+                WorldInspectorPlugin::default().run_if(
+                    resource_exists::<DebugState>()
+                        .and_then(|state: Res<DebugState>| state.inspector),
+                ),
+            ))
+            .init_resource::<DebugState>()
+            .add_systems(OnEnter(GameState::Play), init_fps)
+            .add_systems(
+                Update,
+                (update_fps, handle_keys).run_if(in_state(GameState::Play)),
             );
-            std::fs::write(
-                format!("graphs/{}-schedule.dot", name.to_lowercase()),
-                graph,
-            )
-            .unwrap();
-        }
-    }
-    #[cfg(target_arch = "wasm32")]
-    #[allow(dead_code)]
-    pub fn save_schedule(_: &mut App, _: &[&'static str]) {}
-
-    fn name_to_stage(name: &'static str) -> &dyn ScheduleLabel {
-        match name {
-            "PreStartup" => &PreStartup,
-            "Startup" => &Startup,
-            "PostStartup" => &PostStartup,
-            "PreUpdate" => &PreUpdate,
-            "Update" => &Update,
-            "PostUpdate" => &PostUpdate,
-            "FixedUpdate" => &FixedUpdate,
-            _ => panic!("Unknown stage name: {}", name),
         }
     }
 
@@ -122,14 +82,8 @@ mod only_in_debug {
         ));
     }
 
-    fn update_fps(diagnostics: Res<Diagnostics>, mut text: Query<&mut Text, With<FpsText>>) {
-        if let Ok(mut text) = text.get_single_mut() {
-            if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
-                if let Some(fps) = fps.smoothed() {
-                    text.sections[1].value = format!("{fps:.0}");
-                }
-            }
-        }
+    fn update_fps(mut text: Query<&mut Text, With<FpsText>>) {
+        // TODO: Fix this
     }
 
     // State for debug

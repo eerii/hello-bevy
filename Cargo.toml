@@ -1,6 +1,6 @@
 [package]
 name = "hello-bevy" # [CHANGE]: Set your project name.
-version = "0.1.0"
+version = "0.12.0"
 edition = "2021"
 description = "a bevy game template"
 exclude = ["build", "assets", "graphs"]
@@ -9,10 +9,10 @@ exclude = ["build", "assets", "graphs"]
 # opt-level = 3 # [CHANGE]: Improves performance when developing, but slows down first compilation significantly
 
 [dependencies]
-bevy = { git = "https://github.com/bevyengine/bevy" } # The bevy engine <3
-iyes_progress = { git = "https://github.com/josekoalas/iyes_progress", branch = "bevy_main" }
-bevy_asset_loader = { git = "https://github.com/josekoalas/bevy_asset_loader", branch = "bevy_main", features = ["progress_tracking"] } # Better asset loader
-bevy-inspector-egui = { git = "https://github.com/josekoalas/bevy-inspector-egui", branch = "bevy-main" } # Inspector
-bevy_mod_debugdump = { git = "https://github.com/jakobhellermann/bevy_mod_debugdump", branch = "bevy-main" } # Get dependency graphs for systems
-bevy_pkv = { git = "https://github.com/josekoalas/bevy_pkv", branch = "bevy-main" } # Persistent key value pairs (for saving)
+bevy = "0.12" # The bevy engine <3
+bevy_asset_loader = "0.18" # Better asset loader
+iyes_progress = "0.10" # Track loading and game state
+bevy-inspector-egui = "0.21" # Inspector
+bevy-persistent = { version = "0.4", features = ["all"] } # Persistent values (for saving)
+bevy_mod_debugdump = "0.9" # Debug graphs
 rand = "0.8"

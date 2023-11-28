@@ -12,6 +12,8 @@ pub const SPLASH_TIME: f32 = 0.;
 #[cfg(not(debug_assertions))]
 pub const SPLASH_TIME: f32 = 2.;
 
+// TODO: What happened to Size in UI?
+
 const COLOR_LIGHT: Color = Color::rgb(1.0, 0.96, 0.97);
 const COLOR_MID: Color = Color::rgb(0.65, 0.74, 0.76);
 const COLOR_DARK: Color = Color::rgb(0.27, 0.42, 0.45);
@@ -23,24 +25,24 @@ impl Plugin for LoadPlugin {
     fn build(&self, app: &mut App) {
         app.add_loading_state(LoadingState::new(GameState::Loading))
             .init_collection::<SplashAssets>()
-            .add_collection_to_loading_state::<_, OtherAssets>(GameState::Loading)
-            .add_plugin(ProgressPlugin::new(GameState::Loading).continue_to(GameState::Menu))
+            .add_collection_to_loading_state::<_, SampleAssets>(GameState::Loading)
+            .add_plugins(ProgressPlugin::new(GameState::Loading).continue_to(GameState::Menu))
             .add_systems(OnEnter(GameState::Loading), init_splash)
             .add_systems(OnExit(GameState::Loading), clear_loading)
             .add_systems(
                 Update,
                 (
                     check_splash_finished.track_progress(),
-                    check_progress.after(ProgressSystemSet::CheckProgress),
+                    check_progress.after(TrackedProgressSet),
                 )
                     .run_if(in_state(GameState::Loading)),
             );
     }
 }
 
-// Test assets
+// Sample assets
 #[derive(AssetCollection, Resource)]
-pub struct OtherAssets {
+pub struct SampleAssets {
     // Add assets here
 }
 
@@ -70,14 +72,10 @@ fn init_splash(mut cmd: Commands, assets: Res<SplashAssets>) {
     cmd.spawn((
         NodeBundle {
             style: Style {
-                size: Size::all(Val::Percent(100.)),
+                // TODO: Figure out size
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
-                gap: Size {
-                    width: Val::Px(0.),
-                    height: Val::Px(12.),
-                },
                 ..default()
             },
             background_color: BackgroundColor(Color::BLACK),
@@ -92,10 +90,7 @@ fn init_splash(mut cmd: Commands, assets: Res<SplashAssets>) {
                 texture: assets.bevy_icon.clone(),
                 ..default()
             },
-            style: Style {
-                size: Size::width(Val::Px(240.0)),
-                ..default()
-            },
+            style: Style { ..default() },
             ..default()
         });
     });
@@ -135,7 +130,7 @@ fn check_progress(
             debug!("Loading progress: {}/{}", progress.done, progress.total);
             *last_progress = (progress.done, progress.total);
             if let Ok(mut bar) = bar.get_single_mut() {
-                bar.size.width = Val::Percent(progress.done as f32 / progress.total as f32 * 100.);
+                //bar.size.width = Val::Percent(progress.done as f32 / progress.total as f32 * 100.);
             }
         }
     }
@@ -160,26 +155,14 @@ fn check_progress(
                     // Progress bar
                     parent
                         .spawn(NodeBundle {
-                            style: Style {
-                                size: Size::new(Val::Percent(70.), Val::Px(32.)),
-                                ..default()
-                            },
+                            style: Style { ..default() },
                             background_color: COLOR_DARK.into(),
                             ..default()
                         })
                         .with_children(|parent| {
                             parent.spawn((
                                 NodeBundle {
-                                    style: Style {
-                                        size: Size::new(
-                                            Val::Percent(
-                                                last_progress.0 as f32 / last_progress.1 as f32
-                                                    * 100.,
-                                            ),
-                                            Val::Px(32.),
-                                        ),
-                                        ..default()
-                                    },
+                                    style: Style { ..default() },
                                     background_color: COLOR_LIGHT.into(),
                                     ..default()
                                 },

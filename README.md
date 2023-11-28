@@ -4,7 +4,7 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 
 ### features 🌿
 
-- uses bevy main and has curated plugin support
+- uses bevy 0.12 and has curated plugin support
 - ci that checks errors and lint
 - creates binaries for web, linux, mac and windows when adding a tag
 - deploy to itch

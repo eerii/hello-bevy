@@ -40,14 +40,9 @@ fn init_menu(mut cmd: Commands, assets: Res<SplashAssets>) {
     cmd.spawn((
         NodeBundle {
             style: Style {
-                size: Size::all(Val::Percent(100.)),
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
-                gap: Size {
-                    width: Val::Px(0.),
-                    height: Val::Px(24.),
-                },
                 ..default()
             },
             background_color: COLOR_DARKER.into(),
@@ -75,7 +70,6 @@ fn create_button(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, butt
         .spawn((
             ButtonBundle {
                 style: Style {
-                    size: Size::new(Val::Px(256.), Val::Px(64.)),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     ..default()
@@ -111,7 +105,7 @@ fn handle_buttons(
         let text = child.and_then(|child| text.get_mut(*child).ok());
 
         match inter {
-            Interaction::Clicked => {
+            Interaction::Pressed => {
                 bg.0 = COLOR_DARK;
                 if let Some(mut text) = text {
                     text.sections[0].style.color = COLOR_LIGHT;
