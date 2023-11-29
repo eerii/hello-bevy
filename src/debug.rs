@@ -65,7 +65,11 @@ mod only_in_debug {
     // Systems
     // ·······
 
-    fn init_fps(mut cmd: Commands, assets: Res<SplashAssets>) {
+    fn init_fps(mut cmd: Commands, assets: Res<SplashAssets>, query: Query<Entity, With<FpsText>>) {
+        if query.iter().next().is_some() {
+            return;
+        }
+
         cmd.spawn((Camera2dBundle {
             camera_2d: Camera2d {
                 clear_color: ClearColorConfig::Custom(Color::rgba(0., 0., 0., 0.)),
@@ -115,9 +119,9 @@ mod only_in_debug {
         }
     }
 
-    // ········
-    // External
-    // ········
+    // ·····
+    // Extra
+    // ·····
 
     // Save the scheduling graphs for system stages (disabled for wasm)
     #[cfg(not(target_arch = "wasm32"))]

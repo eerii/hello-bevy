@@ -16,7 +16,7 @@ fn main() {
                 }),
                 ..default()
             }),
-            //.set(ImagePlugin::default_nearest()), // use if your game is pixel art
+            //.set(ImagePlugin::default_nearest()), // [CHANGE]: Use if your game is pixel art
             GamePlugin,
         ))
         // Run

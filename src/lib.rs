@@ -1,19 +1,17 @@
-mod config;
+pub mod config;
 mod debug;
-mod load;
+pub mod load;
 mod menu;
-mod sample_game;
 
 use bevy::prelude::*;
 use debug::save_schedule;
 
 // Game state
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
-enum GameState {
+pub enum GameState {
     #[default]
     Loading,
     Menu,
-    //OptionMenu,
     Play,
 }
 
@@ -32,7 +30,6 @@ impl Plugin for GamePlugin {
             load::LoadPlugin,
             menu::MenuPlugin,
             config::ConfigPlugin,
-            sample_game::SampleGamePlugin,
         ));
 
         #[cfg(debug_assertions)]

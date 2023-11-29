@@ -7,7 +7,7 @@ use bevy_asset_loader::prelude::*;
 use iyes_progress::prelude::*;
 
 #[cfg(debug_assertions)]
-pub const SPLASH_TIME: f32 = 2.;
+pub const SPLASH_TIME: f32 = 0.;
 #[cfg(not(debug_assertions))]
 pub const SPLASH_TIME: f32 = 2.;
 

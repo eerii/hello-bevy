@@ -1,11 +1,16 @@
 #![allow(clippy::type_complexity)]
 
 use crate::{
-    config::{GameOptions, Persistent},
+    config::{GameOptions, Keybinds, Persistent},
     load::SplashAssets,
     GameState, COLOR_DARK, COLOR_DARKER, COLOR_LIGHT, COLOR_MID,
 };
 use bevy::prelude::*;
+use bevy::reflect::Struct;
+
+// TODO: Extract styles into external functions (maybe create ui package)
+// TODO: Change the create functions to be more modular
+// TODO: Single UI camera (for debug fps as well)
 
 // ······
 // Plugin
@@ -15,10 +20,37 @@ pub struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Menu), init_menu)
-            .add_systems(Update, handle_buttons.run_if(in_state(GameState::Menu)))
-            .add_systems(OnExit(GameState::Menu), clean_menu);
+        app.add_state::<MenuState>()
+            .add_systems(OnEnter(GameState::Menu), init_menu)
+            .add_systems(
+                Update,
+                (
+                    handle_buttons.run_if(in_state(GameState::Menu)),
+                    return_to_menu,
+                ),
+            )
+            .add_systems(OnExit(GameState::Menu), exit_menu)
+            .add_systems(
+                OnEnter(MenuState::Main),
+                clean_menu.run_if(in_state(GameState::Menu)),
+            )
+            .add_systems(
+                OnEnter(MenuState::Options),
+                clean_menu.run_if(in_state(GameState::Menu)),
+            )
+            .add_systems(
+                OnEnter(MenuState::Keybinds),
+                clean_menu.run_if(in_state(GameState::Menu)),
+            );
     }
+}
+
+#[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
+pub enum MenuState {
+    #[default]
+    Main,
+    Options,
+    Keybinds,
 }
 
 // ··········
@@ -32,52 +64,233 @@ struct MenuCam;
 struct MenuNode;
 
 #[derive(Component)]
-enum Button {
+struct MenuText;
+
+#[derive(Component)]
+enum MenuButton {
     Play,
-    Options,
+    GoMain,
+    GoOptions,
+    GoKeybinds,
+    OptionsTest,
+    RemapKeybind(String, KeyCode),
 }
 
 // ·······
 // Systems
 // ·······
 
-// Create the menu
 fn init_menu(mut cmd: Commands, assets: Res<SplashAssets>) {
     cmd.spawn((Camera2dBundle::default(), MenuCam));
 
-    // Main UI node for the menu
-    cmd.spawn((
-        NodeBundle {
-            style: Style {
-                width: Val::Percent(100.),
-                height: Val::Percent(100.),
-                flex_direction: FlexDirection::Column,
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                row_gap: Val::Px(18.),
+    let node = cmd
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.),
+                    height: Val::Percent(100.),
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    row_gap: Val::Px(18.),
+                    ..default()
+                },
+                background_color: COLOR_DARKER.into(),
                 ..default()
             },
-            background_color: COLOR_DARKER.into(),
-            ..default()
-        },
-        MenuNode,
-    ))
-    .with_children(|parent| {
-        parent.spawn(TextBundle::from_section(
-            "Hello Bevy",
-            TextStyle {
-                font: assets.font.clone(),
-                font_size: 48.,
-                color: COLOR_MID,
-            },
-        ));
+            MenuNode,
+        ))
+        .id();
 
-        create_button(parent, assets.font.clone(), "Play", Button::Play);
-        create_button(parent, assets.font.clone(), "Options", Button::Options);
+    layout_main(cmd, node, assets);
+}
+
+fn handle_buttons(
+    mut game_state: ResMut<NextState<GameState>>,
+    mut menu_state: ResMut<NextState<MenuState>>,
+    mut text: Query<&mut Text>,
+    mut buttons: Query<
+        (&Interaction, &MenuButton, &Children, &mut BackgroundColor),
+        Changed<Interaction>,
+    >,
+    mut opts: ResMut<Persistent<GameOptions>>,
+) {
+    for (inter, button, child, mut bg) in &mut buttons {
+        let child = child.iter().next();
+        if let Some(mut text) = child.and_then(|child| text.get_mut(*child).ok()) {
+            match inter {
+                Interaction::Pressed => {
+                    bg.0 = COLOR_DARK;
+                    text.sections[0].style.color = COLOR_LIGHT;
+
+                    match button {
+                        MenuButton::Play => {
+                            game_state.set(GameState::Play);
+                        }
+                        MenuButton::GoMain => {
+                            menu_state.set(MenuState::Main);
+                        }
+                        MenuButton::GoOptions => {
+                            menu_state.set(MenuState::Options);
+                        }
+                        MenuButton::GoKeybinds => {
+                            menu_state.set(MenuState::Keybinds);
+                        }
+                        MenuButton::OptionsTest => {
+                            opts.update(|opts| {
+                                opts.test = !opts.test;
+                            })
+                            .expect("Failed to update game options");
+
+                            text.sections[0].value = if opts.test {
+                                "Test: On".to_string()
+                            } else {
+                                "Test: Off".to_string()
+                            };
+                        }
+                        MenuButton::RemapKeybind(field, _) => {
+                            // TODO: Remap keymaps
+                            info!("remap {}", field);
+                        }
+                    }
+                }
+                Interaction::Hovered => {
+                    bg.0 = COLOR_MID;
+                    text.sections[0].style.color = COLOR_DARKER;
+                }
+                Interaction::None => {
+                    bg.0 = COLOR_LIGHT;
+                    text.sections[0].style.color = COLOR_DARK;
+                }
+            }
+        }
+    }
+}
+
+fn clean_menu(
+    mut cmd: Commands,
+    state: Res<State<MenuState>>,
+    node: Query<Entity, With<MenuNode>>,
+    assets: Res<SplashAssets>,
+    opts: Res<Persistent<GameOptions>>,
+    keybinds: Res<Persistent<Keybinds>>,
+) {
+    let node = node.single();
+
+    cmd.entity(node).despawn_descendants();
+
+    match state.get() {
+        MenuState::Main => layout_main(cmd, node, assets),
+        MenuState::Options => layout_options(cmd, node, assets, opts),
+        MenuState::Keybinds => layout_keybinds(cmd, node, assets, keybinds),
+    }
+}
+
+fn exit_menu(
+    mut cmd: Commands,
+    query: Query<Entity, Or<(With<MenuNode>, With<MenuCam>)>>,
+    mut menu_state: ResMut<NextState<MenuState>>,
+) {
+    for entity in query.iter() {
+        cmd.entity(entity).despawn_recursive();
+    }
+    menu_state.set(MenuState::Main);
+}
+
+fn return_to_menu(
+    mut game_state: ResMut<NextState<GameState>>,
+    current_menu_state: Res<State<MenuState>>,
+    mut next_menu_state: ResMut<NextState<MenuState>>,
+    keyboard: Res<Input<KeyCode>>,
+    keybinds: Res<Persistent<Keybinds>>,
+) {
+    if keyboard.just_pressed(keybinds.pause) {
+        if *current_menu_state.get() != MenuState::Main {
+            next_menu_state.set(MenuState::Main);
+        }
+        game_state.set(GameState::Menu);
+    }
+}
+
+// ·····
+// Extra
+// ·····
+
+fn layout_main(mut cmd: Commands, node: Entity, assets: Res<SplashAssets>) {
+    cmd.entity(node).with_children(|parent| {
+        create_title(parent, assets.font.clone(), "Hello Bevy");
+
+        create_button(parent, assets.font.clone(), "Play", MenuButton::Play);
+        create_button(
+            parent,
+            assets.font.clone(),
+            "Options",
+            MenuButton::GoOptions,
+        );
     });
 }
 
-fn create_button(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, button: Button) {
+fn layout_options(
+    mut cmd: Commands,
+    node: Entity,
+    assets: Res<SplashAssets>,
+    opts: Res<Persistent<GameOptions>>,
+) {
+    cmd.entity(node).with_children(|parent| {
+        create_title(parent, assets.font.clone(), "Options");
+
+        create_button(
+            parent,
+            assets.font.clone(),
+            if opts.test { "Test: On" } else { "Test: Off" },
+            MenuButton::OptionsTest,
+        );
+
+        create_button(
+            parent,
+            assets.font.clone(),
+            "Keybinds",
+            MenuButton::GoKeybinds,
+        );
+
+        create_button(parent, assets.font.clone(), "Back", MenuButton::GoMain);
+    });
+}
+
+fn layout_keybinds(
+    mut cmd: Commands,
+    node: Entity,
+    assets: Res<SplashAssets>,
+    keybinds: Res<Persistent<Keybinds>>,
+) {
+    cmd.entity(node).with_children(|parent| {
+        create_title(parent, assets.font.clone(), "Keybinds");
+
+        // TODO: Scrollable section
+
+        for (i, value) in keybinds.iter_fields().enumerate() {
+            let field_name = keybinds.name_at(i).unwrap();
+            if let Some(value) = value.downcast_ref::<KeyCode>() {
+                create_keybind_remap(parent, assets.font.clone(), field_name, *value);
+            }
+        }
+
+        create_button(parent, assets.font.clone(), "Back", MenuButton::GoOptions);
+    });
+}
+
+fn create_title(parent: &mut ChildBuilder, font: Handle<Font>, text: &str) {
+    parent.spawn(TextBundle::from_section(
+        text,
+        TextStyle {
+            font,
+            font_size: 48.,
+            color: COLOR_MID,
+        },
+    ));
+}
+
+fn create_button(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, button: MenuButton) {
     parent
         .spawn((
             ButtonBundle {
@@ -105,58 +318,75 @@ fn create_button(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, butt
         });
 }
 
-// Check for button presses
-fn handle_buttons(
-    mut state: ResMut<NextState<GameState>>,
-    mut text: Query<&mut Text>,
-    mut buttons: Query<
-        (&Interaction, &Button, &Children, &mut BackgroundColor),
-        Changed<Interaction>,
-    >,
-    mut opts: ResMut<Persistent<GameOptions>>,
-) {
-    for (inter, button, child, mut bg) in &mut buttons {
-        let child = child.iter().next();
-        let text = child.and_then(|child| text.get_mut(*child).ok());
-
-        match inter {
-            Interaction::Pressed => {
-                bg.0 = COLOR_DARK;
-                if let Some(mut text) = text {
-                    text.sections[0].style.color = COLOR_LIGHT;
-                }
-
-                match button {
-                    Button::Play => {
-                        state.set(GameState::Play);
+fn create_keybind_remap(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, key: KeyCode) {
+    parent
+        .spawn(NodeBundle {
+            style: Style {
+                min_width: Val::Px(196.),
+                flex_direction: FlexDirection::Row,
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                column_gap: Val::Px(12.),
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|parent| {
+            let name = text
+                .chars()
+                .enumerate()
+                .map(|(i, c)| {
+                    if i == 0 {
+                        c.to_uppercase().next().unwrap()
+                    } else if c == '_' {
+                        ' '
+                    } else {
+                        c
                     }
-                    Button::Options => {
-                        opts.update(|opts| {
-                            opts.test = !opts.test;
-                        })
-                        .expect("failed to update game options");
-                    }
-                }
-            }
-            Interaction::Hovered => {
-                bg.0 = COLOR_MID;
-                if let Some(mut text) = text {
-                    text.sections[0].style.color = COLOR_DARKER;
-                }
-            }
-            Interaction::None => {
-                bg.0 = COLOR_LIGHT;
-                if let Some(mut text) = text {
-                    text.sections[0].style.color = COLOR_DARK;
-                }
-            }
-        }
-    }
-}
+                })
+                .collect::<String>();
 
-// Clean the menu
-fn clean_menu(mut cmd: Commands, query: Query<Entity, Or<(With<MenuNode>, With<MenuCam>)>>) {
-    for entity in query.iter() {
-        cmd.entity(entity).despawn_recursive();
-    }
+            parent.spawn(
+                TextBundle::from_section(
+                    name,
+                    TextStyle {
+                        font: font.clone(),
+                        font_size: 24.,
+                        color: COLOR_LIGHT,
+                    },
+                )
+                .with_style(Style {
+                    flex_grow: 1.,
+                    ..default()
+                }),
+            );
+
+            parent
+                .spawn((
+                    ButtonBundle {
+                        style: Style {
+                            width: Val::Px(56.),
+                            height: Val::Px(40.),
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        background_color: COLOR_LIGHT.into(),
+                        ..default()
+                    },
+                    MenuButton::RemapKeybind(text.to_string(), key),
+                ))
+                .with_children(|parent| {
+                    let key_name = format!("{:?}", key);
+                    let font_size = if key_name.len() > 1 { 16. } else { 24. };
+                    parent.spawn(TextBundle::from_section(
+                        key_name,
+                        TextStyle {
+                            font,
+                            font_size,
+                            color: COLOR_DARK,
+                        },
+                    ));
+                });
+        });
 }

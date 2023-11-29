@@ -23,7 +23,7 @@ impl Plugin for ConfigPlugin {
 // Resources
 // ·········
 
-#[derive(Resource, Serialize, Deserialize)]
+#[derive(Resource, Serialize, Deserialize, Reflect)]
 pub struct GameOptions {
     pub test: bool,
 }
@@ -35,7 +35,7 @@ impl Default for GameOptions {
 }
 
 // Keybinds
-#[derive(Resource, Serialize, Deserialize)]
+#[derive(Resource, Serialize, Deserialize, Reflect)]
 pub struct Keybinds {
     pub up: KeyCode,
     pub down: KeyCode,
