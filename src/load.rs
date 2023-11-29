@@ -51,7 +51,7 @@ pub struct SplashAssets {
     #[asset(path = "icons/bevy.png")]
     pub bevy_icon: Handle<Image>,
 
-    #[asset(path = "fonts/at.ttf")]
+    #[asset(path = "fonts/sans.ttf")]
     pub font: Handle<Font>,
 }
 
@@ -103,7 +103,7 @@ fn init_splash(mut cmd: Commands, assets: Res<SplashAssets>) {
                 ..default()
             },
             style: Style {
-                width: Val::Px(240.),
+                width: Val::Px(128.),
                 ..default()
             },
             ..default()

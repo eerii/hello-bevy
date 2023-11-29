@@ -67,7 +67,10 @@ impl Default for Keybinds {
 // ·······
 
 fn init_persistence(mut cmd: Commands) {
+    #[cfg(not(target_arch = "wasm32"))]
     let config_dir = Path::new(".data");
+    #[cfg(target_arch = "wasm32")]
+    let config_dir = Path::new("session");
 
     cmd.insert_resource(
         Persistent::<GameOptions>::builder()

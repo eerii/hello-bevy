@@ -166,10 +166,12 @@ mod only_in_debug {
     #[cfg(target_arch = "wasm32")]
     pub fn save_schedule(_: &mut App) {}
 
+    #[allow(dead_code)]
     fn schedule_label(schedule: &dyn ScheduleLabel) -> String {
         format!("{:?}", schedule)
     }
 
+    #[allow(dead_code)]
     fn save_dot(dot: String, name: String) {
         use std::path::Path;
 

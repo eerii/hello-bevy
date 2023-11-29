@@ -54,7 +54,7 @@ fn init_menu(mut cmd: Commands, assets: Res<SplashAssets>) {
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
-                row_gap: Val::Px(24.),
+                row_gap: Val::Px(18.),
                 ..default()
             },
             background_color: COLOR_DARKER.into(),
@@ -67,7 +67,7 @@ fn init_menu(mut cmd: Commands, assets: Res<SplashAssets>) {
             "Hello Bevy",
             TextStyle {
                 font: assets.font.clone(),
-                font_size: 64.,
+                font_size: 48.,
                 color: COLOR_MID,
             },
         ));
@@ -82,8 +82,8 @@ fn create_button(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, butt
         .spawn((
             ButtonBundle {
                 style: Style {
-                    width: Val::Px(256.),
-                    height: Val::Px(64.),
+                    width: Val::Px(196.),
+                    height: Val::Px(48.),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     ..default()
@@ -98,7 +98,7 @@ fn create_button(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, butt
                 text,
                 TextStyle {
                     font,
-                    font_size: 32.,
+                    font_size: 24.,
                     color: COLOR_DARK,
                 },
             ));

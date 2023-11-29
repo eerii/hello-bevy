@@ -1,15 +1,20 @@
 [package]
 name = "hello_bevy" # [CHANGE]: Set your project name.
-version = "0.12.0"
+version = "0.12.1"
 edition = "2021"
 description = "a bevy game template"
-exclude = ["build", "assets", "graphs"]
+exclude = ["build", "assets", ".data"]
+
+[profile.dev.package."*"]
+opt-level = 3 # Improves performance when developing, but slows down first compilation significantly
 
 [profile.dev]
 opt-level = 1
 
-[profile.dev.package."*"]
-opt-level = 3 # Improves performance when developing, but slows down first compilation significantly
+[features]
+dev = [
+    "bevy/dynamic_linking",
+]
 
 [dependencies]
 bevy = "0.12" # The bevy engine <3

@@ -16,7 +16,7 @@ body {
 
 @font-face {
     font-family: 'atkinson';
-    src: url('assets/fonts/at.ttf');
+    src: url('assets/fonts/sans.ttf');
 }
 
 .game-container {

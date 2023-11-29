@@ -15,7 +15,7 @@ on:
 env:
   binary: hello-bevy # [CHANGE]: This needs to match the project name in cargo.toml
   add_binaries_to_github_release: true
-  itch_target: josekoalas/hello-bevy # [CHANGE]: If you want to deploy to itch, set this as your username/project-url
+  itch_target: eerii/hello-bevy # [CHANGE]: If you want to deploy to itch, set this as your username/project-url
 
 jobs:
   get-version:
@@ -37,14 +37,21 @@ jobs:
     steps:
       - uses: little-core-labs/get-git-tag@v3.0.1
         id: get_version
-      - uses: actions/checkout@v2
-      - uses: dtolnay/rust-toolchain@stable
+      
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Remove debug config
+        run: rm -f .cargo/config.toml
+
+      - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: wasm32-unknown-unknown
       
       - name: Install wasm-bindgen-cli
         run: |
           cargo install wasm-bindgen-cli
+
       - name: Install trunk
         uses: jetli/trunk-action@v0.1.0
         with:
@@ -94,10 +101,17 @@ jobs:
     steps:
       - uses: little-core-labs/get-git-tag@v3.0.1
         id: get_version
-      - uses: actions/checkout@v2
-      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Remove debug config
+        run: rm -f .cargo/config.toml
+
+      - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-unknown-linux-gnu
+
       - name: install dependencies
         run: |
           sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
@@ -143,8 +157,14 @@ jobs:
     steps:
       - uses: little-core-labs/get-git-tag@v3.0.1
         id: get_version
-      - uses: actions/checkout@v2
-      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Remove debug config
+        run: rm -f .cargo/config.toml 
+
+      - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-pc-windows-msvc
 
@@ -188,8 +208,14 @@ jobs:
     steps:
       - uses: little-core-labs/get-git-tag@v3.0.1
         id: get_version
-      - uses: actions/checkout@v2
-      - uses: dtolnay/rust-toolchain@stable
+      
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Remove debug config
+        run: rm -f .cargo/config.toml
+
+      - uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-apple-darwin
       - name: Environment setup
