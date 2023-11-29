@@ -4,9 +4,8 @@ mod load;
 mod menu;
 mod sample_game;
 
-pub use debug::DEBUG;
-
 use bevy::prelude::*;
+use debug::save_schedule;
 
 // Game state
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -36,6 +35,9 @@ impl Plugin for GamePlugin {
         ));
 
         #[cfg(debug_assertions)]
-        app.add_plugins(debug::DebugPlugin);
+        {
+            app.add_plugins(debug::DebugPlugin);
+            save_schedule(app);
+        }
     }
 }

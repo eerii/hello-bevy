@@ -1,4 +1,5 @@
 // Constant that indicates if this is a debug build
+#[allow(dead_code)]
 #[cfg(debug_assertions)]
 pub const DEBUG: bool = true;
 #[cfg(not(debug_assertions))]
@@ -7,8 +8,6 @@ pub const DEBUG: bool = false;
 // Debug plugin
 pub struct DebugPlugin;
 
-// TODO: Add back save schedule
-
 // Only debug implementation
 #[cfg(debug_assertions)]
 mod only_in_debug {
@@ -16,6 +15,7 @@ mod only_in_debug {
     use bevy::{
         core_pipeline::clear_color::ClearColorConfig,
         diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+        ecs::schedule::ScheduleLabel,
         prelude::*,
     };
     use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -50,6 +50,9 @@ mod only_in_debug {
     struct DebugState {
         inspector: bool,
     }
+
+    #[derive(ScheduleLabel, Clone, Debug, PartialEq, Eq, Hash)]
+    struct ScheduleDebugGroup;
 
     // ··········
     // Components
@@ -109,6 +112,83 @@ mod only_in_debug {
     fn handle_keys(mut state: ResMut<DebugState>, keyboard: Res<Input<KeyCode>>) {
         if keyboard.just_pressed(KeyCode::I) {
             state.inspector = !state.inspector;
+        }
+    }
+
+    // ········
+    // External
+    // ········
+
+    // Save the scheduling graphs for system stages (disabled for wasm)
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn save_schedule(app: &mut App) {
+        use std::path::Path;
+
+        let graph_dir = Path::new(".data").join("graphs");
+        if !graph_dir.exists() {
+            std::fs::create_dir(&graph_dir).expect("Failed to create graph directory");
+        }
+
+        // Render graph
+        {
+            use bevy_mod_debugdump::*;
+            let dot = render_graph_dot(app, &render_graph::Settings::default());
+            save_dot(dot, "RenderGraph".to_string());
+        }
+
+        // Schedule graphs
+        app.world
+            .resource_scope::<Schedules, _>(|world, mut schedules| {
+                use bevy_mod_debugdump::schedule_graph::*;
+
+                let ignored_ambiguities = schedules.ignored_scheduling_ambiguities.clone();
+                for (label, schedule) in schedules.iter_mut() {
+                    schedule.graph_mut().initialize(world);
+                    schedule
+                        .graph_mut()
+                        .build_schedule(
+                            world.components(),
+                            ScheduleDebugGroup.intern(),
+                            &ignored_ambiguities,
+                        )
+                        .unwrap();
+
+                    let settings = Settings {
+                        collapse_single_system_sets: true,
+                        ..Default::default()
+                    };
+                    let dot = schedule_graph_dot(schedule, world, &settings);
+                    save_dot(dot, schedule_label(label));
+                }
+            });
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn save_schedule(_: &mut App) {}
+
+    fn schedule_label(schedule: &dyn ScheduleLabel) -> String {
+        format!("{:?}", schedule)
+    }
+
+    fn save_dot(dot: String, name: String) {
+        use std::path::Path;
+
+        let graph_dir = Path::new(".data").join("graphs");
+        if !graph_dir.exists() {
+            std::fs::create_dir(&graph_dir).expect("Failed to create graph directory");
+        }
+
+        std::fs::write(graph_dir.join(format!("{}.dot", name)), dot)
+            .expect("Failed to write graph");
+
+        if let Err(e) = std::process::Command::new("dot")
+            .arg("-Tsvg")
+            .arg("-o")
+            .arg(graph_dir.join(format!("{}.svg", name)))
+            .arg(graph_dir.join(format!("{}.dot", name)))
+            .output()
+        {
+            warn!("Failed to convert graph to svg: {}", e);
         }
     }
 }
