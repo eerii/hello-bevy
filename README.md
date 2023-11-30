@@ -9,6 +9,7 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 - creates binaries for web, linux, mac and windows when adding a tag
 - deploy to itch
 - debug features integrated (inspector, schedule graphs)
+- asset loading with progress, audio, saving, menu...
 
 ### how to use it ✨
 
@@ -28,7 +29,7 @@ to run a debug build use:
 cargo run
 ```
 
-and to start a local web build, use trunk (_this won't work until bevy#10157 is released on 0.12.1_):
+and to start a local web build, use trunk (_this won't work until bevy 0.12.1 is released, meanwhile use `trunk build` and serve another way_):
 
 ```sh
 trunk serve

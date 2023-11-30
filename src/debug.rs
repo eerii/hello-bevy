@@ -11,7 +11,7 @@ pub struct DebugPlugin;
 // Only debug implementation
 #[cfg(debug_assertions)]
 mod only_in_debug {
-    use crate::{load::SplashAssets, GameState};
+    use crate::{load::GameAssets, GameState};
     use bevy::{
         core_pipeline::clear_color::ClearColorConfig,
         diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
@@ -65,7 +65,7 @@ mod only_in_debug {
     // Systems
     // ·······
 
-    fn init_fps(mut cmd: Commands, assets: Res<SplashAssets>, query: Query<Entity, With<FpsText>>) {
+    fn init_fps(mut cmd: Commands, assets: Res<GameAssets>, query: Query<Entity, With<FpsText>>) {
         if query.iter().next().is_some() {
             return;
         }

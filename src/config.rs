@@ -7,6 +7,10 @@ use crate::GameState;
 
 pub use bevy_persistent::prelude::*;
 
+// TODO: Resize font
+// TODO: Change color palette
+// TODO: Gamepad support
+
 // ······
 // Plugin
 // ······

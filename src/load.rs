@@ -4,10 +4,11 @@
 use crate::{GameState, COLOR_DARK, COLOR_DARKER, COLOR_LIGHT, COLOR_MID};
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
+use bevy_kira_audio::AudioSource;
 use iyes_progress::prelude::*;
 
 #[cfg(debug_assertions)]
-pub const SPLASH_TIME: f32 = 0.;
+pub const SPLASH_TIME: f32 = 0.1;
 #[cfg(not(debug_assertions))]
 pub const SPLASH_TIME: f32 = 2.;
 
@@ -20,18 +21,20 @@ pub struct LoadPlugin;
 impl Plugin for LoadPlugin {
     fn build(&self, app: &mut App) {
         app.add_loading_state(LoadingState::new(GameState::Loading))
-            .init_collection::<SplashAssets>()
+            .init_collection::<GameAssets>()
             .add_collection_to_loading_state::<_, SampleAssets>(GameState::Loading)
-            .add_plugins(ProgressPlugin::new(GameState::Loading).continue_to(GameState::Menu))
+            .add_plugins(
+                ProgressPlugin::new(GameState::Loading)
+                    .continue_to(GameState::Menu)
+                    .track_assets(),
+            )
             .add_systems(OnEnter(GameState::Loading), init_splash)
             .add_systems(OnExit(GameState::Loading), clear_loading)
             .add_systems(
                 Update,
-                (
-                    check_splash_finished.track_progress(),
-                    check_progress.after(TrackedProgressSet),
-                )
-                    .run_if(in_state(GameState::Loading)),
+                (check_splash_finished.track_progress(), check_progress)
+                    .run_if(in_state(GameState::Loading))
+                    .after(LoadingStateSet(GameState::Loading)),
             );
     }
 }
@@ -40,19 +43,25 @@ impl Plugin for LoadPlugin {
 // Resources
 // ·········
 
-// Sample assets
+// Assets for the splash screen and menus
+// They are loaded inmediately after the app is fired, no effect on loading state
 #[derive(AssetCollection, Resource)]
-pub struct SampleAssets {
-    // Add assets here
-}
-
-#[derive(AssetCollection, Resource)] // this is loaded inmediately after the app is fired, has no effect on state
-pub struct SplashAssets {
+pub struct GameAssets {
     #[asset(path = "icons/bevy.png")]
     pub bevy_icon: Handle<Image>,
 
     #[asset(path = "fonts/sans.ttf")]
     pub font: Handle<Font>,
+}
+
+// Sample assets
+#[derive(AssetCollection, Resource)]
+pub struct SampleAssets {
+    #[asset(path = "sounds/boing.ogg")]
+    pub boing: Handle<AudioSource>,
+
+    #[asset(path = "music/soundscape.ogg")]
+    pub ambient_music: Handle<AudioSource>,
 }
 
 // ··········
@@ -75,7 +84,7 @@ struct ProgressBar;
 // Systems
 // ·······
 
-fn init_splash(mut cmd: Commands, assets: Res<SplashAssets>) {
+fn init_splash(mut cmd: Commands, assets: Res<GameAssets>) {
     cmd.spawn((Camera2dBundle::default(), SplashCam));
 
     // Main ui node for the loading screen
@@ -126,7 +135,7 @@ fn check_splash_finished(time: Res<Time>, mut timer: Query<&mut SplashTimer>) ->
 fn check_progress(
     mut cmd: Commands,
     progress: Option<Res<ProgressCounter>>,
-    assets: Res<SplashAssets>,
+    assets: Res<GameAssets>,
     timer: Query<&SplashTimer>,
     node: Query<Entity, With<SplashNode>>,
     mut bar: Query<&mut Style, With<ProgressBar>>,
@@ -138,7 +147,7 @@ fn check_progress(
         }
 
         if progress.done > last_progress.0 {
-            debug!("Loading progress: {}/{}", progress.done, progress.total);
+            info!("Loading progress: {}/{}", progress.done, progress.total);
             *last_progress = (progress.done, progress.total);
             if let Ok(mut bar) = bar.get_single_mut() {
                 bar.width = Val::Percent(progress.done as f32 / progress.total as f32 * 100.);

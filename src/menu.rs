@@ -2,7 +2,7 @@
 
 use crate::{
     config::{GameOptions, Keybinds, Persistent},
-    load::SplashAssets,
+    load::GameAssets,
     GameState, COLOR_DARK, COLOR_DARKER, COLOR_LIGHT, COLOR_MID,
 };
 use bevy::prelude::*;
@@ -80,7 +80,7 @@ enum MenuButton {
 // Systems
 // ·······
 
-fn init_menu(mut cmd: Commands, assets: Res<SplashAssets>) {
+fn init_menu(mut cmd: Commands, assets: Res<GameAssets>) {
     cmd.spawn((Camera2dBundle::default(), MenuCam));
 
     let node = cmd
@@ -171,7 +171,7 @@ fn clean_menu(
     mut cmd: Commands,
     state: Res<State<MenuState>>,
     node: Query<Entity, With<MenuNode>>,
-    assets: Res<SplashAssets>,
+    assets: Res<GameAssets>,
     opts: Res<Persistent<GameOptions>>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
@@ -216,7 +216,7 @@ fn return_to_menu(
 // Extra
 // ·····
 
-fn layout_main(mut cmd: Commands, node: Entity, assets: Res<SplashAssets>) {
+fn layout_main(mut cmd: Commands, node: Entity, assets: Res<GameAssets>) {
     cmd.entity(node).with_children(|parent| {
         create_title(parent, assets.font.clone(), "Hello Bevy");
 
@@ -233,7 +233,7 @@ fn layout_main(mut cmd: Commands, node: Entity, assets: Res<SplashAssets>) {
 fn layout_options(
     mut cmd: Commands,
     node: Entity,
-    assets: Res<SplashAssets>,
+    assets: Res<GameAssets>,
     opts: Res<Persistent<GameOptions>>,
 ) {
     cmd.entity(node).with_children(|parent| {
@@ -260,7 +260,7 @@ fn layout_options(
 fn layout_keybinds(
     mut cmd: Commands,
     node: Entity,
-    assets: Res<SplashAssets>,
+    assets: Res<GameAssets>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
     cmd.entity(node).with_children(|parent| {

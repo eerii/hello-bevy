@@ -1,5 +1,6 @@
 use bevy::{prelude::*, window::WindowResolution};
-use hello_bevy::{load::SplashAssets, GamePlugin, GameState, COLOR_DARKER};
+use bevy_kira_audio::prelude::*;
+use hello_bevy::{GameAssets, GamePlugin, GameState, SampleAssets, COLOR_DARKER};
 
 fn main() {
     App::new()
@@ -72,7 +73,7 @@ struct CollisionEvent(Entity);
 // Systems
 // ·······
 
-fn init_sample(mut cmd: Commands, assets: Res<SplashAssets>, info: Option<Res<GameInfo>>) {
+fn init_sample(mut cmd: Commands, assets: Res<GameAssets>, info: Option<Res<GameInfo>>) {
     cmd.spawn((Camera2dBundle::default(), GameCamera));
 
     if info.is_some() {
@@ -151,6 +152,8 @@ fn on_collision(
     mut objects: Query<&mut Sprite>,
     mut counter: Query<(&mut Text, &mut Counter)>,
     mut event_collision: EventReader<CollisionEvent>,
+    audio: Res<Audio>,
+    assets: Res<SampleAssets>,
 ) {
     let (mut text, mut counter) = counter.single_mut();
 
@@ -161,6 +164,8 @@ fn on_collision(
         if let Ok(mut sprite) = objects.get_mut(*entity) {
             sprite.color = random_color();
         }
+
+        audio.play(assets.boing.clone()).with_volume(0.3);
     }
 }
 
