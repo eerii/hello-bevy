@@ -1,11 +1,13 @@
 // Constant that indicates if this is a debug build
-#[allow(dead_code)]
 #[cfg(debug_assertions)]
+#[allow(dead_code)]
 pub const DEBUG: bool = true;
 #[cfg(not(debug_assertions))]
+#[allow(dead_code)]
 pub const DEBUG: bool = false;
 
 // Debug plugin
+#[allow(dead_code)]
 pub struct DebugPlugin;
 
 // Only debug implementation

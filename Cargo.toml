@@ -1,5 +1,5 @@
 [package]
-name = "hello_bevy" # [CHANGE]: Set your project name.
+name = "hello-bevy" # [CHANGE]: Set your project name.
 version = "0.12.2"
 edition = "2021"
 description = "a bevy game template"
@@ -33,7 +33,3 @@ bevy-persistent = { version = "0.4", features = ["toml"] } # Persistent values 
 bevy_mod_debugdump = { version = "0.9" } # Debug graphs
 rand = { version = "0.8" }
 serde = { version = "1.0", features = ["derive"] }
-
-[patch.crates-io]
-# Fix for bevy-peristent
-bevy-persistent = { git = "https://github.com/eerii/bevy-persistent.git" }

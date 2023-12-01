@@ -35,9 +35,6 @@ jobs:
       version: ${{needs.get-version.outputs.version}}
 
     steps:
-      - uses: little-core-labs/get-git-tag@v3.0.1
-        id: get_version
-      
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -99,9 +96,6 @@ jobs:
       version: ${{needs.get-version.outputs.version}}
 
     steps:
-      - uses: little-core-labs/get-git-tag@v3.0.1
-        id: get_version
-
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -124,6 +118,7 @@ jobs:
         run: |
           mkdir linux
           cp target/x86_64-unknown-linux-gnu/release/${{ env.binary }} linux/
+          strip linux/${{ env.binary }}
           cp -r assets linux/
 
       - name: Package as a zip
@@ -155,9 +150,6 @@ jobs:
       version: ${{needs.get-version.outputs.version}}
 
     steps:
-      - uses: little-core-labs/get-git-tag@v3.0.1
-        id: get_version
-
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -203,35 +195,44 @@ jobs:
 
     needs: get-version
     env:
+      MACOSX_DEPLOYMENT_TARGET: 11.0
       version: ${{needs.get-version.outputs.version}}
 
     steps:
-      - uses: little-core-labs/get-git-tag@v3.0.1
-        id: get_version
-      
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Remove debug config
         run: rm -f .cargo/config.toml
 
-      - uses: dtolnay/rust-toolchain@nightly
+      - name: Install rust toolchain for Apple Silicon
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: aarch64-apple-darwin
+
+      - name: Build release for Apple Silicon
+        run: |
+          SDKROOT=$(xcrun -sdk macosx --show-sdk-path) cargo build --release --target=aarch64-apple-darwin
+
+      - name: Install rust toolchain for Apple x86
+        uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-apple-darwin
-      - name: Environment setup
-        run: |
-          export CFLAGS="-fno-stack-check"
-          export MACOSX_DEPLOYMENT_TARGET="10.9"
 
-      - name: Build
+      - name: Build release for x86 Apple
         run: |
-          cargo build --release --target x86_64-apple-darwin
+          SDKROOT=$(xcrun -sdk macosx --show-sdk-path) cargo build --release --target=x86_64-apple-darwin
 
+      - name: Create Universal Binary
+        run: |
+          lipo -create -output target/release/${{ env.binary }} target/aarch64-apple-darwin/release/${{ env.binary }} target/x86_64-apple-darwin/release/${{ env.binary }}
+      
       - name: Prepare package
         run: |
           mkdir -p ${{ env.binary }}.app/Contents/MacOS
-          cp target/x86_64-apple-darwin/release/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
+          cp target/release/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
           cp -r assets ${{ env.binary }}.app/Contents/MacOS/
+          strip ${{ env.binary }}.app/Contents/MacOS/${{ env.binary }}
           hdiutil create -fs HFS+ -volname "${{ env.binary }}" -srcfolder ${{ env.binary }}.app ${{ env.binary }}.dmg
 
       - name: Upload binaries to artifacts
@@ -258,9 +259,9 @@ jobs:
       - id: check-env
         run: |
           if [[ -z "$itch_target" ]]; then
-            echo "::set-output name=has-itch-target::no"
+            echo "has-itch-target == no >> $GITHUB_OUTPUT"
           else
-            echo "::set-output name=has-itch-target::yes"
+            echo "has-itch-target == yes >> $GITHUB_OUTPUT"
           fi
 
   upload-to-itch:
@@ -289,8 +290,7 @@ jobs:
           unzip butler.zip
           chmod +x butler
           ./butler -V
-      - uses: little-core-labs/get-git-tag@v3.0.1
-        id: get_version
+
       - name: Upload to itch.io
         env:
           BUTLER_API_KEY: ${{ secrets.ITCH_API_KEY }}
