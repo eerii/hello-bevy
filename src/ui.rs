@@ -134,12 +134,19 @@ impl<T: Component> UIButton<T> {
         self
     }
 
+    pub fn with_font_scale(mut self, scale: f32) -> Self {
+        self.text.text.sections[0].style.font_size *= scale;
+        self
+    }
+
     pub fn add(self, parent: &mut ChildBuilder) {
-        parent
+        let _text = self.text.text.sections[0].value.clone();
+        let _id = parent
             .spawn((self.button, self.action))
             .with_children(|button| {
                 button.spawn(self.text);
-            });
+            })
+            .id();
     }
 }
 

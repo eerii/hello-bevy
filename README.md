@@ -30,7 +30,7 @@ to run a debug build use:
 cargo run
 ```
 
-and to start a local web build, use trunk (_this won't work until bevy 0.12.1 is released, meanwhile use `trunk build` and serve another way_):
+and to start a local web build, use trunk:
 
 ```sh
 trunk serve

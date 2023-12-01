@@ -2,8 +2,6 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 // TODO: Mouse and gamepad axis
-// TODO: Check when gamepad is connected/disconnected
-//          - Create gamepad buttons automatically for that gamepad
 
 // ·····
 // Extra
@@ -13,15 +11,15 @@ use serde::{Deserialize, Serialize};
 pub enum Bind {
     Key(KeyCode),
     Mouse(MouseButton),
-    Gamepad(GamepadButton),
+    Gamepad(GamepadButtonType),
 }
 
 impl ToString for Bind {
     fn to_string(&self) -> String {
         match self {
             Bind::Key(key) => format!("{:?}", key),
-            Bind::Mouse(button) => format!("{:?}", button),
-            Bind::Gamepad(button) => format!("{:?}", button),
+            Bind::Mouse(button) => format!("m{:?}", button),
+            Bind::Gamepad(button) => format!("g{:?}", button).replace("DPad", ""),
         }
     }
 }
@@ -33,31 +31,36 @@ pub enum InputError {
 pub struct InputState<'a> {
     keyboard: Option<&'a Input<KeyCode>>,
     mouse: Option<&'a Input<MouseButton>>,
-    gamepad: Option<&'a Input<GamepadButton>>,
+    gamepads: Option<&'a Gamepads>,
+    gamepad_buttons: Option<&'a Input<GamepadButton>>,
 }
 
 impl<'a> InputState<'a> {
     pub fn new(
         keyboard: &'a Input<KeyCode>,
         mouse: &'a Input<MouseButton>,
-        gamepad: &'a Input<GamepadButton>,
+        gamepads: &'a Gamepads,
+        gamepad_buttons: &'a Input<GamepadButton>,
     ) -> Self {
         Self {
             keyboard: Some(keyboard),
             mouse: Some(mouse),
-            gamepad: Some(gamepad),
+            gamepads: Some(gamepads),
+            gamepad_buttons: Some(gamepad_buttons),
         }
     }
 
     pub fn new_opt(
         keyboard: Option<&'a Input<KeyCode>>,
         mouse: Option<&'a Input<MouseButton>>,
-        gamepad: Option<&'a Input<GamepadButton>>,
+        gamepads: Option<&'a Gamepads>,
+        gamepad_buttons: Option<&'a Input<GamepadButton>>,
     ) -> Self {
         Self {
             keyboard,
             mouse,
-            gamepad,
+            gamepads,
+            gamepad_buttons,
         }
     }
 
@@ -72,11 +75,22 @@ impl<'a> InputState<'a> {
                 Bind::Mouse(button) => self.mouse.map_or(Err(InputError::BindNotFound), |mouse| {
                     Ok(mouse.pressed(*button))
                 }),
-                Bind::Gamepad(button) => self
-                    .gamepad
-                    .map_or(Err(InputError::BindNotFound), |gamepad| {
-                        Ok(gamepad.pressed(*button))
-                    }),
+                Bind::Gamepad(button) => {
+                    if let Some(gamepads) = self.gamepads {
+                        for gamepad in gamepads.iter() {
+                            if let Some(buttons) = self.gamepad_buttons {
+                                if buttons.pressed(GamepadButton::new(gamepad, *button)) {
+                                    return Ok(true);
+                                }
+                            } else {
+                                return Err(InputError::BindNotFound);
+                            }
+                        }
+                        Ok(false)
+                    } else {
+                        Err(InputError::BindNotFound)
+                    }
+                }
             }?;
             if is_pressed {
                 return Ok(true);
@@ -96,11 +110,22 @@ impl<'a> InputState<'a> {
                 Bind::Mouse(button) => self.mouse.map_or(Err(InputError::BindNotFound), |mouse| {
                     Ok(mouse.just_pressed(*button))
                 }),
-                Bind::Gamepad(button) => self
-                    .gamepad
-                    .map_or(Err(InputError::BindNotFound), |gamepad| {
-                        Ok(gamepad.just_pressed(*button))
-                    }),
+                Bind::Gamepad(button) => {
+                    if let Some(gamepads) = self.gamepads {
+                        for gamepad in gamepads.iter() {
+                            if let Some(buttons) = self.gamepad_buttons {
+                                if buttons.just_pressed(GamepadButton::new(gamepad, *button)) {
+                                    return Ok(true);
+                                }
+                            } else {
+                                return Err(InputError::BindNotFound);
+                            }
+                        }
+                        Ok(false)
+                    } else {
+                        Err(InputError::BindNotFound)
+                    }
+                }
             }?;
             if is_pressed {
                 return Ok(true);
@@ -120,11 +145,22 @@ impl<'a> InputState<'a> {
                 Bind::Mouse(button) => self.mouse.map_or(Err(InputError::BindNotFound), |mouse| {
                     Ok(mouse.just_released(*button))
                 }),
-                Bind::Gamepad(button) => self
-                    .gamepad
-                    .map_or(Err(InputError::BindNotFound), |gamepad| {
-                        Ok(gamepad.just_released(*button))
-                    }),
+                Bind::Gamepad(button) => {
+                    if let Some(gamepads) = self.gamepads {
+                        for gamepad in gamepads.iter() {
+                            if let Some(buttons) = self.gamepad_buttons {
+                                if buttons.just_released(GamepadButton::new(gamepad, *button)) {
+                                    return Ok(true);
+                                }
+                            } else {
+                                return Err(InputError::BindNotFound);
+                            }
+                        }
+                        Ok(false)
+                    } else {
+                        Err(InputError::BindNotFound)
+                    }
+                }
             }?;
             if is_pressed {
                 return Ok(true);

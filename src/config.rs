@@ -86,14 +86,39 @@ pub struct Keybinds {
 impl Default for Keybinds {
     fn default() -> Self {
         Self {
-            up: vec![Bind::Key(KeyCode::W)],
-            down: vec![Bind::Key(KeyCode::S)],
-            left: vec![Bind::Key(KeyCode::A)],
-            right: vec![Bind::Key(KeyCode::D)],
-            jump: vec![Bind::Key(KeyCode::Space)],
-            interact: vec![Bind::Key(KeyCode::E)],
-            inventory: vec![Bind::Key(KeyCode::Tab)],
-            pause: vec![Bind::Key(KeyCode::Escape)],
+            up: vec![
+                Bind::Key(KeyCode::W),
+                Bind::Gamepad(GamepadButtonType::DPadUp),
+            ],
+            down: vec![
+                Bind::Key(KeyCode::S),
+                Bind::Gamepad(GamepadButtonType::DPadDown),
+            ],
+            left: vec![
+                Bind::Key(KeyCode::A),
+                Bind::Gamepad(GamepadButtonType::DPadLeft),
+            ],
+            right: vec![
+                Bind::Key(KeyCode::D),
+                Bind::Gamepad(GamepadButtonType::DPadRight),
+            ],
+            jump: vec![
+                Bind::Key(KeyCode::Space),
+                Bind::Gamepad(GamepadButtonType::South),
+            ],
+            interact: vec![
+                Bind::Key(KeyCode::E),
+                Bind::Mouse(MouseButton::Left),
+                Bind::Gamepad(GamepadButtonType::East),
+            ],
+            inventory: vec![
+                Bind::Key(KeyCode::Tab),
+                Bind::Gamepad(GamepadButtonType::West),
+            ],
+            pause: vec![
+                Bind::Key(KeyCode::Escape),
+                Bind::Gamepad(GamepadButtonType::Start),
+            ],
         }
     }
 }
@@ -115,8 +140,9 @@ fn init_persistence(mut cmd: Commands) {
             .path(config_dir.join("options.toml"))
             .default(GameOptions::default())
             .revertible(true)
+            .revert_to_default_on_deserialization_errors(true)
             .build()
-            .expect("failed to initialize game options"),
+            .expect("Failed to initialize game options"),
     );
 
     cmd.insert_resource(
@@ -128,7 +154,7 @@ fn init_persistence(mut cmd: Commands) {
             .revertible(true)
             .revert_to_default_on_deserialization_errors(true)
             .build()
-            .expect("failed to initialize keybinds"),
+            .expect("Failed to initialize keybinds"),
     );
 }
 

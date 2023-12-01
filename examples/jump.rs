@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_arguments)]
+
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
 use bevy_persistent::Persistent;
@@ -133,10 +135,11 @@ fn update_sample(
     mut counter: Query<(&mut Text, &mut Counter)>,
     keyboard: Res<Input<KeyCode>>,
     mouse: Res<Input<MouseButton>>,
-    gamepad: Res<Input<GamepadButton>>,
+    gamepads: Res<Gamepads>,
+    gamepad_buttons: Res<Input<GamepadButton>>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
-    let input = InputState::new(&keyboard, &mouse, &gamepad);
+    let input = InputState::new(&keyboard, &mouse, &gamepads, &gamepad_buttons);
 
     for (mut player, mut trans) in objects.iter_mut() {
         let t = &mut trans.translation;
