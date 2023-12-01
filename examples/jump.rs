@@ -1,6 +1,8 @@
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_persistent::Persistent;
-use hello_bevy::{GameAssets, GamePlugin, GameState, Keybinds, COLOR_DARKER};
+use hello_bevy::{
+    config::Keybinds, input::InputState, load::GameAssets, GamePlugin, GameState, COLOR_DARKER,
+};
 
 fn main() {
     App::new()
@@ -119,8 +121,12 @@ fn update_sample(
     mut objects: Query<(&mut Player, &mut Transform)>,
     mut counter: Query<(&mut Text, &mut Counter)>,
     keyboard: Res<Input<KeyCode>>,
+    mouse: Res<Input<MouseButton>>,
+    gamepad: Res<Input<GamepadButton>>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
+    let input = InputState::new(&keyboard, &mouse, &gamepad);
+
     for (mut player, mut trans) in objects.iter_mut() {
         let t = &mut trans.translation;
 
@@ -137,7 +143,7 @@ fn update_sample(
         }
 
         // Jump
-        if keyboard.just_pressed(keybinds.jump) {
+        if input.just_pressed(&keybinds.jump).unwrap_or(false) {
             player.velocity.y = JUMP_VEL;
 
             let (mut text, mut counter) = counter.single_mut();
@@ -146,9 +152,9 @@ fn update_sample(
         }
 
         // Move
-        if keyboard.pressed(keybinds.left) {
+        if input.pressed(&keybinds.left).unwrap_or(false) {
             player.velocity.x = -MOVE_VEL;
-        } else if keyboard.pressed(keybinds.right) {
+        } else if input.pressed(&keybinds.right).unwrap_or(false) {
             player.velocity.x = MOVE_VEL;
         } else if player.velocity.x.abs() > MOVE_CUTOFF {
             player.velocity.x *= MOVE_FACTOR;

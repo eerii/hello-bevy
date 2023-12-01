@@ -2,6 +2,7 @@
 
 use crate::{
     config::{GameOptions, Keybinds, Persistent},
+    input::{Bind, InputState},
     load::GameAssets,
     GameState, COLOR_DARK, COLOR_DARKER, COLOR_LIGHT, COLOR_MID,
 };
@@ -10,7 +11,8 @@ use bevy::reflect::Struct;
 
 // TODO: Extract styles into external functions (maybe create ui package)
 // TODO: Change the create functions to be more modular
-// TODO: Single UI camera (for debug fps as well)
+// TODO: Single UI camera (for debug fps as well
+// TODO: Tweening and animation
 
 // ······
 // Plugin
@@ -73,7 +75,7 @@ enum MenuButton {
     GoOptions,
     GoKeybinds,
     OptionsTest,
-    RemapKeybind(String, KeyCode),
+    RemapKeybind(String, Vec<Bind>),
 }
 
 // ·······
@@ -202,9 +204,13 @@ fn return_to_menu(
     current_menu_state: Res<State<MenuState>>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
     keyboard: Res<Input<KeyCode>>,
+    mouse: Res<Input<MouseButton>>,
+    gamepad: Res<Input<GamepadButton>>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
-    if keyboard.just_pressed(keybinds.pause) {
+    let input = InputState::new(&keyboard, &mouse, &gamepad);
+
+    if input.just_pressed(&keybinds.pause).unwrap_or(false) {
         if *current_menu_state.get() != MenuState::Main {
             next_menu_state.set(MenuState::Main);
         }
@@ -270,8 +276,8 @@ fn layout_keybinds(
 
         for (i, value) in keybinds.iter_fields().enumerate() {
             let field_name = keybinds.name_at(i).unwrap();
-            if let Some(value) = value.downcast_ref::<KeyCode>() {
-                create_keybind_remap(parent, assets.font.clone(), field_name, *value);
+            if let Some(value) = value.downcast_ref::<Vec<Bind>>() {
+                create_keybind_remap(parent, assets.font.clone(), field_name, value);
             }
         }
 
@@ -318,7 +324,7 @@ fn create_button(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, butt
         });
 }
 
-fn create_keybind_remap(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, key: KeyCode) {
+fn create_keybind_remap(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, bind: &[Bind]) {
     parent
         .spawn(NodeBundle {
             style: Style {
@@ -374,13 +380,17 @@ fn create_keybind_remap(parent: &mut ChildBuilder, font: Handle<Font>, text: &st
                         background_color: COLOR_LIGHT.into(),
                         ..default()
                     },
-                    MenuButton::RemapKeybind(text.to_string(), key),
+                    MenuButton::RemapKeybind(text.to_string(), bind.to_vec()),
                 ))
                 .with_children(|parent| {
-                    let key_name = format!("{:?}", key);
-                    let font_size = if key_name.len() > 1 { 16. } else { 24. };
+                    let name = bind
+                        .iter()
+                        .map(|bind| bind.name())
+                        .collect::<Vec<String>>()
+                        .join(", ");
+                    let font_size = if name.len() > 1 { 16. } else { 24. };
                     parent.spawn(TextBundle::from_section(
-                        key_name,
+                        name,
                         TextStyle {
                             font,
                             font_size,

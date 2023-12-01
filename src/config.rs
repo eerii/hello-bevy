@@ -3,13 +3,13 @@ use std::path::Path;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::GameState;
+use crate::{input::Bind, GameState};
 
 pub use bevy_persistent::prelude::*;
 
-// TODO: Resize font
-// TODO: Change color palette
-// TODO: Gamepad support
+// TODO: Accesibility
+//          - Change font size
+//          - Change color palette
 
 // ······
 // Plugin
@@ -39,29 +39,30 @@ impl Default for GameOptions {
 }
 
 // Keybinds
+
 #[derive(Resource, Serialize, Deserialize, Reflect)]
 pub struct Keybinds {
-    pub up: KeyCode,
-    pub down: KeyCode,
-    pub left: KeyCode,
-    pub right: KeyCode,
-    pub jump: KeyCode,
-    pub interact: KeyCode,
-    pub inventory: KeyCode,
-    pub pause: KeyCode,
+    pub up: Vec<Bind>,
+    pub down: Vec<Bind>,
+    pub left: Vec<Bind>,
+    pub right: Vec<Bind>,
+    pub jump: Vec<Bind>,
+    pub interact: Vec<Bind>,
+    pub inventory: Vec<Bind>,
+    pub pause: Vec<Bind>,
 }
 
 impl Default for Keybinds {
     fn default() -> Self {
         Self {
-            up: KeyCode::W,
-            down: KeyCode::S,
-            left: KeyCode::A,
-            right: KeyCode::D,
-            jump: KeyCode::Space,
-            interact: KeyCode::E,
-            inventory: KeyCode::Tab,
-            pause: KeyCode::Escape,
+            up: vec![Bind::Key(KeyCode::W)],
+            down: vec![Bind::Key(KeyCode::S)],
+            left: vec![Bind::Key(KeyCode::A)],
+            right: vec![Bind::Key(KeyCode::D)],
+            jump: vec![Bind::Key(KeyCode::Space)],
+            interact: vec![Bind::Key(KeyCode::E)],
+            inventory: vec![Bind::Key(KeyCode::Tab)],
+            pause: vec![Bind::Key(KeyCode::Escape)],
         }
     }
 }

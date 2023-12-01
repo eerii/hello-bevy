@@ -1,16 +1,18 @@
-mod audio;
-mod config;
+pub mod audio;
+pub mod config;
 mod debug;
-mod load;
+pub mod input;
+pub mod load;
 mod menu;
 
 use bevy::prelude::*;
 use debug::save_schedule;
 
-pub use {config::*, load::*};
-
-// TODO: Fixed screen size and resizing with fancy border and upscaling (for pixel art and arcade games)
-// TODO: Tweening and animation
+// TODO: Fixed screen size
+//          - For pixel art and arcade games
+//          - Fancy border
+//          - Upscaling
+//          - Window resize
 
 // Game state
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -36,6 +38,7 @@ impl Plugin for GamePlugin {
             load::LoadPlugin,
             menu::MenuPlugin,
             config::ConfigPlugin,
+            input::InputPlugin,
             audio::AudioPlugin,
         ));
 

@@ -1,6 +1,6 @@
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_kira_audio::prelude::*;
-use hello_bevy::{GameAssets, GamePlugin, GameState, SampleAssets, COLOR_DARKER};
+use hello_bevy::{load::GameAssets, load::SampleAssets, GamePlugin, GameState, COLOR_DARKER};
 
 fn main() {
     App::new()

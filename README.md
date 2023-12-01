@@ -9,6 +9,7 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 - creates binaries for web, linux, mac and windows when adding a tag
 - deploy to itch
 - debug features integrated (inspector, schedule graphs)
+- remapable input manager with gamepad support (wip)
 - asset loading with progress, audio, saving, menu...
 
 ### how to use it ✨

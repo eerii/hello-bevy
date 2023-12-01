@@ -39,7 +39,7 @@ jobs:
         id: get_version
       
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Remove debug config
         run: rm -f .cargo/config.toml
@@ -103,7 +103,7 @@ jobs:
         id: get_version
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Remove debug config
         run: rm -f .cargo/config.toml
@@ -159,10 +159,10 @@ jobs:
         id: get_version
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Remove debug config
-        run: rm -f .cargo/config.toml 
+      - name: Remove debug config (windows)
+        run: Remove-Item -Path .cargo/config.toml
 
       - uses: dtolnay/rust-toolchain@nightly
         with:
@@ -210,7 +210,7 @@ jobs:
         id: get_version
       
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Remove debug config
         run: rm -f .cargo/config.toml
