@@ -16,8 +16,8 @@ pub enum Bind {
     Gamepad(GamepadButton),
 }
 
-impl Bind {
-    pub fn name(&self) -> String {
+impl ToString for Bind {
+    fn to_string(&self) -> String {
         match self {
             Bind::Key(key) => format!("{:?}", key),
             Bind::Mouse(button) => format!("{:?}", button),

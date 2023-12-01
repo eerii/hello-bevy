@@ -1,10 +1,11 @@
 use bevy::prelude::*;
 use bevy_persistent::Persistent;
 
-use crate::{config::GameOptions, input::Bind, load::GameAssets};
+use crate::{config::GameOptions, load::GameAssets};
 
-// TODO: Input field
-// TODO: Color picker
+const MENU_WIDTH: Val = Val::Px(300.);
+const MENU_ITEM_HEIGHT: Val = Val::Px(40.);
+const MENU_ITEM_GAP: Val = Val::Px(10.);
 
 // ······
 // Plugin
@@ -29,8 +30,9 @@ impl Plugin for UIPlugin {
 pub struct UIStyle {
     pub title: TextStyle,
     pub text: TextStyle,
-    pub button: Style,
     pub button_text: TextStyle,
+
+    pub button: Style,
     pub button_bg: BackgroundColor,
 }
 
@@ -55,18 +57,18 @@ pub fn change_style(
         color: opts.color.mid,
     };
 
+    style.button_text = TextStyle {
+        font: assets.font.clone(),
+        font_size: opts.font_size.button_text,
+        color: opts.color.dark,
+    };
+
     style.button = Style {
-        width: Val::Px(196.),
-        height: Val::Px(48.),
+        width: MENU_WIDTH,
+        height: MENU_ITEM_HEIGHT,
         justify_content: JustifyContent::Center,
         align_items: AlignItems::Center,
         ..default()
-    };
-
-    style.button_text = TextStyle {
-        font: assets.font.clone(),
-        font_size: 24.,
-        color: opts.color.dark,
     };
 
     style.button_bg = opts.color.light.into();
@@ -76,98 +78,118 @@ pub fn change_style(
 // Extra
 // ·····
 
-pub fn create_title(parent: &mut ChildBuilder, style: &UIStyle, text: &str) {
-    parent.spawn(TextBundle::from_section(text, style.title.clone()));
+// Text
+
+pub struct UIText<'a> {
+    text: TextBundle,
+    style: &'a UIStyle,
 }
 
-pub fn create_button<T: Component>(
-    parent: &mut ChildBuilder,
-    style: &UIStyle,
-    text: &str,
+impl<'a> UIText<'a> {
+    pub fn new(style: &'a UIStyle, text: &str) -> Self {
+        Self {
+            text: TextBundle::from_section(text, style.text.clone()),
+            style,
+        }
+    }
+
+    pub fn with_title(mut self) -> Self {
+        self.text.text.sections[0].style = self.style.title.clone();
+        self
+    }
+
+    pub fn with_style(mut self, style: Style) -> Self {
+        self.text.style = style;
+        self
+    }
+
+    pub fn add(self, parent: &mut ChildBuilder) {
+        parent.spawn(self.text);
+    }
+}
+
+// Button
+
+pub struct UIButton<T: Component> {
+    button: ButtonBundle,
+    text: TextBundle,
     action: T,
-) {
-    parent
-        .spawn((
-            ButtonBundle {
+}
+
+impl<T: Component> UIButton<T> {
+    pub fn new(style: &UIStyle, text: &str, action: T) -> Self {
+        Self {
+            button: ButtonBundle {
                 style: style.button.clone(),
                 background_color: style.button_bg,
                 ..default()
             },
+            text: TextBundle::from_section(text, style.button_text.clone()),
             action,
-        ))
-        .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(text, style.button_text.clone()));
-        });
+        }
+    }
+
+    pub fn with_width(mut self, width: Val) -> Self {
+        self.button.style.width = width;
+        self
+    }
+
+    pub fn add(self, parent: &mut ChildBuilder) {
+        parent
+            .spawn((self.button, self.action))
+            .with_children(|button| {
+                button.spawn(self.text);
+            });
+    }
 }
 
-pub fn create_keybind_remap<T: Component>(
-    parent: &mut ChildBuilder,
-    style: &UIStyle,
-    text: &str,
-    action: T,
-    bind: &[Bind],
-) {
-    parent
-        .spawn(NodeBundle {
-            style: Style {
-                min_width: Val::Px(196.),
-                flex_direction: FlexDirection::Row,
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                column_gap: Val::Px(12.),
+// Option row (label text + widget)
+
+pub struct UIOption<'a> {
+    row: NodeBundle,
+    label: UIText<'a>,
+}
+
+impl<'a> UIOption<'a> {
+    pub fn new(style: &'a UIStyle, label: &str) -> Self {
+        Self {
+            row: NodeBundle {
+                style: Style {
+                    width: MENU_WIDTH,
+                    column_gap: MENU_ITEM_GAP,
+                    flex_direction: FlexDirection::Row,
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        })
-        .with_children(|parent| {
-            let name = text
-                .chars()
-                .enumerate()
-                .map(|(i, c)| {
-                    if i == 0 {
-                        c.to_uppercase().next().unwrap()
-                    } else if c == '_' {
-                        ' '
-                    } else {
-                        c
-                    }
-                })
-                .collect::<String>();
+            label: UIText::new(style, &snake_to_upper(label)).with_style(Style {
+                flex_grow: 1.,
+                ..default()
+            }),
+        }
+    }
 
-            parent.spawn(
-                TextBundle::from_section(name, style.text.clone()).with_style(Style {
-                    flex_grow: 1.,
-                    ..default()
-                }),
-            );
-
-            parent
-                .spawn((
-                    ButtonBundle {
-                        style: Style {
-                            width: Val::Px(96.),
-                            ..style.button.clone()
-                        },
-                        background_color: style.button_bg,
-                        ..default()
-                    },
-                    action,
-                ))
-                .with_children(|parent| {
-                    let name = bind
-                        .iter()
-                        .map(|bind| bind.name())
-                        .collect::<Vec<String>>()
-                        .join(", ");
-                    let font_size = if name.len() > 1 { 16. } else { 24. };
-                    parent.spawn(TextBundle::from_section(
-                        name,
-                        TextStyle {
-                            font: style.button_text.font.clone(),
-                            font_size,
-                            color: style.button_text.color,
-                        },
-                    ));
-                });
+    pub fn add(self, parent: &mut ChildBuilder, children: impl FnOnce(&mut ChildBuilder)) {
+        parent.spawn(self.row).with_children(|row| {
+            self.label.add(row);
+            children(row);
         });
+    }
+}
+
+pub fn snake_to_upper(text: &str) -> String {
+    text.chars()
+        .enumerate()
+        .map(|(i, c)| {
+            if i == 0 {
+                c.to_uppercase().next().unwrap()
+            } else if c == '_' {
+                ' '
+            } else {
+                c
+            }
+        })
+        .collect::<String>()
 }

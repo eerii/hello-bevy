@@ -119,7 +119,6 @@ jobs:
           mkdir linux
           cp target/x86_64-unknown-linux-gnu/release/${{ env.binary }} linux/
           strip linux/${{ env.binary }}
-          cp -r assets linux/
 
       - name: Package as a zip
         working-directory: ./linux
@@ -168,7 +167,6 @@ jobs:
         run: |
           mkdir windows
           cp target/x86_64-pc-windows-msvc/release/${{ env.binary }}.exe windows/
-          cp -r assets windows/
 
       - name: Package as a zip
         run: |
@@ -231,7 +229,6 @@ jobs:
         run: |
           mkdir -p ${{ env.binary }}.app/Contents/MacOS
           cp target/release/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
-          cp -r assets ${{ env.binary }}.app/Contents/MacOS/
           strip ${{ env.binary }}.app/Contents/MacOS/${{ env.binary }}
           hdiutil create -fs HFS+ -volname "${{ env.binary }}" -srcfolder ${{ env.binary }}.app ${{ env.binary }}.dmg
 
@@ -259,20 +256,19 @@ jobs:
       - id: check-env
         run: |
           if [[ -z "$itch_target" ]]; then
-            echo "has-itch-target == no >> $GITHUB_OUTPUT"
+            echo "has-itch-target=no" >> $GITHUB_OUTPUT
           else
-            echo "has-itch-target == yes >> $GITHUB_OUTPUT"
+            echo "has-itch-target=yes" >> $GITHUB_OUTPUT
           fi
 
   upload-to-itch:
     runs-on: ubuntu-latest
     needs:
-      - get-version
       - check-upload-to-itch
       - release-wasm
       - release-linux
-      - release-windows
-      - release-macos
+      # - release-windows # [CHANGE]: Uncomment this if you want to automaticall deploy mac and windows builds to itch
+      # - release-macos   #           It is disabled by default because they take a loong time
     if: ${{ needs.check-upload-to-itch.outputs.should-upload == 'yes' }}
 
     env:
@@ -282,7 +278,8 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          path: ./builds
+          name: wasm
+          path: ./builds/wasm
 
       - name: Install butler
         run: |

@@ -74,7 +74,7 @@ mod only_in_debug {
 
         cmd.spawn((Camera2dBundle {
             camera_2d: Camera2d {
-                clear_color: ClearColorConfig::Custom(Color::rgba(0., 0., 0., 0.)),
+                clear_color: ClearColorConfig::Custom(Color::WHITE),
             },
             camera: Camera {
                 order: -10,

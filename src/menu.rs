@@ -9,9 +9,7 @@ use crate::{
 use bevy::prelude::*;
 use bevy::reflect::Struct;
 
-// TODO: Extract styles into external functions (maybe create ui package)
-// TODO: Change the create functions to be more modular
-// TODO: Single UI camera (for debug fps as well
+// TODO: Single UI camera (for debug fps as well)
 // TODO: Tweening and animation
 
 // ······
@@ -37,11 +35,15 @@ impl Plugin for MenuPlugin {
                 clean_menu.run_if(in_state(GameState::Menu)),
             )
             .add_systems(
-                OnEnter(MenuState::Options),
+                OnEnter(MenuState::Settings),
                 clean_menu.run_if(in_state(GameState::Menu)),
             )
             .add_systems(
                 OnEnter(MenuState::Keybinds),
+                clean_menu.run_if(in_state(GameState::Menu)),
+            )
+            .add_systems(
+                OnEnter(MenuState::Visual),
                 clean_menu.run_if(in_state(GameState::Menu)),
             );
     }
@@ -51,8 +53,9 @@ impl Plugin for MenuPlugin {
 pub enum MenuState {
     #[default]
     Main,
-    Options,
+    Settings,
     Keybinds,
+    Visual,
 }
 
 // ··········
@@ -72,10 +75,12 @@ struct MenuText;
 enum MenuButton {
     Play,
     GoMain,
-    GoOptions,
+    GoSettings,
     GoKeybinds,
-    OptionsColor(String),
+    GoVisual,
     RemapKeybind(String, Vec<Bind>),
+    ChangeFont(String),
+    ChangeColor(String, String),
 }
 
 // ·······
@@ -94,7 +99,7 @@ fn init_menu(mut cmd: Commands, opts: Res<Persistent<GameOptions>>, style: Res<U
                     flex_direction: FlexDirection::Column,
                     align_items: AlignItems::Center,
                     justify_content: JustifyContent::Center,
-                    row_gap: Val::Px(18.),
+                    row_gap: Val::Px(12.),
                     ..default()
                 },
                 background_color: opts.color.darker.into(),
@@ -132,19 +137,23 @@ fn handle_buttons(
                         MenuButton::GoMain => {
                             menu_state.set(MenuState::Main);
                         }
-                        MenuButton::GoOptions => {
-                            menu_state.set(MenuState::Options);
+                        MenuButton::GoSettings => {
+                            menu_state.set(MenuState::Settings);
                         }
                         MenuButton::GoKeybinds => {
                             menu_state.set(MenuState::Keybinds);
                         }
-                        MenuButton::OptionsColor(field) => {
-                            // TODO: Add color picker
-                            info!("color {}", field);
+                        MenuButton::GoVisual => {
+                            menu_state.set(MenuState::Visual);
                         }
-                        MenuButton::RemapKeybind(field, _) => {
+                        MenuButton::RemapKeybind(_, _) => {
                             // TODO: Remap keymaps
-                            info!("remap {}", field);
+                        }
+                        MenuButton::ChangeFont(_) => {
+                            // TODO: Change font size
+                        }
+                        MenuButton::ChangeColor(_, _) => {
+                            // TODO: Change color
                         }
                     }
                 }
@@ -175,8 +184,9 @@ fn clean_menu(
 
     match state.get() {
         MenuState::Main => layout_main(cmd, node, &style),
-        MenuState::Options => layout_options(cmd, node, &style, &opts),
+        MenuState::Settings => layout_options(cmd, node, &style),
         MenuState::Keybinds => layout_keybinds(cmd, node, &style, &keybinds),
+        MenuState::Visual => layout_visual(cmd, node, &style, &opts),
     }
 }
 
@@ -203,8 +213,11 @@ fn return_to_menu(
     let input = InputState::new(&keyboard, &mouse, &gamepad);
 
     if input.just_pressed(&keybinds.pause).unwrap_or(false) {
-        if *current_menu_state.get() != MenuState::Main {
-            next_menu_state.set(MenuState::Main);
+        match *current_menu_state.get() {
+            MenuState::Settings => next_menu_state.set(MenuState::Main),
+            MenuState::Keybinds => next_menu_state.set(MenuState::Settings),
+            MenuState::Visual => next_menu_state.set(MenuState::Settings),
+            _ => {}
         }
         game_state.set(GameState::Menu);
     }
@@ -216,63 +229,107 @@ fn return_to_menu(
 
 fn layout_main(mut cmd: Commands, node: Entity, style: &UIStyle) {
     cmd.entity(node).with_children(|parent| {
-        create_title(parent, style, "Hello Bevy");
+        UIText::new(style, "Hello Bevy").with_title().add(parent);
 
-        create_button(parent, style, "Play", MenuButton::Play);
-        create_button(parent, style, "Options", MenuButton::GoOptions);
+        UIButton::new(style, "Play", MenuButton::Play).add(parent);
+        UIButton::new(style, "Settings", MenuButton::GoSettings).add(parent);
     });
 }
 
-fn layout_options(mut cmd: Commands, node: Entity, style: &UIStyle, opts: &GameOptions) {
+fn layout_options(mut cmd: Commands, node: Entity, style: &UIStyle) {
     cmd.entity(node).with_children(|parent| {
-        create_title(parent, style, "Options");
+        UIText::new(style, "Settings").with_title().add(parent);
 
-        create_button(parent, style, "Keybinds", MenuButton::GoKeybinds);
+        UIButton::new(style, "Keybinds", MenuButton::GoKeybinds).add(parent);
+        UIButton::new(style, "Visual", MenuButton::GoVisual).add(parent);
 
-        for (i, value) in opts.color.iter_fields().enumerate() {
-            let field_name = opts.color.name_at(i).unwrap();
-            if let Some(value) = value.downcast_ref::<Color>() {
-                let r = value.r();
-                let g = value.g();
-                let b = value.b();
-                create_button(
-                    parent,
-                    style,
-                    &format!(
-                        "{}: {:.0},{:.0},{:.0}",
-                        field_name,
-                        r * 255.,
-                        g * 255.,
-                        b * 255.
-                    ),
-                    MenuButton::OptionsColor(field_name.to_string()),
-                );
-            }
-        }
-
-        create_button(parent, style, "Back", MenuButton::GoMain);
+        UIButton::new(style, "Back", MenuButton::GoMain).add(parent);
     });
 }
 
 fn layout_keybinds(mut cmd: Commands, node: Entity, style: &UIStyle, keybinds: &Keybinds) {
     cmd.entity(node).with_children(|parent| {
-        create_title(parent, style, "Keybinds");
+        UIText::new(style, "Options").with_title().add(parent);
 
-        // TODO: Scrollable section
+        // TODO: Scrollable section (Requires #8104 to be merged in 0.13)
 
         for (i, value) in keybinds.iter_fields().enumerate() {
             let field_name = keybinds.name_at(i).unwrap();
             if let Some(value) = value.downcast_ref::<Vec<Bind>>() {
-                create_keybind_remap(
-                    parent,
-                    style,
-                    field_name,
-                    MenuButton::RemapKeybind(field_name.to_string(), value.clone()),
-                    value,
-                );
+                UIOption::new(style, field_name).add(parent, |row| {
+                    let keys = value
+                        .iter()
+                        .map(|bind| bind.to_string())
+                        .collect::<Vec<_>>()
+                        .join(" ");
+
+                    UIButton::new(
+                        style,
+                        &keys,
+                        MenuButton::RemapKeybind(field_name.to_string(), value.clone()),
+                    )
+                    .with_width(Val::Px(64.))
+                    .add(row);
+                });
             }
         }
 
-        create_button(parent, style, "Back", MenuButton::GoOptions);
+        UIButton::new(style, "Back", MenuButton::GoSettings).add(parent);
+    });
+}
+
+fn layout_visual(mut cmd: Commands, node: Entity, style: &UIStyle, opts: &GameOptions) {
+    cmd.entity(node).with_children(|parent| {
+        UIText::new(style, "Visual settings")
+            .with_title()
+            .add(parent);
+
+        for (i, value) in opts.font_size.iter_fields().enumerate() {
+            let field_name = opts.font_size.name_at(i).unwrap().to_string();
+            if let Some(value) = value.downcast_ref::<f32>() {
+                UIOption::new(style, &format!("font_{}", field_name)).add(parent, |row| {
+                    UIButton::new(
+                        style,
+                        &format!("{}", value),
+                        MenuButton::ChangeFont(field_name),
+                    )
+                    .with_width(Val::Px(40.))
+                    .add(row);
+                });
+            }
+        }
+
+        for (i, value) in opts.color.iter_fields().enumerate() {
+            let field_name = format!("color_{}", opts.color.name_at(i).unwrap());
+            if let Some(value) = value.downcast_ref::<Color>() {
+                UIOption::new(style, &field_name).add(parent, |row| {
+                    UIButton::new(
+                        style,
+                        &format!("{:.0}", value.r() * 255.),
+                        MenuButton::ChangeColor(field_name.clone(), "r".to_string()),
+                    )
+                    .with_width(Val::Px(40.))
+                    .add(row);
+
+                    UIButton::new(
+                        style,
+                        &format!("{:.0}", value.g() * 255.),
+                        MenuButton::ChangeColor(field_name.clone(), "g".to_string()),
+                    )
+                    .with_width(Val::Px(40.))
+                    .add(row);
+
+                    UIButton::new(
+                        style,
+                        &format!("{:.0}", value.b() * 255.),
+                        MenuButton::ChangeColor(field_name.clone(), "b".to_string()),
+                    )
+                    .with_width(Val::Px(40.))
+                    .add(row);
+                });
+            }
+        }
+
+        UIButton::new(style, "Back", MenuButton::GoSettings).add(parent);
     });
 }

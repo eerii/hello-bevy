@@ -1,10 +1,19 @@
 use bevy::{prelude::*, window::WindowResolution};
+use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
 use bevy_persistent::Persistent;
-use hello_bevy::{config::Keybinds, input::InputState, load::GameAssets, GamePlugin, GameState};
+use hello_bevy::{
+    config::{GameOptions, Keybinds},
+    input::InputState,
+    load::GameAssets,
+    GamePlugin, GameState,
+};
 
 fn main() {
     App::new()
         .add_plugins((
+            EmbeddedAssetPlugin {
+                mode: PluginMode::ReplaceDefault,
+            },
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "Endless jump".to_string(),
@@ -73,7 +82,12 @@ struct GameCamera;
 // Systems
 // ·······
 
-fn init_sample(mut cmd: Commands, assets: Res<GameAssets>, info: Option<Res<GameInfo>>) {
+fn init_sample(
+    mut cmd: Commands,
+    assets: Res<GameAssets>,
+    opts: Res<Persistent<GameOptions>>,
+    info: Option<Res<GameInfo>>,
+) {
     cmd.spawn((Camera2dBundle::default(), GameCamera));
 
     if info.is_some() {
@@ -104,7 +118,7 @@ fn init_sample(mut cmd: Commands, assets: Res<GameAssets>, info: Option<Res<Game
                 TextStyle {
                     font: assets.font.clone(),
                     font_size: 192.,
-                    color: Color::WHITE,
+                    color: opts.color.mid,
                 },
             ),
             ..default()

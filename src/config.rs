@@ -7,10 +7,6 @@ use crate::{input::Bind, GameState};
 
 pub use bevy_persistent::prelude::*;
 
-// TODO: Accesibility
-//          - Change font size
-//          - Change color palette
-
 // ······
 // Plugin
 // ······
@@ -35,6 +31,7 @@ impl Plugin for ConfigPlugin {
 pub struct FontSize {
     pub title: f32,
     pub text: f32,
+    pub button_text: f32,
 }
 
 impl Default for FontSize {
@@ -42,6 +39,7 @@ impl Default for FontSize {
         Self {
             title: 48.0,
             text: 24.0,
+            button_text: 20.0,
         }
     }
 }

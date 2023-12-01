@@ -26,6 +26,7 @@ bevy = { version = "0.12", default-features = false, features = [
     "tonemapping_luts", "default_font", "webgl2",
 ]} 
 bevy_asset_loader = { version = "0.18", features = [ "progress_tracking" ] } # Better asset loader
+bevy_embedded_assets = { version = "0.9" } # Embed assets in binary
 bevy_kira_audio = { version =  "0.18" } # Improved audio library
 iyes_progress = { version = "0.10", features = [ "assets" ] } # Track loading and game state
 bevy-inspector-egui = { version = "0.21" } # Inspector

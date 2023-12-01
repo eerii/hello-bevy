@@ -24,11 +24,9 @@ impl Plugin for LoadPlugin {
         app.add_loading_state(LoadingState::new(GameState::Loading))
             .init_collection::<GameAssets>()
             .add_collection_to_loading_state::<_, SampleAssets>(GameState::Loading)
-            .add_plugins(
-                ProgressPlugin::new(GameState::Loading)
-                    .continue_to(GameState::Menu)
-                    .track_assets(),
-            )
+            .add_plugins((ProgressPlugin::new(GameState::Loading)
+                .continue_to(GameState::Menu)
+                .track_assets(),))
             .add_systems(OnEnter(GameState::Loading), init_splash)
             .add_systems(OnExit(GameState::Loading), clear_loading)
             .add_systems(
