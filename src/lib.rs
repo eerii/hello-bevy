@@ -4,9 +4,9 @@ mod debug;
 pub mod input;
 pub mod load;
 mod menu;
+mod ui;
 
 use bevy::prelude::*;
-use debug::save_schedule;
 
 // TODO: Fixed screen size
 //          - For pixel art and arcade games
@@ -23,12 +23,6 @@ pub enum GameState {
     Play,
 }
 
-// Colors
-pub const COLOR_LIGHT: Color = Color::rgb(245.0 / 255.0, 237.0 / 255.0, 200.0 / 255.0);
-pub const COLOR_MID: Color = Color::rgb(69.0 / 255.0, 173.0 / 255.0, 118.0 / 255.0);
-pub const COLOR_DARK: Color = Color::rgb(43.0 / 255.0, 115.0 / 255.0, 77.0 / 255.0);
-pub const COLOR_DARKER: Color = Color::rgb(55.0 / 255.0, 84.0 / 255.0, 70.0 / 255.0);
-
 // Main game plugin
 pub struct GamePlugin;
 
@@ -36,16 +30,16 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_state::<GameState>().add_plugins((
             load::LoadPlugin,
+            ui::UIPlugin,
             menu::MenuPlugin,
             config::ConfigPlugin,
-            input::InputPlugin,
             audio::AudioPlugin,
         ));
 
         #[cfg(debug_assertions)]
         {
             app.add_plugins(debug::DebugPlugin);
-            save_schedule(app);
+            debug::save_schedule(app);
         }
     }
 }

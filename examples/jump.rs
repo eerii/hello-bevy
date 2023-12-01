@@ -1,12 +1,9 @@
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_persistent::Persistent;
-use hello_bevy::{
-    config::Keybinds, input::InputState, load::GameAssets, GamePlugin, GameState, COLOR_DARKER,
-};
+use hello_bevy::{config::Keybinds, input::InputState, load::GameAssets, GamePlugin, GameState};
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(COLOR_DARKER))
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {

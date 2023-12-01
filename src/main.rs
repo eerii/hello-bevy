@@ -1,9 +1,8 @@
 use bevy::{prelude::*, window::WindowResolution};
-use hello_bevy::{GamePlugin, COLOR_DARKER};
+use hello_bevy::GamePlugin;
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(COLOR_DARKER))
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {

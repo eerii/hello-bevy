@@ -1,10 +1,11 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
 
-use crate::{GameState, COLOR_DARK, COLOR_DARKER, COLOR_LIGHT, COLOR_MID};
+use crate::{config::GameOptions, GameState};
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
+use bevy_persistent::Persistent;
 use iyes_progress::prelude::*;
 
 #[cfg(debug_assertions)]
@@ -99,7 +100,6 @@ fn init_splash(mut cmd: Commands, assets: Res<GameAssets>) {
                 row_gap: Val::Px(12.),
                 ..default()
             },
-            background_color: BackgroundColor(COLOR_DARKER),
             ..default()
         },
         SplashNode,
@@ -138,6 +138,7 @@ fn check_progress(
     assets: Res<GameAssets>,
     timer: Query<&SplashTimer>,
     node: Query<Entity, With<SplashNode>>,
+    opts: Res<Persistent<GameOptions>>,
     mut bar: Query<&mut Style, With<ProgressBar>>,
     mut last_progress: Local<(u32, u32)>,
 ) {
@@ -166,7 +167,7 @@ fn check_progress(
                             TextStyle {
                                 font: assets.font.clone(),
                                 font_size: 48.,
-                                color: COLOR_MID,
+                                color: opts.color.mid,
                             },
                         ),
                         ..default()
@@ -180,7 +181,7 @@ fn check_progress(
                                 height: Val::Px(32.),
                                 ..default()
                             },
-                            background_color: COLOR_DARK.into(),
+                            background_color: opts.color.dark.into(),
                             ..default()
                         })
                         .with_children(|parent| {
@@ -193,7 +194,7 @@ fn check_progress(
                                         height: Val::Px(32.),
                                         ..default()
                                     },
-                                    background_color: COLOR_LIGHT.into(),
+                                    background_color: opts.color.light.into(),
                                     ..default()
                                 },
                                 ProgressBar,

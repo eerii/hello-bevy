@@ -3,8 +3,8 @@
 use crate::{
     config::{GameOptions, Keybinds, Persistent},
     input::{Bind, InputState},
-    load::GameAssets,
-    GameState, COLOR_DARK, COLOR_DARKER, COLOR_LIGHT, COLOR_MID,
+    ui::*,
+    GameState,
 };
 use bevy::prelude::*;
 use bevy::reflect::Struct;
@@ -74,7 +74,7 @@ enum MenuButton {
     GoMain,
     GoOptions,
     GoKeybinds,
-    OptionsTest,
+    OptionsColor(String),
     RemapKeybind(String, Vec<Bind>),
 }
 
@@ -82,7 +82,7 @@ enum MenuButton {
 // Systems
 // ·······
 
-fn init_menu(mut cmd: Commands, assets: Res<GameAssets>) {
+fn init_menu(mut cmd: Commands, opts: Res<Persistent<GameOptions>>, style: Res<UIStyle>) {
     cmd.spawn((Camera2dBundle::default(), MenuCam));
 
     let node = cmd
@@ -97,14 +97,14 @@ fn init_menu(mut cmd: Commands, assets: Res<GameAssets>) {
                     row_gap: Val::Px(18.),
                     ..default()
                 },
-                background_color: COLOR_DARKER.into(),
+                background_color: opts.color.darker.into(),
                 ..default()
             },
             MenuNode,
         ))
         .id();
 
-    layout_main(cmd, node, assets);
+    layout_main(cmd, node, &style);
 }
 
 fn handle_buttons(
@@ -115,15 +115,15 @@ fn handle_buttons(
         (&Interaction, &MenuButton, &Children, &mut BackgroundColor),
         Changed<Interaction>,
     >,
-    mut opts: ResMut<Persistent<GameOptions>>,
+    opts: Res<Persistent<GameOptions>>,
 ) {
     for (inter, button, child, mut bg) in &mut buttons {
         let child = child.iter().next();
         if let Some(mut text) = child.and_then(|child| text.get_mut(*child).ok()) {
             match inter {
                 Interaction::Pressed => {
-                    bg.0 = COLOR_DARK;
-                    text.sections[0].style.color = COLOR_LIGHT;
+                    bg.0 = opts.color.dark;
+                    text.sections[0].style.color = opts.color.light;
 
                     match button {
                         MenuButton::Play => {
@@ -138,17 +138,9 @@ fn handle_buttons(
                         MenuButton::GoKeybinds => {
                             menu_state.set(MenuState::Keybinds);
                         }
-                        MenuButton::OptionsTest => {
-                            opts.update(|opts| {
-                                opts.test = !opts.test;
-                            })
-                            .expect("Failed to update game options");
-
-                            text.sections[0].value = if opts.test {
-                                "Test: On".to_string()
-                            } else {
-                                "Test: Off".to_string()
-                            };
+                        MenuButton::OptionsColor(field) => {
+                            // TODO: Add color picker
+                            info!("color {}", field);
                         }
                         MenuButton::RemapKeybind(field, _) => {
                             // TODO: Remap keymaps
@@ -157,12 +149,12 @@ fn handle_buttons(
                     }
                 }
                 Interaction::Hovered => {
-                    bg.0 = COLOR_MID;
-                    text.sections[0].style.color = COLOR_DARKER;
+                    bg.0 = opts.color.mid;
+                    text.sections[0].style.color = opts.color.darker;
                 }
                 Interaction::None => {
-                    bg.0 = COLOR_LIGHT;
-                    text.sections[0].style.color = COLOR_DARK;
+                    bg.0 = opts.color.light;
+                    text.sections[0].style.color = opts.color.dark;
                 }
             }
         }
@@ -173,7 +165,7 @@ fn clean_menu(
     mut cmd: Commands,
     state: Res<State<MenuState>>,
     node: Query<Entity, With<MenuNode>>,
-    assets: Res<GameAssets>,
+    style: Res<UIStyle>,
     opts: Res<Persistent<GameOptions>>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
@@ -182,9 +174,9 @@ fn clean_menu(
     cmd.entity(node).despawn_descendants();
 
     match state.get() {
-        MenuState::Main => layout_main(cmd, node, assets),
-        MenuState::Options => layout_options(cmd, node, assets, opts),
-        MenuState::Keybinds => layout_keybinds(cmd, node, assets, keybinds),
+        MenuState::Main => layout_main(cmd, node, &style),
+        MenuState::Options => layout_options(cmd, node, &style, &opts),
+        MenuState::Keybinds => layout_keybinds(cmd, node, &style, &keybinds),
     }
 }
 
@@ -222,181 +214,65 @@ fn return_to_menu(
 // Extra
 // ·····
 
-fn layout_main(mut cmd: Commands, node: Entity, assets: Res<GameAssets>) {
+fn layout_main(mut cmd: Commands, node: Entity, style: &UIStyle) {
     cmd.entity(node).with_children(|parent| {
-        create_title(parent, assets.font.clone(), "Hello Bevy");
+        create_title(parent, style, "Hello Bevy");
 
-        create_button(parent, assets.font.clone(), "Play", MenuButton::Play);
-        create_button(
-            parent,
-            assets.font.clone(),
-            "Options",
-            MenuButton::GoOptions,
-        );
+        create_button(parent, style, "Play", MenuButton::Play);
+        create_button(parent, style, "Options", MenuButton::GoOptions);
     });
 }
 
-fn layout_options(
-    mut cmd: Commands,
-    node: Entity,
-    assets: Res<GameAssets>,
-    opts: Res<Persistent<GameOptions>>,
-) {
+fn layout_options(mut cmd: Commands, node: Entity, style: &UIStyle, opts: &GameOptions) {
     cmd.entity(node).with_children(|parent| {
-        create_title(parent, assets.font.clone(), "Options");
+        create_title(parent, style, "Options");
 
-        create_button(
-            parent,
-            assets.font.clone(),
-            if opts.test { "Test: On" } else { "Test: Off" },
-            MenuButton::OptionsTest,
-        );
+        create_button(parent, style, "Keybinds", MenuButton::GoKeybinds);
 
-        create_button(
-            parent,
-            assets.font.clone(),
-            "Keybinds",
-            MenuButton::GoKeybinds,
-        );
+        for (i, value) in opts.color.iter_fields().enumerate() {
+            let field_name = opts.color.name_at(i).unwrap();
+            if let Some(value) = value.downcast_ref::<Color>() {
+                let r = value.r();
+                let g = value.g();
+                let b = value.b();
+                create_button(
+                    parent,
+                    style,
+                    &format!(
+                        "{}: {:.0},{:.0},{:.0}",
+                        field_name,
+                        r * 255.,
+                        g * 255.,
+                        b * 255.
+                    ),
+                    MenuButton::OptionsColor(field_name.to_string()),
+                );
+            }
+        }
 
-        create_button(parent, assets.font.clone(), "Back", MenuButton::GoMain);
+        create_button(parent, style, "Back", MenuButton::GoMain);
     });
 }
 
-fn layout_keybinds(
-    mut cmd: Commands,
-    node: Entity,
-    assets: Res<GameAssets>,
-    keybinds: Res<Persistent<Keybinds>>,
-) {
+fn layout_keybinds(mut cmd: Commands, node: Entity, style: &UIStyle, keybinds: &Keybinds) {
     cmd.entity(node).with_children(|parent| {
-        create_title(parent, assets.font.clone(), "Keybinds");
+        create_title(parent, style, "Keybinds");
 
         // TODO: Scrollable section
 
         for (i, value) in keybinds.iter_fields().enumerate() {
             let field_name = keybinds.name_at(i).unwrap();
             if let Some(value) = value.downcast_ref::<Vec<Bind>>() {
-                create_keybind_remap(parent, assets.font.clone(), field_name, value);
+                create_keybind_remap(
+                    parent,
+                    style,
+                    field_name,
+                    MenuButton::RemapKeybind(field_name.to_string(), value.clone()),
+                    value,
+                );
             }
         }
 
-        create_button(parent, assets.font.clone(), "Back", MenuButton::GoOptions);
+        create_button(parent, style, "Back", MenuButton::GoOptions);
     });
-}
-
-fn create_title(parent: &mut ChildBuilder, font: Handle<Font>, text: &str) {
-    parent.spawn(TextBundle::from_section(
-        text,
-        TextStyle {
-            font,
-            font_size: 48.,
-            color: COLOR_MID,
-        },
-    ));
-}
-
-fn create_button(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, button: MenuButton) {
-    parent
-        .spawn((
-            ButtonBundle {
-                style: Style {
-                    width: Val::Px(196.),
-                    height: Val::Px(48.),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                background_color: COLOR_LIGHT.into(),
-                ..default()
-            },
-            button,
-        ))
-        .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                text,
-                TextStyle {
-                    font,
-                    font_size: 24.,
-                    color: COLOR_DARK,
-                },
-            ));
-        });
-}
-
-fn create_keybind_remap(parent: &mut ChildBuilder, font: Handle<Font>, text: &str, bind: &[Bind]) {
-    parent
-        .spawn(NodeBundle {
-            style: Style {
-                min_width: Val::Px(196.),
-                flex_direction: FlexDirection::Row,
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                column_gap: Val::Px(12.),
-                ..default()
-            },
-            ..default()
-        })
-        .with_children(|parent| {
-            let name = text
-                .chars()
-                .enumerate()
-                .map(|(i, c)| {
-                    if i == 0 {
-                        c.to_uppercase().next().unwrap()
-                    } else if c == '_' {
-                        ' '
-                    } else {
-                        c
-                    }
-                })
-                .collect::<String>();
-
-            parent.spawn(
-                TextBundle::from_section(
-                    name,
-                    TextStyle {
-                        font: font.clone(),
-                        font_size: 24.,
-                        color: COLOR_LIGHT,
-                    },
-                )
-                .with_style(Style {
-                    flex_grow: 1.,
-                    ..default()
-                }),
-            );
-
-            parent
-                .spawn((
-                    ButtonBundle {
-                        style: Style {
-                            width: Val::Px(56.),
-                            height: Val::Px(40.),
-                            justify_content: JustifyContent::Center,
-                            align_items: AlignItems::Center,
-                            ..default()
-                        },
-                        background_color: COLOR_LIGHT.into(),
-                        ..default()
-                    },
-                    MenuButton::RemapKeybind(text.to_string(), bind.to_vec()),
-                ))
-                .with_children(|parent| {
-                    let name = bind
-                        .iter()
-                        .map(|bind| bind.name())
-                        .collect::<Vec<String>>()
-                        .join(", ");
-                    let font_size = if name.len() > 1 { 16. } else { 24. };
-                    parent.spawn(TextBundle::from_section(
-                        name,
-                        TextStyle {
-                            font,
-                            font_size,
-                            color: COLOR_DARK,
-                        },
-                    ));
-                });
-        });
 }

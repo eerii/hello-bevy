@@ -1,10 +1,12 @@
 use bevy::{prelude::*, window::WindowResolution};
 use bevy_kira_audio::prelude::*;
-use hello_bevy::{load::GameAssets, load::SampleAssets, GamePlugin, GameState, COLOR_DARKER};
+use hello_bevy::{
+    load::{GameAssets, SampleAssets},
+    GamePlugin, GameState,
+};
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(COLOR_DARKER))
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {

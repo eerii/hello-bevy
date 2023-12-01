@@ -5,16 +5,6 @@ use serde::{Deserialize, Serialize};
 // TODO: Check when gamepad is connected/disconnected
 //          - Create gamepad buttons automatically for that gamepad
 
-// ······
-// Plugin
-// ······
-
-pub struct InputPlugin;
-
-impl Plugin for InputPlugin {
-    fn build(&self, _app: &mut App) {}
-}
-
 // ·····
 // Extra
 // ·····

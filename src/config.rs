@@ -19,7 +19,11 @@ pub struct ConfigPlugin;
 
 impl Plugin for ConfigPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Loading), init_persistence);
+        app.add_systems(OnEnter(GameState::Loading), init_persistence)
+            .add_systems(
+                PostUpdate,
+                change_options.run_if(resource_changed::<Persistent<GameOptions>>()),
+            );
     }
 }
 
@@ -27,15 +31,44 @@ impl Plugin for ConfigPlugin {
 // Resources
 // ·········
 
-#[derive(Resource, Serialize, Deserialize, Reflect)]
-pub struct GameOptions {
-    pub test: bool,
+#[derive(Serialize, Deserialize, Reflect)]
+pub struct FontSize {
+    pub title: f32,
+    pub text: f32,
 }
 
-impl Default for GameOptions {
+impl Default for FontSize {
     fn default() -> Self {
-        Self { test: true }
+        Self {
+            title: 48.0,
+            text: 24.0,
+        }
     }
+}
+
+#[derive(Serialize, Deserialize, Reflect)]
+pub struct ColorPalette {
+    pub light: Color,
+    pub mid: Color,
+    pub dark: Color,
+    pub darker: Color,
+}
+
+impl Default for ColorPalette {
+    fn default() -> Self {
+        Self {
+            light: Color::rgb(245.0 / 255.0, 237.0 / 255.0, 200.0 / 255.0),
+            mid: Color::rgb(69.0 / 255.0, 173.0 / 255.0, 118.0 / 255.0),
+            dark: Color::rgb(43.0 / 255.0, 115.0 / 255.0, 77.0 / 255.0),
+            darker: Color::rgb(55.0 / 255.0, 84.0 / 255.0, 70.0 / 255.0),
+        }
+    }
+}
+
+#[derive(Resource, Serialize, Deserialize, Reflect, Default)]
+pub struct GameOptions {
+    pub font_size: FontSize,
+    pub color: ColorPalette,
 }
 
 // Keybinds
@@ -99,4 +132,8 @@ fn init_persistence(mut cmd: Commands) {
             .build()
             .expect("failed to initialize keybinds"),
     );
+}
+
+fn change_options(mut cmd: Commands, options: Res<Persistent<GameOptions>>) {
+    cmd.insert_resource(ClearColor(options.color.darker));
 }
