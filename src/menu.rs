@@ -2,7 +2,7 @@
 #![allow(clippy::type_complexity)]
 
 use crate::{
-    config::{GameOptions, Keybinds, Persistent},
+    config::{GameOptions, Keybinds, Persistent, FONT_MULTIPLIERS, FONT_SIZES},
     input::{Bind, InputState},
     ui::*,
     GameState,
@@ -32,7 +32,7 @@ impl Plugin for MenuPlugin {
             )
             .add_systems(OnExit(GameState::Menu), exit_menu)
             .add_systems(
-                Update,
+                PreUpdate,
                 clean_menu.run_if(
                     in_state(GameState::Menu).and_then(
                         state_changed::<MenuState>()
@@ -134,7 +134,7 @@ fn handle_buttons(
         (&Interaction, &MenuButton, &Children, &mut BackgroundColor),
         Changed<Interaction>,
     >,
-    opts: Res<Persistent<GameOptions>>,
+    mut opts: ResMut<Persistent<GameOptions>>,
     mut keybinds: ResMut<Persistent<Keybinds>>,
 ) {
     for (inter, button, child, mut bg) in &mut buttons {
@@ -170,8 +170,30 @@ fn handle_buttons(
                                 .revert_to_default()
                                 .expect("Failed to reset keybinds");
                         }
-                        MenuButton::ChangeFont(_) => {
-                            // TODO: Change font size
+                        MenuButton::ChangeFont(name) => {
+                            opts.update(|opts| {
+                                assert_eq!(FONT_MULTIPLIERS.len(), opts.font_size.field_len());
+                                for (i, mult) in FONT_MULTIPLIERS
+                                    .iter()
+                                    .enumerate()
+                                    .take(opts.font_size.field_len())
+                                {
+                                    if name != opts.font_size.name_at(i).unwrap() {
+                                        continue;
+                                    }
+                                    let field = opts.font_size.field_at_mut(i).unwrap();
+                                    if let Some(value) = field.downcast_mut::<f32>() {
+                                        let j = FONT_SIZES
+                                            .iter()
+                                            .position(|size| (*size - *value / mult).abs() < 1.5)
+                                            .unwrap_or(0);
+
+                                        *value =
+                                            (FONT_SIZES[(j + 1) % FONT_SIZES.len()] * mult).round();
+                                    }
+                                }
+                            })
+                            .expect("Failed to change font size");
                         }
                         MenuButton::ChangeColor(_, _) => {
                             // TODO: Change color

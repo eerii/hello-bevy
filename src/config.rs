@@ -7,6 +7,9 @@ use crate::{input::Bind, GameState};
 
 pub use bevy_persistent::prelude::*;
 
+pub const FONT_MULTIPLIERS: [f32; 3] = [2.0, 1.0, 0.8];
+pub const FONT_SIZES: [f32; 5] = [16.0, 20.0, 24.0, 28.0, 32.0];
+
 // ······
 // Plugin
 // ······
@@ -37,9 +40,9 @@ pub struct FontSize {
 impl Default for FontSize {
     fn default() -> Self {
         Self {
-            title: 48.0,
-            text: 24.0,
-            button_text: 20.0,
+            title: FONT_SIZES[2] * FONT_MULTIPLIERS[0],
+            text: FONT_SIZES[2] * FONT_MULTIPLIERS[1],
+            button_text: FONT_SIZES[2] * FONT_MULTIPLIERS[2],
         }
     }
 }
