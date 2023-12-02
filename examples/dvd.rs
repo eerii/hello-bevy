@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::WindowResolution};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle, window::WindowResolution};
 use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
 use bevy_kira_audio::prelude::*;
 use bevy_persistent::Persistent;
@@ -7,6 +7,8 @@ use hello_bevy::{
     load::{GameAssets, SampleAssets},
     GamePlugin, GameState,
 };
+
+const SIZE: Vec2 = Vec2::new(600., 600.);
 
 fn main() {
     App::new()
@@ -17,7 +19,7 @@ fn main() {
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "DVD Screensaver".to_string(),
-                    resolution: WindowResolution::new(600., 600.),
+                    resolution: WindowResolution::new(SIZE.x, SIZE.y),
                     resizable: false,
                     canvas: Some("#bevy".to_string()),
                     prevent_default_event_handling: false,
@@ -86,6 +88,8 @@ fn init_sample(
     assets: Res<GameAssets>,
     opts: Res<Persistent<GameOptions>>,
     info: Option<Res<GameInfo>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     cmd.spawn((Camera2dBundle::default(), GameCamera));
 
@@ -95,6 +99,15 @@ fn init_sample(
     }
     cmd.insert_resource(GameInfo);
 
+    // Background
+    cmd.spawn(MaterialMesh2dBundle {
+        mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
+        transform: Transform::from_xyz(0., 0., -10.).with_scale(SIZE.extend(1.)),
+        material: materials.add(ColorMaterial::from(opts.color.darker)),
+        ..default()
+    });
+
+    // Sprites
     for velocity in [
         Vec2::new(300., 250.),
         Vec2::new(-150., 400.),
@@ -114,6 +127,7 @@ fn init_sample(
         ));
     }
 
+    // Counter text
     cmd.spawn((
         Text2dBundle {
             text: Text::from_section(
@@ -132,12 +146,10 @@ fn init_sample(
 
 fn update_sample(
     time: Res<Time>,
-    window: Query<&Window>,
     mut objects: Query<(Entity, &mut Transform, &mut Velocity, &Sprite)>,
     mut event_collision: EventWriter<CollisionEvent>,
 ) {
-    let window = window.single();
-    let win_bound = Rect::from_center_size(Vec2::ZERO, Vec2::new(window.width(), window.height()));
+    let win_bound = Rect::from_center_size(Vec2::ZERO, SIZE);
 
     for (entity, mut trans, mut vel, sprite) in objects.iter_mut() {
         let t = &mut trans.translation;

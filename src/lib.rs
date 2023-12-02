@@ -8,11 +8,7 @@ mod ui;
 
 use bevy::prelude::*;
 
-// TODO: Fixed screen size
-//          - For pixel art and arcade games
-//          - Fancy border
-//          - Upscaling
-//          - Window resize
+// TODO: Option for pixel perfect upscaling camera
 
 // Game state
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]

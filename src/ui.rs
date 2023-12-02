@@ -1,11 +1,14 @@
 use bevy::prelude::*;
 use bevy_persistent::Persistent;
 
-use crate::{config::GameOptions, load::GameAssets};
+use crate::{config::GameOptions, load::GameAssets, GameState};
 
 const MENU_WIDTH: Val = Val::Px(300.);
 const MENU_ITEM_HEIGHT: Val = Val::Px(40.);
 const MENU_ITEM_GAP: Val = Val::Px(10.);
+
+// TODO: Tweening and animation (Look into https://github.com/djeedai/bevy_tweening)
+// TODO: Rounded button corners (Requires #8973 to be merged in 0.13)
 
 // ······
 // Plugin
@@ -15,10 +18,12 @@ pub struct UIPlugin;
 
 impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(UIStyle::default()).add_systems(
-            PostUpdate,
-            change_style.run_if(resource_changed::<Persistent<GameOptions>>()),
-        );
+        app.insert_resource(UIStyle::default())
+            .add_systems(OnEnter(GameState::Loading), init_ui)
+            .add_systems(
+                PostUpdate,
+                change_style.run_if(resource_changed::<Persistent<GameOptions>>()),
+            );
     }
 }
 
@@ -28,19 +33,58 @@ impl Plugin for UIPlugin {
 
 #[derive(Resource, Default)]
 pub struct UIStyle {
-    pub title: TextStyle,
-    pub text: TextStyle,
-    pub button_text: TextStyle,
+    title: TextStyle,
+    text: TextStyle,
+    button_text: TextStyle,
 
-    pub button: Style,
-    pub button_bg: BackgroundColor,
+    button: Style,
+    button_bg: BackgroundColor,
 }
+
+// ··········
+// Components
+// ··········
+
+#[derive(Component)]
+pub struct UiCam;
+
+#[derive(Component)]
+pub struct UiNode;
 
 // ·······
 // Systems
 // ·······
 
-pub fn change_style(
+pub fn init_ui(mut cmd: Commands) {
+    cmd.spawn((
+        Camera2dBundle {
+            camera: Camera {
+                order: 10,
+                ..default()
+            },
+            ..default()
+        },
+        UiCam,
+    ));
+
+    cmd.spawn((
+        NodeBundle {
+            style: Style {
+                width: Val::Percent(100.),
+                height: Val::Percent(100.),
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                row_gap: Val::Px(12.),
+                ..default()
+            },
+            ..default()
+        },
+        UiNode,
+    ));
+}
+
+fn change_style(
     mut style: ResMut<UIStyle>,
     opts: Res<Persistent<GameOptions>>,
     assets: Res<GameAssets>,

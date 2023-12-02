@@ -40,7 +40,7 @@ fn init_music(
     match handles.ambient_music.clone() {
         Some(h) => {
             if let Some(inst) = instances.get_mut(h) {
-                inst.resume(Default::default());
+                inst.resume(default());
             }
         }
         None => {
@@ -59,7 +59,7 @@ fn init_music(
 fn pause_music(handles: Res<MusicHandles>, mut instances: ResMut<Assets<AudioInstance>>) {
     if let Some(handle) = handles.ambient_music.clone() {
         if let Some(inst) = instances.get_mut(handle) {
-            inst.pause(Default::default());
+            inst.pause(default());
         }
     }
 }

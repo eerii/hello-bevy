@@ -20,7 +20,7 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 
 ### how to use it ✨
 
-- use this template in a new project (the green button on the top right)
+- use this template in a new project (on github, a green button on the top right)
 - search for '[CHANGE]' and make the necessary adjustments
 - done c:
 
@@ -68,7 +68,7 @@ this is heavily based on [NiklasEi/bevy_game_template](https://github.com/Niklas
 i tried to be very intentional with all the plugins in this template. there is an amazing community that creates tons of useful tools, and some of them have become essential when making games with bevy:
 
 - [bevy_asset_loader](https://github.com/NiklasEi/bevy_asset_loader): easier asset handling with collections
-- [bevy_embedded_assets](https://github.com/vleue/bevy_embedded_assets): puts assets inside the binary*
+- [bevy_embedded_assets](https://github.com/vleue/bevy_embedded_assets): puts assets inside the binary [*]
 - [iyes_progress](https://github.com/IyesGames/iyes_progress): tracks progress (used for an accurate loading screen)
 - [bevy_kira_audio](https://github.com/NiklasEi/bevy_kira_audio): improved audio library with more features
 - [bevy-persistent](https://github.com/umut-sahin/bevy-persistent): save and load any resource on disk
@@ -78,7 +78,7 @@ there are also nice tools for debugging:
 - [bevy_mod_debugdump](https://github.com/jakobhellermann/bevy_mod_debugdump): creates system and rendering graphs to inspect dependencies
 - [bevy-inspector-egui](https://github.com/jakobhellermann/bevy-inspector-egui): imgui-like interface where you can see entities and components in real time (press I)
 
-* I have encountered issues with the new bevy asset v2 on itch.io, but embedding them into the build seems to work wonderfully
+[*] I have encountered issues with the new bevy asset v2 on itch.io, but embedding them into the build seems to work wonderfully
 
 ### license 📝
 

@@ -1,6 +1,6 @@
 #![allow(clippy::too_many_arguments)]
 
-use bevy::{prelude::*, window::WindowResolution};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle, window::WindowResolution};
 use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
 use bevy_persistent::Persistent;
 use hello_bevy::{
@@ -9,6 +9,16 @@ use hello_bevy::{
     load::GameAssets,
     GamePlugin, GameState,
 };
+
+const SIZE: Vec2 = Vec2::new(600., 600.);
+const INITIAL_VEL: Vec2 = Vec2::new(0., 250.);
+const GRAVITY: f32 = -10000.;
+const JUMP_VEL: f32 = 2000.;
+const MOVE_VEL: f32 = 700.;
+const BOUNCE_CUTOFF: f32 = 100.;
+const BOUNCE_FACTOR: f32 = 0.2;
+const MOVE_CUTOFF: f32 = 100.;
+const MOVE_FACTOR: f32 = 0.85;
 
 fn main() {
     App::new()
@@ -19,7 +29,7 @@ fn main() {
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
                     title: "Endless jump".to_string(),
-                    resolution: WindowResolution::new(600., 600.),
+                    resolution: WindowResolution::new(SIZE.x, SIZE.y),
                     resizable: false,
                     canvas: Some("#bevy".to_string()),
                     prevent_default_event_handling: false,
@@ -33,16 +43,6 @@ fn main() {
         // Run
         .run();
 }
-
-const LEVEL_SIZE: Vec2 = Vec2::new(600., 500.);
-const INITIAL_VEL: Vec2 = Vec2::new(0., 250.);
-const GRAVITY: f32 = -10000.;
-const JUMP_VEL: f32 = 2000.;
-const MOVE_VEL: f32 = 700.;
-const BOUNCE_CUTOFF: f32 = 100.;
-const BOUNCE_FACTOR: f32 = 0.1;
-const MOVE_CUTOFF: f32 = 100.;
-const MOVE_FACTOR: f32 = 0.85;
 
 // ······
 // Plugin
@@ -89,6 +89,8 @@ fn init_sample(
     assets: Res<GameAssets>,
     opts: Res<Persistent<GameOptions>>,
     info: Option<Res<GameInfo>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     cmd.spawn((Camera2dBundle::default(), GameCamera));
 
@@ -98,6 +100,15 @@ fn init_sample(
     }
     cmd.insert_resource(GameInfo);
 
+    // Background
+    cmd.spawn(MaterialMesh2dBundle {
+        mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
+        transform: Transform::from_xyz(0., 0., -10.).with_scale(SIZE.extend(1.)),
+        material: materials.add(ColorMaterial::from(opts.color.darker)),
+        ..default()
+    });
+
+    // Player
     cmd.spawn((
         SpriteBundle {
             texture: assets.bevy_icon.clone(),
@@ -113,6 +124,7 @@ fn init_sample(
         },
     ));
 
+    // Counter
     cmd.spawn((
         Text2dBundle {
             text: Text::from_section(
@@ -145,10 +157,10 @@ fn update_sample(
         let t = &mut trans.translation;
 
         // Gravity
-        if t.y > -LEVEL_SIZE.y * 0.5 {
+        if t.y > -SIZE.y * 0.4 {
             player.velocity.y += GRAVITY * time.delta_seconds();
         } else {
-            t.y = -LEVEL_SIZE.y * 0.5;
+            t.y = -SIZE.y * 0.4;
             if player.velocity.y.abs() > BOUNCE_CUTOFF {
                 player.velocity.y = player.velocity.y.abs() * BOUNCE_FACTOR;
             } else {
@@ -178,8 +190,8 @@ fn update_sample(
 
         // Move
         *t += player.velocity.extend(0.) * time.delta_seconds();
-        t.y = t.y.max(-LEVEL_SIZE.y * 0.5);
-        t.x = (t.x + LEVEL_SIZE.x * 0.5).rem_euclid(LEVEL_SIZE.x) - LEVEL_SIZE.x * 0.5;
+        t.y = t.y.max(-SIZE.y * 0.4);
+        t.x = (t.x + SIZE.x * 0.5).rem_euclid(SIZE.x) - SIZE.x * 0.5;
     }
 }
 

@@ -18,11 +18,7 @@ pub struct ConfigPlugin;
 
 impl Plugin for ConfigPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Loading), init_persistence)
-            .add_systems(
-                PostUpdate,
-                change_options.run_if(resource_changed::<Persistent<GameOptions>>()),
-            );
+        app.add_systems(OnEnter(GameState::Loading), init_persistence);
     }
 }
 
@@ -159,8 +155,4 @@ fn init_persistence(mut cmd: Commands) {
             .build()
             .expect("Failed to initialize keybinds"),
     );
-}
-
-fn change_options(mut cmd: Commands, options: Res<Persistent<GameOptions>>) {
-    cmd.insert_resource(ClearColor(options.color.darker));
 }

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-// TODO: Mouse and gamepad axis
+// TODO: Mouse movement and gamepad axis
 
 // ·····
 // Extra

@@ -13,9 +13,8 @@ pub struct DebugPlugin;
 // Only debug implementation
 #[cfg(debug_assertions)]
 mod only_in_debug {
-    use crate::{load::GameAssets, GameState};
+    use crate::{load::GameAssets, ui::*, GameState};
     use bevy::{
-        core_pipeline::clear_color::ClearColorConfig,
         diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
         ecs::schedule::ScheduleLabel,
         prelude::*,
@@ -67,37 +66,39 @@ mod only_in_debug {
     // Systems
     // ·······
 
-    fn init_fps(mut cmd: Commands, assets: Res<GameAssets>, query: Query<Entity, With<FpsText>>) {
-        if query.iter().next().is_some() {
+    fn init_fps(
+        mut cmd: Commands,
+        node: Query<Entity, With<UiNode>>,
+        assets: Res<GameAssets>,
+        fps: Query<Entity, With<FpsText>>,
+    ) {
+        if fps.iter().next().is_some() {
             return;
         }
 
-        cmd.spawn((Camera2dBundle {
-            camera_2d: Camera2d {
-                clear_color: ClearColorConfig::Custom(Color::WHITE),
-            },
-            camera: Camera {
-                order: -10,
-                ..default()
-            },
-            ..default()
-        },));
-
-        cmd.spawn((
-            TextBundle::from_sections([
-                TextSection::from_style(TextStyle {
-                    font: assets.font.clone(),
-                    font_size: 16.0,
-                    color: Color::WHITE,
-                }),
-                TextSection::from_style(TextStyle {
-                    font: assets.font.clone(),
-                    font_size: 16.0,
-                    color: Color::GOLD,
-                }),
-            ]),
-            FpsText,
-        ));
+        if let Ok(node) = node.get_single() {
+            if let Some(mut entity) = cmd.get_entity(node) {
+                entity.with_children(|parent| {
+                    parent.spawn((
+                        TextBundle::from_section(
+                            "",
+                            TextStyle {
+                                font: assets.font.clone(),
+                                font_size: 16.0,
+                                color: Color::WHITE,
+                            },
+                        )
+                        .with_style(Style {
+                            position_type: PositionType::Absolute,
+                            left: Val::Px(5.0),
+                            top: Val::Px(5.0),
+                            ..default()
+                        }),
+                        FpsText,
+                    ));
+                });
+            }
+        }
     }
 
     fn update_fps(diagnostics: Res<DiagnosticsStore>, mut text: Query<&mut Text, With<FpsText>>) {
@@ -107,11 +108,6 @@ mod only_in_debug {
                     t.sections[0].value = format!("FPS {value:.0}");
                 }
             }
-            /*if let Some(frame_time) = diagnostics.get(FrameTimeDiagnosticsPlugin::FRAME_TIME) {
-                if let Some(value) = frame_time.smoothed() {
-                    t.sections[1].value = format!(" ({value:.2}ms)");
-                }
-            }*/
         }
     }
 
@@ -161,7 +157,7 @@ mod only_in_debug {
 
                     let settings = Settings {
                         collapse_single_system_sets: true,
-                        ..Default::default()
+                        ..default()
                     };
                     let dot = schedule_graph_dot(schedule, world, &settings);
                     save_dot(dot, schedule_label(label));

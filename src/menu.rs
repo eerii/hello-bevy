@@ -10,9 +10,6 @@ use crate::{
 use bevy::prelude::*;
 use bevy::reflect::Struct;
 
-// TODO: Single UI camera (for debug fps as well)
-// TODO: Tweening and animation
-
 // ······
 // Plugin
 // ······
@@ -57,6 +54,7 @@ pub enum MenuState {
     Keybinds,
     Rebinding,
     Visual,
+    Exit,
 }
 
 // ·········
@@ -72,12 +70,6 @@ struct KeyBeingRebound(String);
 // ··········
 // Components
 // ··········
-
-#[derive(Component)]
-struct MenuCam;
-
-#[derive(Component)]
-struct MenuNode;
 
 #[derive(Component)]
 struct MenuText;
@@ -99,30 +91,17 @@ enum MenuButton {
 // Systems
 // ·······
 
-fn init_menu(mut cmd: Commands, opts: Res<Persistent<GameOptions>>, style: Res<UIStyle>) {
-    cmd.spawn((Camera2dBundle::default(), MenuCam));
-
-    let node = cmd
-        .spawn((
-            NodeBundle {
-                style: Style {
-                    width: Val::Percent(100.),
-                    height: Val::Percent(100.),
-                    flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    row_gap: Val::Px(12.),
-                    ..default()
-                },
-                background_color: opts.color.darker.into(),
-                ..default()
-            },
-            MenuNode,
-        ))
-        .id();
-
-    cmd.insert_resource(MenuStarting);
-    layout_main(cmd, node, &style);
+fn init_menu(
+    mut cmd: Commands,
+    style: Res<UIStyle>,
+    mut node: Query<(Entity, &mut BackgroundColor), With<UiNode>>,
+    opts: Res<Persistent<GameOptions>>,
+) {
+    if let Ok((node, mut bg)) = node.get_single_mut() {
+        cmd.insert_resource(MenuStarting);
+        *bg = opts.color.darker.into();
+        layout_main(cmd, node, &style);
+    }
 }
 
 fn handle_buttons(
@@ -196,7 +175,7 @@ fn handle_buttons(
                             .expect("Failed to change font size");
                         }
                         MenuButton::ChangeColor(_, _) => {
-                            // TODO: Change color
+                            // TODO: Change color (Needs either a color picker or an input field)
                         }
                     }
                 }
@@ -222,7 +201,7 @@ fn may_be_cleaned(mut cmd: Commands, menu_starting: Option<Res<MenuStarting>>) {
 fn clean_menu(
     mut cmd: Commands,
     state: Res<State<MenuState>>,
-    node: Query<Entity, With<MenuNode>>,
+    node: Query<Entity, With<UiNode>>,
     style: Res<UIStyle>,
     opts: Res<Persistent<GameOptions>>,
     keybinds: Res<Persistent<Keybinds>>,
@@ -249,6 +228,7 @@ fn clean_menu(
                     layout_rebinding(cmd, node, &style, &rebind_key)
                 }
                 MenuState::Visual => layout_visual(cmd, node, &style, &opts),
+                MenuState::Exit => {}
             }
         }
     }
@@ -256,13 +236,17 @@ fn clean_menu(
 
 fn exit_menu(
     mut cmd: Commands,
-    query: Query<Entity, Or<(With<MenuNode>, With<MenuCam>)>>,
-    mut menu_state: ResMut<NextState<MenuState>>,
+    mut next_state: ResMut<NextState<MenuState>>,
+    mut node: Query<(Entity, &mut BackgroundColor), With<UiNode>>,
 ) {
-    for entity in query.iter() {
-        cmd.entity(entity).despawn_recursive();
+    if let Ok((node, mut bg)) = node.get_single_mut() {
+        if let Some(mut entity) = cmd.get_entity(node) {
+            entity.despawn_descendants();
+        }
+        *bg = Color::rgba(0., 0., 0., 0.).into();
     }
-    menu_state.set(MenuState::Main);
+
+    next_state.set(MenuState::Exit);
 }
 
 fn return_to_menu(
@@ -279,10 +263,8 @@ fn return_to_menu(
 
     if input.just_pressed(&keybinds.pause).unwrap_or(false) {
         match *current_menu_state.get() {
-            MenuState::Settings => next_menu_state.set(MenuState::Main),
-            MenuState::Keybinds => next_menu_state.set(MenuState::Settings),
-            MenuState::Visual => next_menu_state.set(MenuState::Settings),
-            _ => {}
+            MenuState::Keybinds | MenuState::Visual => next_menu_state.set(MenuState::Settings),
+            _ => next_menu_state.set(MenuState::Main),
         }
         game_state.set(GameState::Menu);
     }
@@ -369,7 +351,7 @@ fn layout_options(mut cmd: Commands, node: Entity, style: &UIStyle) {
 fn layout_keybinds(mut cmd: Commands, node: Entity, style: &UIStyle, keybinds: &Keybinds) {
     if let Some(mut node) = cmd.get_entity(node) {
         node.with_children(|parent| {
-            UIText::new(style, "Options").with_title().add(parent);
+            UIText::new(style, "Keybinds").with_title().add(parent);
 
             // TODO: Scrollable section (Requires #8104 to be merged in 0.13)
 

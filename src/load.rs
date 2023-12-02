@@ -1,7 +1,7 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
 
-use crate::{config::GameOptions, GameState};
+use crate::{config::GameOptions, ui::*, GameState};
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
@@ -27,7 +27,7 @@ impl Plugin for LoadPlugin {
             .add_plugins((ProgressPlugin::new(GameState::Loading)
                 .continue_to(GameState::Menu)
                 .track_assets(),))
-            .add_systems(OnEnter(GameState::Loading), init_splash)
+            .add_systems(OnEnter(GameState::Loading), init_splash.after(init_ui))
             .add_systems(OnExit(GameState::Loading), clear_loading)
             .add_systems(
                 Update,
@@ -68,12 +68,6 @@ pub struct SampleAssets {
 // ··········
 
 #[derive(Component)]
-struct SplashCam;
-
-#[derive(Component)]
-struct SplashNode;
-
-#[derive(Component)]
 struct SplashTimer(Timer);
 
 #[derive(Component)]
@@ -83,39 +77,24 @@ struct ProgressBar;
 // Systems
 // ·······
 
-fn init_splash(mut cmd: Commands, assets: Res<GameAssets>) {
-    cmd.spawn((Camera2dBundle::default(), SplashCam));
-
-    // Main ui node for the loading screen
-    cmd.spawn((
-        NodeBundle {
-            style: Style {
-                width: Val::Percent(100.),
-                height: Val::Percent(100.),
-                flex_direction: FlexDirection::Column,
-                align_items: AlignItems::Center,
-                justify_content: JustifyContent::Center,
-                row_gap: Val::Px(12.),
-                ..default()
-            },
-            ..default()
-        },
-        SplashNode,
-    ))
-    .with_children(|parent| {
-        // Bevy pixel logo
-        parent.spawn(ImageBundle {
-            image: UiImage {
-                texture: assets.bevy_icon.clone(),
-                ..default()
-            },
-            style: Style {
-                width: Val::Px(128.),
-                ..default()
-            },
-            ..default()
-        });
-    });
+fn init_splash(mut cmd: Commands, node: Query<Entity, With<UiNode>>, assets: Res<GameAssets>) {
+    if let Ok(node) = node.get_single() {
+        if let Some(mut node) = cmd.get_entity(node) {
+            node.with_children(|parent| {
+                parent.spawn(ImageBundle {
+                    image: UiImage {
+                        texture: assets.bevy_icon.clone(),
+                        ..default()
+                    },
+                    style: Style {
+                        width: Val::Px(128.),
+                        ..default()
+                    },
+                    ..default()
+                });
+            });
+        }
+    }
 
     cmd.spawn(SplashTimer(Timer::from_seconds(
         SPLASH_TIME,
@@ -135,7 +114,7 @@ fn check_progress(
     progress: Option<Res<ProgressCounter>>,
     assets: Res<GameAssets>,
     timer: Query<&SplashTimer>,
-    node: Query<Entity, With<SplashNode>>,
+    node: Query<Entity, With<UiNode>>,
     opts: Res<Persistent<GameOptions>>,
     mut bar: Query<&mut Style, With<ProgressBar>>,
     mut last_progress: Local<(u32, u32)>,
@@ -157,59 +136,60 @@ fn check_progress(
     if let Ok(timer) = timer.get_single() {
         if timer.0.just_finished() {
             if let Ok(node) = node.get_single() {
-                cmd.entity(node).with_children(|parent| {
-                    // Loading text
-                    parent.spawn(TextBundle {
-                        text: Text::from_section(
-                            "Loading",
-                            TextStyle {
-                                font: assets.font.clone(),
-                                font_size: 48.,
-                                color: opts.color.mid,
-                            },
-                        ),
-                        ..default()
-                    });
-
-                    // Progress bar
-                    parent
-                        .spawn(NodeBundle {
-                            style: Style {
-                                width: Val::Percent(70.),
-                                height: Val::Px(32.),
-                                ..default()
-                            },
-                            background_color: opts.color.dark.into(),
+                if let Some(mut entity) = cmd.get_entity(node) {
+                    entity.with_children(|parent| {
+                        // Loading text
+                        parent.spawn(TextBundle {
+                            text: Text::from_section(
+                                "Loading",
+                                TextStyle {
+                                    font: assets.font.clone(),
+                                    font_size: 48.,
+                                    color: opts.color.mid,
+                                },
+                            ),
                             ..default()
-                        })
-                        .with_children(|parent| {
-                            parent.spawn((
-                                NodeBundle {
-                                    style: Style {
-                                        width: Val::Percent(
-                                            last_progress.0 as f32 / last_progress.1 as f32 * 100.,
-                                        ),
-                                        height: Val::Px(32.),
-                                        ..default()
-                                    },
-                                    background_color: opts.color.light.into(),
+                        });
+
+                        // Progress bar
+                        parent
+                            .spawn(NodeBundle {
+                                style: Style {
+                                    width: Val::Percent(70.),
+                                    height: Val::Px(32.),
                                     ..default()
                                 },
-                                ProgressBar,
-                            ));
-                        });
-                });
+                                background_color: opts.color.dark.into(),
+                                ..default()
+                            })
+                            .with_children(|parent| {
+                                parent.spawn((
+                                    NodeBundle {
+                                        style: Style {
+                                            width: Val::Percent(
+                                                last_progress.0 as f32 / last_progress.1 as f32
+                                                    * 100.,
+                                            ),
+                                            height: Val::Px(32.),
+                                            ..default()
+                                        },
+                                        background_color: opts.color.light.into(),
+                                        ..default()
+                                    },
+                                    ProgressBar,
+                                ));
+                            });
+                    });
+                }
             }
         }
     }
 }
 
-// Finish the loading and clear all resources
-fn clear_loading(
-    mut cmd: Commands,
-    splash_entities: Query<Entity, Or<(With<SplashCam>, With<SplashNode>, With<SplashTimer>)>>,
-) {
-    for entity in splash_entities.iter() {
-        cmd.entity(entity).despawn_recursive();
+fn clear_loading(mut cmd: Commands, node: Query<Entity, With<UiNode>>) {
+    if let Ok(node) = node.get_single() {
+        if let Some(mut entity) = cmd.get_entity(node) {
+            entity.despawn_descendants();
+        }
     }
 }
