@@ -5,7 +5,7 @@ use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
 use bevy_persistent::Persistent;
 use hello_bevy::{
     config::{GameOptions, Keybinds},
-    input::InputState,
+    input::Bind,
     load::GameAssets,
     GamePlugin, GameState,
 };
@@ -52,18 +52,14 @@ pub struct SampleGamePlugin;
 
 impl Plugin for SampleGamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Play), init_sample)
-            .add_systems(Update, update_sample.run_if(in_state(GameState::Play)))
-            .add_systems(OnExit(GameState::Play), pause_game);
+        app.add_systems(
+            OnEnter(GameState::Play),
+            (init_sample.run_if(run_once()), resume_game),
+        )
+        .add_systems(Update, update_sample.run_if(in_state(GameState::Play)))
+        .add_systems(OnExit(GameState::Play), pause_game);
     }
 }
-
-// ·········
-// Resources
-// ·········
-
-#[derive(Resource)]
-struct GameInfo;
 
 // ··········
 // Components
@@ -88,17 +84,11 @@ fn init_sample(
     mut cmd: Commands,
     assets: Res<GameAssets>,
     opts: Res<Persistent<GameOptions>>,
-    info: Option<Res<GameInfo>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
+    // Camera
     cmd.spawn((Camera2dBundle::default(), GameCamera));
-
-    if info.is_some() {
-        debug!("Game already initialized");
-        return;
-    }
-    cmd.insert_resource(GameInfo);
 
     // Background
     cmd.spawn(MaterialMesh2dBundle {
@@ -145,14 +135,9 @@ fn update_sample(
     time: Res<Time>,
     mut objects: Query<(&mut Player, &mut Transform)>,
     mut counter: Query<(&mut Text, &mut Counter)>,
-    keyboard: Res<Input<KeyCode>>,
-    mouse: Res<Input<MouseButton>>,
-    gamepads: Res<Gamepads>,
-    gamepad_buttons: Res<Input<GamepadButton>>,
+    input: Res<Input<Bind>>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
-    let input = InputState::new(&keyboard, &mouse, &gamepads, &gamepad_buttons);
-
     for (mut player, mut trans) in objects.iter_mut() {
         let t = &mut trans.translation;
 
@@ -169,7 +154,7 @@ fn update_sample(
         }
 
         // Jump
-        if input.just_pressed(&keybinds.jump).unwrap_or(false) {
+        if keybinds.jump.iter().any(|bind| input.just_pressed(*bind)) {
             player.velocity.y = JUMP_VEL;
 
             let (mut text, mut counter) = counter.single_mut();
@@ -178,9 +163,9 @@ fn update_sample(
         }
 
         // Move
-        if input.pressed(&keybinds.left).unwrap_or(false) {
+        if keybinds.left.iter().any(|bind| input.pressed(*bind)) {
             player.velocity.x = -MOVE_VEL;
-        } else if input.pressed(&keybinds.right).unwrap_or(false) {
+        } else if keybinds.right.iter().any(|bind| input.pressed(*bind)) {
             player.velocity.x = MOVE_VEL;
         } else if player.velocity.x.abs() > MOVE_CUTOFF {
             player.velocity.x *= MOVE_FACTOR;
@@ -188,15 +173,21 @@ fn update_sample(
             player.velocity.x = 0.;
         }
 
-        // Move
+        // Update position based on velocity and add bounds
         *t += player.velocity.extend(0.) * time.delta_seconds();
         t.y = t.y.max(-SIZE.y * 0.4);
         t.x = (t.x + SIZE.x * 0.5).rem_euclid(SIZE.x) - SIZE.x * 0.5;
     }
 }
 
-fn pause_game(mut cmd: Commands, query: Query<Entity, With<GameCamera>>) {
-    for entity in query.iter() {
-        cmd.entity(entity).despawn_recursive();
+fn resume_game(mut cam: Query<&mut Camera, With<GameCamera>>) {
+    if let Ok(mut cam) = cam.get_single_mut() {
+        cam.is_active = true;
+    }
+}
+
+fn pause_game(mut cam: Query<&mut Camera, With<GameCamera>>) {
+    if let Ok(mut cam) = cam.get_single_mut() {
+        cam.is_active = false;
     }
 }

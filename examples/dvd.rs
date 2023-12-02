@@ -43,7 +43,10 @@ pub struct SampleGamePlugin;
 impl Plugin for SampleGamePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<CollisionEvent>()
-            .add_systems(OnEnter(GameState::Play), init_sample)
+            .add_systems(
+                OnEnter(GameState::Play),
+                (init_sample.run_if(run_once()), resume_game),
+            )
             .add_systems(
                 Update,
                 (update_sample, on_collision).run_if(in_state(GameState::Play)),
@@ -51,13 +54,6 @@ impl Plugin for SampleGamePlugin {
             .add_systems(OnExit(GameState::Play), pause_game);
     }
 }
-
-// ·········
-// Resources
-// ·········
-
-#[derive(Resource)]
-struct GameInfo;
 
 // ··········
 // Components
@@ -87,17 +83,11 @@ fn init_sample(
     mut cmd: Commands,
     assets: Res<GameAssets>,
     opts: Res<Persistent<GameOptions>>,
-    info: Option<Res<GameInfo>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
+    // Camera
     cmd.spawn((Camera2dBundle::default(), GameCamera));
-
-    if info.is_some() {
-        debug!("Game already initialized");
-        return;
-    }
-    cmd.insert_resource(GameInfo);
 
     // Background
     cmd.spawn(MaterialMesh2dBundle {
@@ -152,13 +142,17 @@ fn update_sample(
     let win_bound = Rect::from_center_size(Vec2::ZERO, SIZE);
 
     for (entity, mut trans, mut vel, sprite) in objects.iter_mut() {
+        // Update position based on velocity
         let t = &mut trans.translation;
         *t += vel.0.extend(0.) * time.delta_seconds();
+
+        // Calculate the sprite bound
         let obj_bound = Rect::from_center_size(
             Vec2::new(t.x, t.y),
-            sprite.custom_size.expect("Sprite has a custom size"),
+            sprite.custom_size.expect("Sprite needs a custom size"),
         );
 
+        // Calculate the interection with the level borders and send a collision event
         let intersection = win_bound.intersect(obj_bound).size();
         if intersection.x < obj_bound.width() {
             vel.0.x *= -1.;
@@ -182,6 +176,7 @@ fn on_collision(
 ) {
     let (mut text, mut counter) = counter.single_mut();
 
+    // On each collision, increase the counter, change the spirte color and play audio
     for CollisionEvent(entity) in event_collision.read() {
         counter.0 += 1;
         text.sections[0].value = counter.0.to_string();
@@ -194,12 +189,22 @@ fn on_collision(
     }
 }
 
-fn random_color() -> Color {
-    Color::hsl(rand::random::<f32>() * 360., 0.8, 0.8)
+fn resume_game(mut cam: Query<&mut Camera, With<GameCamera>>) {
+    if let Ok(mut cam) = cam.get_single_mut() {
+        cam.is_active = true;
+    }
 }
 
-fn pause_game(mut cmd: Commands, query: Query<Entity, With<GameCamera>>) {
-    for entity in query.iter() {
-        cmd.entity(entity).despawn_recursive();
+fn pause_game(mut cam: Query<&mut Camera, With<GameCamera>>) {
+    if let Ok(mut cam) = cam.get_single_mut() {
+        cam.is_active = false;
     }
+}
+
+// ·····
+// Extra
+// ·····
+
+fn random_color() -> Color {
+    Color::hsl(rand::random::<f32>() * 360., 0.8, 0.8)
 }

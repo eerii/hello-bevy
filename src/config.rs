@@ -82,6 +82,15 @@ pub struct Keybinds {
     pub pause: Vec<Bind>,
 }
 
+impl Keybinds {
+    pub fn all(&self) -> Vec<&Bind> {
+        self.iter_fields()
+            .filter_map(|f| f.downcast_ref::<Vec<Bind>>())
+            .flatten()
+            .collect()
+    }
+}
+
 impl Default for Keybinds {
     fn default() -> Self {
         Self {

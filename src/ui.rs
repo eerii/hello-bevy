@@ -235,7 +235,7 @@ pub fn snake_to_upper(text: &str) -> String {
         .enumerate()
         .map(|(i, c)| {
             if i == 0 {
-                c.to_uppercase().next().unwrap()
+                c.to_uppercase().next().unwrap_or(c)
             } else if c == '_' {
                 ' '
             } else {

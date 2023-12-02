@@ -29,6 +29,7 @@ impl Plugin for GamePlugin {
             ui::UIPlugin,
             menu::MenuPlugin,
             config::ConfigPlugin,
+            input::InputPlugin,
             audio::AudioPlugin,
         ));
 

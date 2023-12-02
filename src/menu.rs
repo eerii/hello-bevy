@@ -3,7 +3,7 @@
 
 use crate::{
     config::{GameOptions, Keybinds, Persistent, FONT_MULTIPLIERS, FONT_SIZES},
-    input::{Bind, InputState},
+    input::Bind,
     ui::*,
     GameState,
 };
@@ -147,7 +147,7 @@ fn handle_buttons(
                         MenuButton::ResetKeybinds => {
                             keybinds
                                 .revert_to_default()
-                                .expect("Failed to reset keybinds");
+                                .unwrap_or_else(|e| error!("Failed to reset keybinds: {}", e));
                         }
                         MenuButton::ChangeFont(name) => {
                             opts.update(|opts| {
@@ -172,7 +172,7 @@ fn handle_buttons(
                                     }
                                 }
                             })
-                            .expect("Failed to change font size");
+                            .unwrap_or_else(|e| error!("Failed to change font size: {}", e));
                         }
                         MenuButton::ChangeColor(_, _) => {
                             // TODO: Change color (Needs either a color picker or an input field)
@@ -253,15 +253,10 @@ fn return_to_menu(
     mut game_state: ResMut<NextState<GameState>>,
     current_menu_state: Res<State<MenuState>>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
-    keyboard: Res<Input<KeyCode>>,
-    mouse: Res<Input<MouseButton>>,
-    gamepads: Res<Gamepads>,
-    gamepad_buttons: Res<Input<GamepadButton>>,
+    input: Res<Input<Bind>>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
-    let input = InputState::new(&keyboard, &mouse, &gamepads, &gamepad_buttons);
-
-    if input.just_pressed(&keybinds.pause).unwrap_or(false) {
+    if keybinds.pause.iter().any(|bind| input.just_pressed(*bind)) {
         match *current_menu_state.get() {
             MenuState::Keybinds | MenuState::Visual => next_menu_state.set(MenuState::Settings),
             _ => next_menu_state.set(MenuState::Main),
@@ -312,7 +307,7 @@ fn remap_keybind(
                         }
                     }
                 })
-                .expect("Failed to remap key bindings");
+                .unwrap_or_else(|e| error!("Failed to remap keybind: {}", e));
 
             cmd.remove_resource::<KeyBeingRebound>();
             menu_state.set(MenuState::Keybinds);

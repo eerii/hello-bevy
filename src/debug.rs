@@ -179,11 +179,11 @@ mod only_in_debug {
 
         let graph_dir = Path::new(".data").join("graphs");
         if !graph_dir.exists() {
-            std::fs::create_dir(&graph_dir).expect("Failed to create graph directory");
+            std::fs::create_dir_all(&graph_dir).expect("Failed to create graph directory");
         }
 
         std::fs::write(graph_dir.join(format!("{}.dot", name)), dot)
-            .expect("Failed to write graph");
+            .unwrap_or_else(|e| warn!("Failed to save graph: {}", e));
 
         if let Err(e) = std::process::Command::new("dot")
             .arg("-Tsvg")
