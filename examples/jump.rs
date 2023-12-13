@@ -1,9 +1,18 @@
 #![allow(clippy::too_many_arguments)]
 
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
-
+use bevy::{
+    prelude::*,
+    sprite::MaterialMesh2dBundle,
+};
 use bevy_persistent::Persistent;
-use hello_bevy::{GameAssets, GameOptions, GamePlugin, GameState, Keybind, Keybinds};
+use hello_bevy::{
+    GameAssets,
+    GameOptions,
+    GamePlugin,
+    GameState,
+    Keybind,
+    Keybinds,
+};
 
 const SIZE: Vec2 = Vec2::new(600., 600.);
 const INITIAL_VEL: Vec2 = Vec2::new(0., 250.);
@@ -15,9 +24,7 @@ const BOUNCE_FACTOR: f32 = 0.2;
 const MOVE_CUTOFF: f32 = 100.;
 const MOVE_FACTOR: f32 = 0.85;
 
-fn main() {
-    App::new().add_plugins((GamePlugin, SampleGamePlugin)).run();
-}
+fn main() { App::new().add_plugins((GamePlugin, SampleGamePlugin)).run(); }
 
 // ······
 // Plugin
@@ -29,9 +36,15 @@ impl Plugin for SampleGamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             OnEnter(GameState::Play),
-            (init_sample.run_if(run_once()), resume_game),
+            (
+                init_sample.run_if(run_once()),
+                resume_game,
+            ),
         )
-        .add_systems(Update, update_sample.run_if(in_state(GameState::Play)))
+        .add_systems(
+            Update,
+            update_sample.run_if(in_state(GameState::Play)),
+        )
         .add_systems(OnExit(GameState::Play), pause_game);
     }
 }
@@ -92,14 +105,11 @@ fn init_sample(
     // Counter
     cmd.spawn((
         Text2dBundle {
-            text: Text::from_section(
-                "0",
-                TextStyle {
-                    font: assets.font.clone(),
-                    font_size: 192.,
-                    color: opts.color.mid,
-                },
-            ),
+            text: Text::from_section("0", TextStyle {
+                font: assets.font.clone(),
+                font_size: 192.,
+                color: opts.color.mid,
+            }),
             ..default()
         },
         Counter(0),

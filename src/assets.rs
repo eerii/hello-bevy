@@ -1,12 +1,17 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
 
-use crate::{ui::*, GameOptions, GameState};
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
 use bevy_persistent::Persistent;
 use iyes_progress::prelude::*;
+
+use crate::{
+    ui::*,
+    GameOptions,
+    GameState,
+};
 
 #[cfg(debug_assertions)]
 const SPLASH_TIME: f32 = 0.1;
@@ -27,11 +32,20 @@ impl Plugin for AssetLoaderPlugin {
             .add_plugins((ProgressPlugin::new(GameState::Loading)
                 .continue_to(GameState::Menu)
                 .track_assets(),))
-            .add_systems(Update, init_splash.run_if(in_state(GameState::Loading)))
-            .add_systems(OnExit(GameState::Loading), clear_loading)
             .add_systems(
                 Update,
-                (check_splash_finished.track_progress(), check_progress)
+                init_splash.run_if(in_state(GameState::Loading)),
+            )
+            .add_systems(
+                OnExit(GameState::Loading),
+                clear_loading,
+            )
+            .add_systems(
+                Update,
+                (
+                    check_splash_finished.track_progress(),
+                    check_progress,
+                )
                     .run_if(in_state(GameState::Loading))
                     .after(LoadingStateSet(GameState::Loading)),
             );
@@ -136,7 +150,10 @@ fn check_progress(
         }
 
         if progress.done > last_progress.0 {
-            info!("Loading progress: {}/{}", progress.done, progress.total);
+            info!(
+                "Loading progress: {}/{}",
+                progress.done, progress.total
+            );
             *last_progress = (progress.done, progress.total);
             if let Ok(mut bar) = bar.get_single_mut() {
                 bar.width = Val::Percent(progress.done as f32 / progress.total as f32 * 100.);
@@ -151,14 +168,11 @@ fn check_progress(
                     entity.with_children(|parent| {
                         // Loading text
                         parent.spawn(TextBundle {
-                            text: Text::from_section(
-                                "Loading",
-                                TextStyle {
-                                    font: assets.font.clone(),
-                                    font_size: 48.,
-                                    color: opts.color.mid,
-                                },
-                            ),
+                            text: Text::from_section("Loading", TextStyle {
+                                font: assets.font.clone(),
+                                font_size: 48.,
+                                color: opts.color.mid,
+                            }),
                             ..default()
                         });
 

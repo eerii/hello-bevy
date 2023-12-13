@@ -1,9 +1,19 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
 
-use crate::{ui::*, GameOptions, GameState, Keybind, Keybinds};
-use bevy::{prelude::*, reflect::Struct};
+use bevy::{
+    prelude::*,
+    reflect::Struct,
+};
 use bevy_persistent::Persistent;
+
+use crate::{
+    ui::*,
+    GameOptions,
+    GameState,
+    Keybind,
+    Keybinds,
+};
 
 // ······
 // Plugin
@@ -28,7 +38,9 @@ impl Plugin for MenuPlugin {
                 clean_menu.run_if(
                     in_state(GameState::Menu).and_then(
                         state_changed::<MenuState>()
-                            .or_else(resource_changed::<Persistent<GameOptions>>())
+                            .or_else(resource_changed::<
+                                Persistent<GameOptions>,
+                            >())
                             .or_else(resource_changed::<Persistent<Keybinds>>()),
                     ),
                 ),
@@ -105,7 +117,12 @@ fn handle_buttons(
     mut menu_state: ResMut<NextState<MenuState>>,
     mut text: Query<&mut Text>,
     mut buttons: Query<
-        (&Interaction, &MenuButton, &Children, &mut BackgroundColor),
+        (
+            &Interaction,
+            &MenuButton,
+            &Children,
+            &mut BackgroundColor,
+        ),
         Changed<Interaction>,
     >,
     mut opts: ResMut<Persistent<GameOptions>>,
@@ -122,31 +139,34 @@ fn handle_buttons(
                     match button {
                         MenuButton::Play => {
                             game_state.set(GameState::Play);
-                        }
+                        },
                         MenuButton::GoMain => {
                             menu_state.set(MenuState::Main);
-                        }
+                        },
                         MenuButton::GoSettings => {
                             menu_state.set(MenuState::Settings);
-                        }
+                        },
                         MenuButton::GoKeybinds => {
                             menu_state.set(MenuState::Keybinds);
-                        }
+                        },
                         MenuButton::GoVisual => {
                             menu_state.set(MenuState::Visual);
-                        }
+                        },
                         MenuButton::RemapKeybind(key) => {
                             menu_state.set(MenuState::Rebinding);
                             cmd.insert_resource(KeyBeingRebound(key.clone()));
-                        }
+                        },
                         MenuButton::ResetKeybinds => {
                             keybinds
                                 .revert_to_default()
                                 .unwrap_or_else(|e| error!("Failed to reset keybinds: {}", e));
-                        }
+                        },
                         MenuButton::ChangeFont(name) => {
                             opts.update(|opts| {
-                                assert_eq!(FONT_MULTIPLIERS.len(), opts.font_size.field_len());
+                                assert_eq!(
+                                    FONT_MULTIPLIERS.len(),
+                                    opts.font_size.field_len()
+                                );
                                 for (i, mult) in FONT_MULTIPLIERS
                                     .iter()
                                     .enumerate()
@@ -168,20 +188,20 @@ fn handle_buttons(
                                 }
                             })
                             .unwrap_or_else(|e| error!("Failed to change font size: {}", e));
-                        }
-                        MenuButton::ChangeColor(_, _) => {
+                        },
+                        MenuButton::ChangeColor(..) => {
                             // TODO: Change color (Needs either a color picker or an input field)
-                        }
+                        },
                     }
-                }
+                },
                 Interaction::Hovered => {
                     bg.0 = opts.color.mid;
                     text.sections[0].style.color = opts.color.darker;
-                }
+                },
                 Interaction::None => {
                     bg.0 = opts.color.light;
                     text.sections[0].style.color = opts.color.dark;
-                }
+                },
             }
         }
     }
@@ -221,9 +241,9 @@ fn clean_menu(
                         None => "none".to_string(),
                     };
                     layout_rebinding(cmd, node, &style, &rebind_key)
-                }
+                },
                 MenuState::Visual => layout_visual(cmd, node, &style, &opts),
-                MenuState::Exit => {}
+                MenuState::Exit => {},
             }
         }
     }
@@ -281,7 +301,10 @@ fn remap_keybind(
         }
 
         if let Some(bind) = bind {
-            info!("Remapping {} to {:?}", rebind_key.0, bind);
+            info!(
+                "Remapping {} to {:?}",
+                rebind_key.0, bind
+            );
             keybinds
                 .update(|keybinds| {
                     let len = keybinds.field_len();
@@ -320,7 +343,12 @@ fn layout_main(mut cmd: Commands, node: Entity, style: &UIStyle) {
             UIText::new(style, "Hello Bevy").with_title().add(parent);
 
             UIButton::new(style, "Play", MenuButton::Play).add(parent);
-            UIButton::new(style, "Settings", MenuButton::GoSettings).add(parent);
+            UIButton::new(
+                style,
+                "Settings",
+                MenuButton::GoSettings,
+            )
+            .add(parent);
         });
     }
 }
@@ -330,7 +358,12 @@ fn layout_options(mut cmd: Commands, node: Entity, style: &UIStyle) {
         node.with_children(|parent| {
             UIText::new(style, "Settings").with_title().add(parent);
 
-            UIButton::new(style, "Keybinds", MenuButton::GoKeybinds).add(parent);
+            UIButton::new(
+                style,
+                "Keybinds",
+                MenuButton::GoKeybinds,
+            )
+            .add(parent);
             UIButton::new(style, "Visual", MenuButton::GoVisual).add(parent);
 
             UIButton::new(style, "Back", MenuButton::GoMain).add(parent);
@@ -367,7 +400,12 @@ fn layout_keybinds(mut cmd: Commands, node: Entity, style: &UIStyle, keybinds: &
                 }
             }
 
-            UIButton::new(style, "Reset", MenuButton::ResetKeybinds).add(parent);
+            UIButton::new(
+                style,
+                "Reset",
+                MenuButton::ResetKeybinds,
+            )
+            .add(parent);
 
             UIButton::new(style, "Back", MenuButton::GoSettings).add(parent);
         });
@@ -379,7 +417,10 @@ fn layout_rebinding(mut cmd: Commands, node: Entity, style: &UIStyle, key: &str)
         node.with_children(|parent| {
             UIText::new(
                 style,
-                &format!("Press a key or button for {}", snake_to_upper(key)),
+                &format!(
+                    "Press a key or button for {}",
+                    snake_to_upper(key)
+                ),
             )
             .add(parent);
 
@@ -411,7 +452,10 @@ fn layout_visual(mut cmd: Commands, node: Entity, style: &UIStyle, opts: &GameOp
             }
 
             for (i, value) in opts.color.iter_fields().enumerate() {
-                let field_name = format!("color_{}", opts.color.name_at(i).unwrap());
+                let field_name = format!(
+                    "color_{}",
+                    opts.color.name_at(i).unwrap()
+                );
                 if let Some(value) = value.downcast_ref::<Color>() {
                     UIOption::new(style, &field_name).add(parent, |row| {
                         UIButton::new(

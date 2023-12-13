@@ -1,14 +1,20 @@
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
-
+use bevy::{
+    prelude::*,
+    sprite::MaterialMesh2dBundle,
+};
 use bevy_kira_audio::prelude::*;
 use bevy_persistent::Persistent;
-use hello_bevy::{ExampleAssets, GameAssets, GameOptions, GamePlugin, GameState};
+use hello_bevy::{
+    ExampleAssets,
+    GameAssets,
+    GameOptions,
+    GamePlugin,
+    GameState,
+};
 
 const SIZE: Vec2 = Vec2::new(600., 600.);
 
-fn main() {
-    App::new().add_plugins((GamePlugin, SampleGamePlugin)).run();
-}
+fn main() { App::new().add_plugins((GamePlugin, SampleGamePlugin)).run(); }
 
 // ······
 // Plugin
@@ -21,7 +27,10 @@ impl Plugin for SampleGamePlugin {
         app.add_event::<CollisionEvent>()
             .add_systems(
                 OnEnter(GameState::Play),
-                (init_sample.run_if(run_once()), resume_game),
+                (
+                    init_sample.run_if(run_once()),
+                    resume_game,
+                ),
             )
             .add_systems(
                 Update,
@@ -96,14 +105,11 @@ fn init_sample(
     // Counter text
     cmd.spawn((
         Text2dBundle {
-            text: Text::from_section(
-                "0",
-                TextStyle {
-                    font: assets.font.clone(),
-                    font_size: 192.,
-                    color: opts.color.mid,
-                },
-            ),
+            text: Text::from_section("0", TextStyle {
+                font: assets.font.clone(),
+                font_size: 192.,
+                color: opts.color.mid,
+            }),
             ..default()
         },
         Counter(0),
@@ -112,7 +118,12 @@ fn init_sample(
 
 fn update_sample(
     time: Res<Time>,
-    mut objects: Query<(Entity, &mut Transform, &mut Velocity, &Sprite)>,
+    mut objects: Query<(
+        Entity,
+        &mut Transform,
+        &mut Velocity,
+        &Sprite,
+    )>,
     mut event_collision: EventWriter<CollisionEvent>,
 ) {
     let win_bound = Rect::from_center_size(Vec2::ZERO, SIZE);
@@ -181,6 +192,4 @@ fn pause_game(mut cam: Query<&mut Camera, With<GameCamera>>) {
 // Extra
 // ·····
 
-fn random_color() -> Color {
-    Color::hsl(rand::random::<f32>() * 360., 0.8, 0.8)
-}
+fn random_color() -> Color { Color::hsl(rand::random::<f32>() * 360., 0.8, 0.8) }

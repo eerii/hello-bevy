@@ -5,19 +5,28 @@ mod debug;
 mod input;
 mod ui;
 
-use bevy::{asset::AssetMetaCheck, prelude::*, window::WindowResolution};
+use bevy::{
+    asset::AssetMetaCheck,
+    prelude::*,
+    window::WindowResolution,
+};
 
 // Exports for examples
 pub use crate::{
-    assets::{ExampleAssets, GameAssets},
-    data::{GameOptions, Keybinds},
+    assets::{
+        ExampleAssets,
+        GameAssets,
+    },
+    data::{
+        GameOptions,
+        Keybinds,
+    },
     input::Keybind,
 };
 
 // TODO: Port improvements from the game jam
 // TODO: Add compilation guards for extra features (such as pixel art or resizable)
 // TODO: Option for pixel perfect upscaling camera
-// TODO: Rust format config
 
 // Game state
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -39,7 +48,10 @@ impl Plugin for GamePlugin {
         // Release only plugins (embedded assets)
         #[cfg(not(debug_assertions))]
         {
-            use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
+            use bevy_embedded_assets::{
+                EmbeddedAssetPlugin,
+                PluginMode,
+            };
             app.add_plugins(EmbeddedAssetPlugin {
                 mode: PluginMode::ReplaceDefault,
             });

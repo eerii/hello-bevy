@@ -1,15 +1,20 @@
 use std::path::Path;
 
 use bevy::prelude::*;
-use serde::{Deserialize, Serialize};
+pub use bevy_persistent::prelude::*;
+use serde::{
+    Deserialize,
+    Serialize,
+};
 
 use crate::{
     input::Keybind,
-    ui::{FONT_MULTIPLIERS, FONT_SIZES},
+    ui::{
+        FONT_MULTIPLIERS,
+        FONT_SIZES,
+    },
     GameState,
 };
-
-pub use bevy_persistent::prelude::*;
 
 // ······
 // Plugin
@@ -19,7 +24,10 @@ pub struct DataPlugin;
 
 impl Plugin for DataPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Loading), init_persistence);
+        app.add_systems(
+            OnEnter(GameState::Loading),
+            init_persistence,
+        );
     }
 }
 
@@ -55,9 +63,21 @@ pub struct ColorPalette {
 impl Default for ColorPalette {
     fn default() -> Self {
         Self {
-            light: Color::rgb(245.0 / 255.0, 237.0 / 255.0, 200.0 / 255.0),
-            mid: Color::rgb(69.0 / 255.0, 173.0 / 255.0, 118.0 / 255.0),
-            dark: Color::rgb(43.0 / 255.0, 115.0 / 255.0, 77.0 / 255.0),
+            light: Color::rgb(
+                245.0 / 255.0,
+                237.0 / 255.0,
+                200.0 / 255.0,
+            ),
+            mid: Color::rgb(
+                69.0 / 255.0,
+                173.0 / 255.0,
+                118.0 / 255.0,
+            ),
+            dark: Color::rgb(
+                43.0 / 255.0,
+                115.0 / 255.0,
+                77.0 / 255.0,
+            ),
             darker: Color::rgb(55.0 / 255.0, 84.0 / 255.0, 70.0 / 255.0),
         }
     }

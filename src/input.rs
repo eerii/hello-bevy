@@ -1,11 +1,17 @@
 use bevy::{
     input::{
-        gamepad::GamepadButtonInput, keyboard::KeyboardInput, mouse::MouseButtonInput, ButtonState,
+        gamepad::GamepadButtonInput,
+        keyboard::KeyboardInput,
+        mouse::MouseButtonInput,
+        ButtonState,
     },
     prelude::*,
 };
 use bevy_persistent::Persistent;
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 
 use crate::Keybinds;
 
@@ -116,6 +122,4 @@ fn handle_input_gamepad(
     }
 }
 
-fn clear_input(mut input: ResMut<Input<Keybind>>) {
-    input.clear();
-}
+fn clear_input(mut input: ResMut<Input<Keybind>>) { input.clear(); }

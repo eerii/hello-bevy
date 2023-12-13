@@ -3,7 +3,11 @@ mod menu;
 use bevy::prelude::*;
 use bevy_persistent::Persistent;
 
-use crate::{GameAssets, GameOptions, GameState};
+use crate::{
+    GameAssets,
+    GameOptions,
+    GameState,
+};
 
 const MENU_WIDTH: Val = Val::Px(300.);
 const MENU_ITEM_HEIGHT: Val = Val::Px(40.);
@@ -27,7 +31,9 @@ impl Plugin for UIPlugin {
             .add_systems(OnEnter(GameState::Loading), init_ui)
             .add_systems(
                 PostUpdate,
-                change_style.run_if(resource_changed::<Persistent<GameOptions>>()),
+                change_style.run_if(resource_changed::<
+                    Persistent<GameOptions>,
+                >()),
             )
             .add_plugins(menu::MenuPlugin);
     }
@@ -154,9 +160,7 @@ impl<'a> UIText<'a> {
         self
     }
 
-    fn add(self, parent: &mut ChildBuilder) {
-        parent.spawn(self.text);
-    }
+    fn add(self, parent: &mut ChildBuilder) { parent.spawn(self.text); }
 }
 
 // Button

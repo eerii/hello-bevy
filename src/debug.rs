@@ -13,13 +13,21 @@ pub struct DebugPlugin;
 // Only debug implementation
 #[cfg(debug_assertions)]
 mod only_in_debug {
-    use crate::{ui::*, GameAssets, GameState};
     use bevy::{
-        diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+        diagnostic::{
+            DiagnosticsStore,
+            FrameTimeDiagnosticsPlugin,
+        },
         ecs::schedule::ScheduleLabel,
         prelude::*,
     };
     use bevy_inspector_egui::quick::WorldInspectorPlugin;
+
+    use crate::{
+        ui::*,
+        GameAssets,
+        GameState,
+    };
 
     // ······
     // Plugin
@@ -80,14 +88,11 @@ mod only_in_debug {
             if let Some(mut entity) = cmd.get_entity(node) {
                 entity.with_children(|parent| {
                     parent.spawn((
-                        TextBundle::from_section(
-                            "",
-                            TextStyle {
-                                font: assets.font.clone(),
-                                font_size: 16.0,
-                                color: Color::WHITE,
-                            },
-                        )
+                        TextBundle::from_section("", TextStyle {
+                            font: assets.font.clone(),
+                            font_size: 16.0,
+                            color: Color::WHITE,
+                        })
                         .with_style(Style {
                             position_type: PositionType::Absolute,
                             left: Val::Px(5.0),
@@ -169,9 +174,7 @@ mod only_in_debug {
     pub fn save_schedule(_: &mut App) {}
 
     #[allow(dead_code)]
-    fn schedule_label(schedule: &dyn ScheduleLabel) -> String {
-        format!("{:?}", schedule)
-    }
+    fn schedule_label(schedule: &dyn ScheduleLabel) -> String { format!("{:?}", schedule) }
 
     #[allow(dead_code)]
     fn save_dot(dot: String, name: String) {
@@ -182,8 +185,11 @@ mod only_in_debug {
             std::fs::create_dir_all(&graph_dir).expect("Failed to create graph directory");
         }
 
-        std::fs::write(graph_dir.join(format!("{}.dot", name)), dot)
-            .unwrap_or_else(|e| warn!("Failed to save graph: {}", e));
+        std::fs::write(
+            graph_dir.join(format!("{}.dot", name)),
+            dot,
+        )
+        .unwrap_or_else(|e| warn!("Failed to save graph: {}", e));
 
         if let Err(e) = std::process::Command::new("dot")
             .arg("-Tsvg")
