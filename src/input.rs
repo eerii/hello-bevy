@@ -72,15 +72,15 @@ fn handle_input_keyboard(
     mut keyboard: EventReader<KeyboardInput>,
 ) {
     for event in keyboard.read() {
-        if let Some(event_key) = event.key_code {
-            if let Some(keybind) = keybinds.all().iter().find(|bind| match bind {
-                Keybind::Key(key) => key == &event_key,
-                _ => false,
-            }) {
-                match event.state {
-                    ButtonState::Pressed => input.press(**keybind),
-                    ButtonState::Released => input.release(**keybind),
-                }
+        let Some(event_key) = event.key_code else { continue };
+
+        if let Some(keybind) = keybinds.all().iter().find(|bind| match bind {
+            Keybind::Key(key) => key == &event_key,
+            _ => false,
+        }) {
+            match event.state {
+                ButtonState::Pressed => input.press(**keybind),
+                ButtonState::Released => input.release(**keybind),
             }
         }
     }

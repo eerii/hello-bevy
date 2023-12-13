@@ -4,6 +4,7 @@ mod data;
 mod debug;
 mod input;
 mod ui;
+mod utils;
 
 use bevy::{
     asset::AssetMetaCheck,
@@ -14,8 +15,8 @@ use bevy::{
 // Exports for examples
 pub use crate::{
     assets::{
+        CoreAssets,
         ExampleAssets,
-        GameAssets,
     },
     data::{
         GameOptions,

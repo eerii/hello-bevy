@@ -5,8 +5,8 @@ use bevy::{
 use bevy_kira_audio::prelude::*;
 use bevy_persistent::Persistent;
 use hello_bevy::{
+    CoreAssets,
     ExampleAssets,
-    GameAssets,
     GameOptions,
     GamePlugin,
     GameState,
@@ -66,7 +66,7 @@ struct CollisionEvent(Entity);
 
 fn init_sample(
     mut cmd: Commands,
-    assets: Res<GameAssets>,
+    assets: Res<CoreAssets>,
     opts: Res<Persistent<GameOptions>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,

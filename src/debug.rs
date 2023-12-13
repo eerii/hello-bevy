@@ -14,20 +14,13 @@ pub struct DebugPlugin;
 #[cfg(debug_assertions)]
 mod only_in_debug {
     use bevy::{
-        diagnostic::{
-            DiagnosticsStore,
-            FrameTimeDiagnosticsPlugin,
-        },
+        diagnostic::FrameTimeDiagnosticsPlugin,
         ecs::schedule::ScheduleLabel,
         prelude::*,
     };
     use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
-    use crate::{
-        ui::*,
-        GameAssets,
-        GameState,
-    };
+    use crate::GameState;
 
     // ······
     // Plugin
@@ -43,10 +36,9 @@ mod only_in_debug {
                 ),
             ))
             .init_resource::<DebugState>()
-            .add_systems(OnEnter(GameState::Play), init_fps)
             .add_systems(
                 Update,
-                (update_fps, handle_keys).run_if(in_state(GameState::Play)),
+                handle_keys.run_if(in_state(GameState::Play)),
             );
         }
     }
@@ -60,61 +52,12 @@ mod only_in_debug {
         inspector: bool,
     }
 
-    #[derive(ScheduleLabel, Clone, Debug, PartialEq, Eq, Hash)]
-    struct ScheduleDebugGroup;
-
-    // ··········
-    // Components
-    // ··········
-
-    #[derive(Component)]
-    struct FpsText;
-
     // ·······
     // Systems
     // ·······
 
-    fn init_fps(
-        mut cmd: Commands,
-        node: Query<Entity, With<UiNode>>,
-        assets: Res<GameAssets>,
-        fps: Query<Entity, With<FpsText>>,
-    ) {
-        if fps.iter().next().is_some() {
-            return;
-        }
-
-        if let Ok(node) = node.get_single() {
-            if let Some(mut entity) = cmd.get_entity(node) {
-                entity.with_children(|parent| {
-                    parent.spawn((
-                        TextBundle::from_section("", TextStyle {
-                            font: assets.font.clone(),
-                            font_size: 16.0,
-                            color: Color::WHITE,
-                        })
-                        .with_style(Style {
-                            position_type: PositionType::Absolute,
-                            left: Val::Px(5.0),
-                            top: Val::Px(5.0),
-                            ..default()
-                        }),
-                        FpsText,
-                    ));
-                });
-            }
-        }
-    }
-
-    fn update_fps(diagnostics: Res<DiagnosticsStore>, mut text: Query<&mut Text, With<FpsText>>) {
-        for mut t in &mut text {
-            if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
-                if let Some(value) = fps.smoothed() {
-                    t.sections[0].value = format!("FPS {value:.0}");
-                }
-            }
-        }
-    }
+    #[derive(ScheduleLabel, Clone, Debug, PartialEq, Eq, Hash)]
+    struct ScheduleDebugGroup;
 
     fn handle_keys(mut state: ResMut<DebugState>, keyboard: Res<Input<KeyCode>>) {
         if keyboard.just_pressed(KeyCode::I) {

@@ -6,7 +6,7 @@ use bevy::{
 };
 use bevy_persistent::Persistent;
 use hello_bevy::{
-    GameAssets,
+    CoreAssets,
     GameOptions,
     GamePlugin,
     GameState,
@@ -70,7 +70,7 @@ struct GameCamera;
 
 fn init_sample(
     mut cmd: Commands,
-    assets: Res<GameAssets>,
+    assets: Res<CoreAssets>,
     opts: Res<Persistent<GameOptions>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,

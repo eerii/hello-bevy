@@ -63,9 +63,7 @@ fn init_music(
 }
 
 fn pause_music(handles: Res<MusicHandles>, mut instances: ResMut<Assets<AudioInstance>>) {
-    if let Some(handle) = handles.ambient_music.clone() {
-        if let Some(inst) = instances.get_mut(handle) {
-            inst.pause(default());
-        }
-    }
+    let Some(ref handle) = handles.ambient_music else { return };
+    let Some(inst) = instances.get_mut(handle) else { return };
+    inst.pause(default());
 }

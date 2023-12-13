@@ -1,10 +1,12 @@
+mod debug;
+mod loading;
 mod menu;
 
 use bevy::prelude::*;
 use bevy_persistent::Persistent;
 
 use crate::{
-    GameAssets,
+    CoreAssets,
     GameOptions,
     GameState,
 };
@@ -35,7 +37,13 @@ impl Plugin for UIPlugin {
                     Persistent<GameOptions>,
                 >()),
             )
-            .add_plugins(menu::MenuPlugin);
+            .add_plugins((
+                menu::MenuUIPlugin,
+                loading::LoadingUIPlugin,
+            ));
+
+        #[cfg(debug_assertions)]
+        app.add_plugins(debug::DebugUIPlugin);
     }
 }
 
@@ -62,7 +70,7 @@ struct UiCam;
 
 // TODO: Make private, move every ui inside the ui module
 #[derive(Component)]
-pub struct UiNode;
+struct UiNode;
 
 // ·······
 // Systems
@@ -100,7 +108,7 @@ fn init_ui(mut cmd: Commands) {
 fn change_style(
     mut style: ResMut<UIStyle>,
     opts: Res<Persistent<GameOptions>>,
-    assets: Res<GameAssets>,
+    assets: Res<CoreAssets>,
 ) {
     style.title = TextStyle {
         font: assets.font.clone(),
@@ -129,6 +137,12 @@ fn change_style(
     };
 
     style.button_bg = opts.color.light.into();
+}
+
+fn clear_ui(mut cmd: Commands, node: Query<Entity, With<UiNode>>) {
+    let Ok(node) = node.get_single() else { return };
+    let Some(mut node) = cmd.get_entity(node) else { return };
+    node.despawn_descendants();
 }
 
 // ·····
