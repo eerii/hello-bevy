@@ -1,5 +1,7 @@
 #![allow(clippy::too_many_arguments)]
 
+use std::cmp::Ordering;
+
 use bevy::{
     prelude::*,
     sprite::MaterialMesh2dBundle,
@@ -10,8 +12,9 @@ use hello_bevy::{
     GameOptions,
     GamePlugin,
     GameState,
-    Keybind,
+    KeyBind,
     Keybinds,
+    Movement,
 };
 
 const SIZE: Vec2 = Vec2::new(600., 600.);
@@ -118,10 +121,11 @@ fn init_sample(
 
 fn update_sample(
     time: Res<Time>,
+    input: Res<Input<KeyBind>>,
+    movement: Res<Movement>,
+    keybinds: Res<Persistent<Keybinds>>,
     mut objects: Query<(&mut Player, &mut Transform)>,
     mut counter: Query<(&mut Text, &mut Counter)>,
-    input: Res<Input<Keybind>>,
-    keybinds: Res<Persistent<Keybinds>>,
 ) {
     for (mut player, mut trans) in objects.iter_mut() {
         let t = &mut trans.translation;
@@ -148,15 +152,20 @@ fn update_sample(
         }
 
         // Move
-        if keybinds.left.iter().any(|bind| input.pressed(*bind)) {
-            player.velocity.x = -MOVE_VEL;
-        } else if keybinds.right.iter().any(|bind| input.pressed(*bind)) {
-            player.velocity.x = MOVE_VEL;
-        } else if player.velocity.x.abs() > MOVE_CUTOFF {
+        let vel = keybinds
+            .x_axis
+            .iter()
+            .map(|bind| movement.get(*bind))
+            .sum::<f32>()
+            .clamp(-1., 1.);
+
+        player.velocity.x = vel * MOVE_VEL;
+
+        /*if player.velocity.x.abs() > MOVE_CUTOFF {
             player.velocity.x *= MOVE_FACTOR;
         } else {
             player.velocity.x = 0.;
-        }
+        }*/
 
         // Update position based on velocity and add bounds
         *t += player.velocity.extend(0.) * time.delta_seconds();

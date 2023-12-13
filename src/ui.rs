@@ -68,7 +68,6 @@ struct UIStyle {
 #[derive(Component)]
 struct UiCam;
 
-// TODO: Make private, move every ui inside the ui module
 #[derive(Component)]
 struct UiNode;
 

@@ -8,7 +8,10 @@ use serde::{
 };
 
 use crate::{
-    input::Keybind,
+    input::{
+        KeyBind,
+        MoveBind,
+    },
     ui::{
         FONT_MULTIPLIERS,
         FONT_SIZES,
@@ -91,20 +94,25 @@ pub struct GameOptions {
 
 #[derive(Resource, Serialize, Deserialize, Reflect)]
 pub struct Keybinds {
-    pub up: Vec<Keybind>,
-    pub down: Vec<Keybind>,
-    pub left: Vec<Keybind>,
-    pub right: Vec<Keybind>,
-    pub jump: Vec<Keybind>,
-    pub interact: Vec<Keybind>,
-    pub inventory: Vec<Keybind>,
-    pub pause: Vec<Keybind>,
+    pub x_axis: Vec<MoveBind>,
+    pub y_axis: Vec<MoveBind>,
+    pub jump: Vec<KeyBind>,
+    pub interact: Vec<KeyBind>,
+    pub inventory: Vec<KeyBind>,
+    pub pause: Vec<KeyBind>,
 }
 
 impl Keybinds {
-    pub fn all(&self) -> Vec<&Keybind> {
+    pub fn keys(&self) -> Vec<&KeyBind> {
         self.iter_fields()
-            .filter_map(|f| f.downcast_ref::<Vec<Keybind>>())
+            .filter_map(|f| f.downcast_ref::<Vec<KeyBind>>())
+            .flatten()
+            .collect()
+    }
+
+    pub fn moves(&self) -> Vec<&MoveBind> {
+        self.iter_fields()
+            .filter_map(|f| f.downcast_ref::<Vec<MoveBind>>())
             .flatten()
             .collect()
     }
@@ -113,38 +121,32 @@ impl Keybinds {
 impl Default for Keybinds {
     fn default() -> Self {
         Self {
-            up: vec![
-                Keybind::Key(KeyCode::W),
-                Keybind::Gamepad(GamepadButtonType::DPadUp),
+            x_axis: vec![
+                MoveBind::KeyAxis(KeyCode::D, KeyCode::A),
+                MoveBind::Gamepad(GamepadAxisType::LeftStickX),
+                // MoveBind::MouseAxis(MouseAxis::X),
             ],
-            down: vec![
-                Keybind::Key(KeyCode::S),
-                Keybind::Gamepad(GamepadButtonType::DPadDown),
-            ],
-            left: vec![
-                Keybind::Key(KeyCode::A),
-                Keybind::Gamepad(GamepadButtonType::DPadLeft),
-            ],
-            right: vec![
-                Keybind::Key(KeyCode::D),
-                Keybind::Gamepad(GamepadButtonType::DPadRight),
+            y_axis: vec![
+                MoveBind::KeyAxis(KeyCode::W, KeyCode::S),
+                MoveBind::Gamepad(GamepadAxisType::LeftStickY),
+                // MoveBind::MouseAxis(MouseAxis::Y),
             ],
             jump: vec![
-                Keybind::Key(KeyCode::Space),
-                Keybind::Gamepad(GamepadButtonType::South),
+                KeyBind::Key(KeyCode::Space),
+                KeyBind::Gamepad(GamepadButtonType::South),
             ],
             interact: vec![
-                Keybind::Key(KeyCode::E),
-                Keybind::Mouse(MouseButton::Left),
-                Keybind::Gamepad(GamepadButtonType::East),
+                KeyBind::Key(KeyCode::E),
+                KeyBind::Mouse(MouseButton::Left),
+                KeyBind::Gamepad(GamepadButtonType::East),
             ],
             inventory: vec![
-                Keybind::Key(KeyCode::Tab),
-                Keybind::Gamepad(GamepadButtonType::West),
+                KeyBind::Key(KeyCode::Tab),
+                KeyBind::Gamepad(GamepadButtonType::West),
             ],
             pause: vec![
-                Keybind::Key(KeyCode::Escape),
-                Keybind::Gamepad(GamepadButtonType::Start),
+                KeyBind::Key(KeyCode::Escape),
+                KeyBind::Gamepad(GamepadButtonType::Start),
             ],
         }
     }
@@ -159,6 +161,9 @@ fn init_persistence(mut cmd: Commands) {
     let config_dir = Path::new(".data");
     #[cfg(target_arch = "wasm32")]
     let config_dir = Path::new("local");
+
+    // Append the package name to have unique configs (especially on web)
+    let config_dir = config_dir.join(env!("CARGO_PKG_NAME"));
 
     cmd.insert_resource(
         Persistent::<GameOptions>::builder()

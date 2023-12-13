@@ -22,7 +22,12 @@ pub use crate::{
         GameOptions,
         Keybinds,
     },
-    input::Keybind,
+    input::{
+        KeyBind,
+        MouseAxis,
+        MoveBind,
+        Movement
+    },
 };
 
 // TODO: Port improvements from the game jam

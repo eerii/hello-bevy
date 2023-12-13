@@ -11,7 +11,7 @@ use crate::{
     ui::*,
     GameOptions,
     GameState,
-    Keybind,
+    KeyBind,
     Keybinds,
 };
 
@@ -264,11 +264,12 @@ fn exit_menu(
     node.despawn_descendants();
 }
 
+// TODO: Add movement keybinds
 fn return_to_menu(
     mut game_state: ResMut<NextState<GameState>>,
     current_menu_state: Res<State<MenuState>>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
-    input: Res<Input<Keybind>>,
+    input: Res<Input<KeyBind>>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
     if keybinds.pause.iter().any(|bind| input.just_pressed(*bind)) {
@@ -293,11 +294,11 @@ fn remap_keybind(
     let mut bind = None;
 
     if let Some(key) = keyboard.get_pressed().next() {
-        bind = Some(Keybind::Key(*key));
+        bind = Some(KeyBind::Key(*key));
     } else if let Some(button) = mouse.get_pressed().find(|b| **b != MouseButton::Left) {
-        bind = Some(Keybind::Mouse(*button));
+        bind = Some(KeyBind::Mouse(*button));
     } else if let Some(button) = gamepad_buttons.get_pressed().next() {
-        bind = Some(Keybind::Gamepad(button.button_type));
+        bind = Some(KeyBind::Gamepad(button.button_type));
     }
 
     let Some(bind) = bind else { return };
@@ -312,13 +313,13 @@ fn remap_keybind(
             // Remove the keybind from all fields
             for i in 0..len {
                 let Some(field) = keybinds.field_at_mut(i) else { continue };
-                let Some(value) = field.downcast_mut::<Vec<Keybind>>() else { continue };
+                let Some(value) = field.downcast_mut::<Vec<KeyBind>>() else { continue };
                 value.retain(|b| b != &bind);
             }
 
             // Add the keybind to the field
             let Some(field) = keybinds.field_mut(&rebind_key.0) else { return };
-            let Some(value) = field.downcast_mut::<Vec<Keybind>>() else { return };
+            let Some(value) = field.downcast_mut::<Vec<KeyBind>>() else { return };
             value.push(bind);
         })
         .unwrap_or_else(|e| error!("Failed to remap keybind: {}", e));
@@ -374,7 +375,7 @@ fn layout_keybinds(mut cmd: Commands, node: Entity, style: &UIStyle, keybinds: &
         // TODO: Scrollable section (Requires #8104 to be merged in 0.13)
         for (i, value) in keybinds.iter_fields().enumerate() {
             let field_name = keybinds.name_at(i).unwrap();
-            let Some(value) = value.downcast_ref::<Vec<Keybind>>() else { continue };
+            let Some(value) = value.downcast_ref::<Vec<KeyBind>>() else { continue };
 
             UIOption::new(style, field_name).add(parent, |row| {
                 let keys = value
