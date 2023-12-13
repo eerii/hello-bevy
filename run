@@ -1,0 +1,49 @@
+#!/bin/sh
+# Usage: ./run.sh [check] [release|trace|web] [args...]
+
+# Hot reloading on debug builds
+ARGS="--features bevy/file_watcher $@"
+
+# Add asset path to env
+export BEVY_ASSET_PATH=$PWD/assets
+
+# Check build
+if [ "$1" = "check" ]; then
+    shift
+    cargo fmt --all
+    cargo clippy --allow-dirty --allow-staged --fix
+    exit
+fi
+
+# Local web build
+if [ "$1" = "web" ]; then
+    shift
+    trunk serve $ARGS
+    exit
+fi
+
+# Release mode
+if [ "$1" = "release" ]; then
+    shift
+    ARGS="--release $@"
+fi
+
+# Trace mode
+if [ "$1" = "trace" ]; then
+    shift
+    ARGS="--release --features bevy/trace_tracy $@"
+    tracy-capture -o capture.tracy &
+fi
+
+if [ "$1" = "ftrace" ]; then
+    shift
+    ARGS="--release --features bevy/trace_tracy $@"
+    TRACY=true
+    tracy-capture -o capture.tracy -f &
+fi
+
+cargo run $ARGS
+
+if [ $TRACY ]; then
+    tracy capture.tracy
+fi

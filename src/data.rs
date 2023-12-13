@@ -3,20 +3,21 @@ use std::path::Path;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{input::Bind, GameState};
+use crate::{
+    input::Keybind,
+    ui::{FONT_MULTIPLIERS, FONT_SIZES},
+    GameState,
+};
 
 pub use bevy_persistent::prelude::*;
-
-pub const FONT_MULTIPLIERS: [f32; 3] = [2.0, 1.0, 0.8];
-pub const FONT_SIZES: [f32; 5] = [16.0, 20.0, 24.0, 28.0, 32.0];
 
 // ······
 // Plugin
 // ······
 
-pub struct ConfigPlugin;
+pub struct DataPlugin;
 
-impl Plugin for ConfigPlugin {
+impl Plugin for DataPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::Loading), init_persistence);
     }
@@ -68,24 +69,22 @@ pub struct GameOptions {
     pub color: ColorPalette,
 }
 
-// Keybinds
-
 #[derive(Resource, Serialize, Deserialize, Reflect)]
 pub struct Keybinds {
-    pub up: Vec<Bind>,
-    pub down: Vec<Bind>,
-    pub left: Vec<Bind>,
-    pub right: Vec<Bind>,
-    pub jump: Vec<Bind>,
-    pub interact: Vec<Bind>,
-    pub inventory: Vec<Bind>,
-    pub pause: Vec<Bind>,
+    pub up: Vec<Keybind>,
+    pub down: Vec<Keybind>,
+    pub left: Vec<Keybind>,
+    pub right: Vec<Keybind>,
+    pub jump: Vec<Keybind>,
+    pub interact: Vec<Keybind>,
+    pub inventory: Vec<Keybind>,
+    pub pause: Vec<Keybind>,
 }
 
 impl Keybinds {
-    pub fn all(&self) -> Vec<&Bind> {
+    pub fn all(&self) -> Vec<&Keybind> {
         self.iter_fields()
-            .filter_map(|f| f.downcast_ref::<Vec<Bind>>())
+            .filter_map(|f| f.downcast_ref::<Vec<Keybind>>())
             .flatten()
             .collect()
     }
@@ -95,37 +94,37 @@ impl Default for Keybinds {
     fn default() -> Self {
         Self {
             up: vec![
-                Bind::Key(KeyCode::W),
-                Bind::Gamepad(GamepadButtonType::DPadUp),
+                Keybind::Key(KeyCode::W),
+                Keybind::Gamepad(GamepadButtonType::DPadUp),
             ],
             down: vec![
-                Bind::Key(KeyCode::S),
-                Bind::Gamepad(GamepadButtonType::DPadDown),
+                Keybind::Key(KeyCode::S),
+                Keybind::Gamepad(GamepadButtonType::DPadDown),
             ],
             left: vec![
-                Bind::Key(KeyCode::A),
-                Bind::Gamepad(GamepadButtonType::DPadLeft),
+                Keybind::Key(KeyCode::A),
+                Keybind::Gamepad(GamepadButtonType::DPadLeft),
             ],
             right: vec![
-                Bind::Key(KeyCode::D),
-                Bind::Gamepad(GamepadButtonType::DPadRight),
+                Keybind::Key(KeyCode::D),
+                Keybind::Gamepad(GamepadButtonType::DPadRight),
             ],
             jump: vec![
-                Bind::Key(KeyCode::Space),
-                Bind::Gamepad(GamepadButtonType::South),
+                Keybind::Key(KeyCode::Space),
+                Keybind::Gamepad(GamepadButtonType::South),
             ],
             interact: vec![
-                Bind::Key(KeyCode::E),
-                Bind::Mouse(MouseButton::Left),
-                Bind::Gamepad(GamepadButtonType::East),
+                Keybind::Key(KeyCode::E),
+                Keybind::Mouse(MouseButton::Left),
+                Keybind::Gamepad(GamepadButtonType::East),
             ],
             inventory: vec![
-                Bind::Key(KeyCode::Tab),
-                Bind::Gamepad(GamepadButtonType::West),
+                Keybind::Key(KeyCode::Tab),
+                Keybind::Gamepad(GamepadButtonType::West),
             ],
             pause: vec![
-                Bind::Key(KeyCode::Escape),
-                Bind::Gamepad(GamepadButtonType::Start),
+                Keybind::Key(KeyCode::Escape),
+                Keybind::Gamepad(GamepadButtonType::Start),
             ],
         }
     }
@@ -139,7 +138,7 @@ fn init_persistence(mut cmd: Commands) {
     #[cfg(not(target_arch = "wasm32"))]
     let config_dir = Path::new(".data");
     #[cfg(target_arch = "wasm32")]
-    let config_dir = Path::new("session");
+    let config_dir = Path::new("local");
 
     cmd.insert_resource(
         Persistent::<GameOptions>::builder()

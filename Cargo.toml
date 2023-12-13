@@ -1,29 +1,31 @@
 [package]
 name = "hello-bevy" # [CHANGE]: Set your project name.
-version = "0.12.3"
+version = "0.12.4"
 edition = "2021"
 description = "a bevy game template"
-exclude = ["build", "assets", ".data"]
+exclude = ["assets", "wasm", ".data"]
 
 [profile.dev.package."*"]
 opt-level = 3 # Improves performance when developing, but slows down first compilation significantly
+debug = false # Disabled debug symbols for dependencies
 
 [profile.dev]
 opt-level = 1
 
 [features]
 dev = [
-    "bevy/dynamic_linking",
+    "bevy/dynamic_linking", # Enables dynamic linking for faster compilation
 ]
 
 [dependencies]
 # The bevy engine <3
 # Default feautres are disabled because we are using audio from a different source (kira)
+# We also add trace_tracy for profiling
 bevy = { version = "0.12", default-features = false, features = [
     "animation", "bevy_asset", "bevy_gilrs", "bevy_scene", "bevy_winit",
     "bevy_core_pipeline", "bevy_pbr", "bevy_gltf", "bevy_render", "bevy_sprite",
     "bevy_text", "bevy_ui", "multi-threaded", "png", "hdr", "x11", "bevy_gizmos",
-    "tonemapping_luts", "default_font", "webgl2",
+    "tonemapping_luts", "default_font", "webgl2", "serialize"
 ]} 
 bevy_asset_loader = { version = "0.18", features = [ "progress_tracking" ] } # Better asset loader
 bevy_embedded_assets = { version = "0.9" } # Embed assets in binary

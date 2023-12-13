@@ -1,37 +1,13 @@
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle, window::WindowResolution};
-use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+
 use bevy_kira_audio::prelude::*;
 use bevy_persistent::Persistent;
-use hello_bevy::{
-    config::GameOptions,
-    load::{GameAssets, SampleAssets},
-    GamePlugin, GameState,
-};
+use hello_bevy::{ExampleAssets, GameAssets, GameOptions, GamePlugin, GameState};
 
 const SIZE: Vec2 = Vec2::new(600., 600.);
 
 fn main() {
-    App::new()
-        .add_plugins((
-            EmbeddedAssetPlugin {
-                mode: PluginMode::ReplaceDefault,
-            },
-            DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "DVD Screensaver".to_string(),
-                    resolution: WindowResolution::new(SIZE.x, SIZE.y),
-                    resizable: false,
-                    canvas: Some("#bevy".to_string()),
-                    prevent_default_event_handling: false,
-                    ..default()
-                }),
-                ..default()
-            }),
-            GamePlugin,
-            SampleGamePlugin,
-        ))
-        // Run
-        .run();
+    App::new().add_plugins((GamePlugin, SampleGamePlugin)).run();
 }
 
 // ······
@@ -172,7 +148,7 @@ fn on_collision(
     mut counter: Query<(&mut Text, &mut Counter)>,
     mut event_collision: EventReader<CollisionEvent>,
     audio: Res<Audio>,
-    assets: Res<SampleAssets>,
+    assets: Res<ExampleAssets>,
 ) {
     let (mut text, mut counter) = counter.single_mut();
 

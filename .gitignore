@@ -4,3 +4,5 @@ dist
 graphs
 .vscode
 .data
+capture*
+*.tracy

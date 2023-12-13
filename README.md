@@ -17,6 +17,7 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 - debug features integrated (inspector, schedule graphs)
 - remapable input manager with gamepad support
 - asset loading with progress, audio, saving, menu...
+- hot reloading and profiling when debugging
 
 ### how to use it ✨
 
@@ -30,19 +31,22 @@ this project is configured to use dynamic linking and fast recompiling by defaul
 in order to have the fastest compile, you may install [mold](https://github.com/rui314/mold) and use rust nightly (`rustup default nightly`).
 if you don't want some of these features, go to [.cargo/config](.cargo/config) and follow the instructions, or remove it to disable optimizations all together.
 
-to run a debug build use:
+to run a debug build use the provided script:
 
 ```sh
-cargo run
+./run [args...] # This calls cargo run with some extra options
+./run [release|tracy] [args...] # You can also do a release build or a profiling one with tracy
+cargo run # If you are not using unix, you can simply use cargo run (check the script for all the optional parameters)
 ```
 
 and to start a local web build, use trunk:
 
 ```sh
-trunk serve
+./run web # This calls trunk serve
+trunk serve # You can use it directly
 ```
 
-you can also play around with some of the included examples with `cargo run --example <name>`.
+you can also play around with some of the included examples with `./run --example <name>` (or `cargo run --example <name>`).
 
 ### release 🌻
 
@@ -68,7 +72,7 @@ this is heavily based on [NiklasEi/bevy_game_template](https://github.com/Niklas
 i tried to be very intentional with all the plugins in this template. there is an amazing community that creates tons of useful tools, and some of them have become essential when making games with bevy:
 
 - [bevy_asset_loader](https://github.com/NiklasEi/bevy_asset_loader): easier asset handling with collections
-- [bevy_embedded_assets](https://github.com/vleue/bevy_embedded_assets): puts assets inside the binary [*]
+- [bevy_embedded_assets](https://github.com/vleue/bevy_embedded_assets): puts assets inside the binary (only on release)
 - [iyes_progress](https://github.com/IyesGames/iyes_progress): tracks progress (used for an accurate loading screen)
 - [bevy_kira_audio](https://github.com/NiklasEi/bevy_kira_audio): improved audio library with more features
 - [bevy-persistent](https://github.com/umut-sahin/bevy-persistent): save and load any resource on disk
@@ -77,8 +81,6 @@ there are also nice tools for debugging:
 
 - [bevy_mod_debugdump](https://github.com/jakobhellermann/bevy_mod_debugdump): creates system and rendering graphs to inspect dependencies
 - [bevy-inspector-egui](https://github.com/jakobhellermann/bevy-inspector-egui): imgui-like interface where you can see entities and components in real time (press I)
-
-[*] I have encountered issues with the new bevy asset v2 on itch.io, but embedding them into the build seems to work wonderfully
 
 ### license 📝
 

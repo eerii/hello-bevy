@@ -1,14 +1,9 @@
 #![allow(clippy::too_many_arguments)]
 
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle, window::WindowResolution};
-use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+
 use bevy_persistent::Persistent;
-use hello_bevy::{
-    config::{GameOptions, Keybinds},
-    input::Bind,
-    load::GameAssets,
-    GamePlugin, GameState,
-};
+use hello_bevy::{GameAssets, GameOptions, GamePlugin, GameState, Keybind, Keybinds};
 
 const SIZE: Vec2 = Vec2::new(600., 600.);
 const INITIAL_VEL: Vec2 = Vec2::new(0., 250.);
@@ -21,27 +16,7 @@ const MOVE_CUTOFF: f32 = 100.;
 const MOVE_FACTOR: f32 = 0.85;
 
 fn main() {
-    App::new()
-        .add_plugins((
-            EmbeddedAssetPlugin {
-                mode: PluginMode::ReplaceDefault,
-            },
-            DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "Endless jump".to_string(),
-                    resolution: WindowResolution::new(SIZE.x, SIZE.y),
-                    resizable: false,
-                    canvas: Some("#bevy".to_string()),
-                    prevent_default_event_handling: false,
-                    ..default()
-                }),
-                ..default()
-            }),
-            GamePlugin,
-            SampleGamePlugin,
-        ))
-        // Run
-        .run();
+    App::new().add_plugins((GamePlugin, SampleGamePlugin)).run();
 }
 
 // ······
@@ -135,7 +110,7 @@ fn update_sample(
     time: Res<Time>,
     mut objects: Query<(&mut Player, &mut Transform)>,
     mut counter: Query<(&mut Text, &mut Counter)>,
-    input: Res<Input<Bind>>,
+    input: Res<Input<Keybind>>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
     for (mut player, mut trans) in objects.iter_mut() {

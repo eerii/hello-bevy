@@ -13,7 +13,7 @@ pub struct DebugPlugin;
 // Only debug implementation
 #[cfg(debug_assertions)]
 mod only_in_debug {
-    use crate::{load::GameAssets, ui::*, GameState};
+    use crate::{ui::*, GameAssets, GameState};
     use bevy::{
         diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
         ecs::schedule::ScheduleLabel,

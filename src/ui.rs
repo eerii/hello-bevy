@@ -1,11 +1,16 @@
+mod menu;
+
 use bevy::prelude::*;
 use bevy_persistent::Persistent;
 
-use crate::{config::GameOptions, load::GameAssets, GameState};
+use crate::{GameAssets, GameOptions, GameState};
 
 const MENU_WIDTH: Val = Val::Px(300.);
 const MENU_ITEM_HEIGHT: Val = Val::Px(40.);
 const MENU_ITEM_GAP: Val = Val::Px(10.);
+
+pub const FONT_MULTIPLIERS: [f32; 3] = [2.0, 1.0, 0.8];
+pub const FONT_SIZES: [f32; 5] = [16.0, 20.0, 24.0, 28.0, 32.0];
 
 // TODO: Tweening and animation (Look into https://github.com/djeedai/bevy_tweening)
 // TODO: Rounded button corners (Requires #8973 to be merged in 0.13)
@@ -23,7 +28,8 @@ impl Plugin for UIPlugin {
             .add_systems(
                 PostUpdate,
                 change_style.run_if(resource_changed::<Persistent<GameOptions>>()),
-            );
+            )
+            .add_plugins(menu::MenuPlugin);
     }
 }
 
@@ -32,7 +38,7 @@ impl Plugin for UIPlugin {
 // ·········
 
 #[derive(Resource, Default)]
-pub struct UIStyle {
+struct UIStyle {
     title: TextStyle,
     text: TextStyle,
     button_text: TextStyle,
@@ -46,8 +52,9 @@ pub struct UIStyle {
 // ··········
 
 #[derive(Component)]
-pub struct UiCam;
+struct UiCam;
 
+// TODO: Make private, move every ui inside the ui module
 #[derive(Component)]
 pub struct UiNode;
 
@@ -55,7 +62,7 @@ pub struct UiNode;
 // Systems
 // ·······
 
-pub fn init_ui(mut cmd: Commands) {
+fn init_ui(mut cmd: Commands) {
     cmd.spawn((
         Camera2dBundle {
             camera: Camera {
@@ -124,44 +131,44 @@ fn change_style(
 
 // Text
 
-pub struct UIText<'a> {
+struct UIText<'a> {
     text: TextBundle,
     style: &'a UIStyle,
 }
 
 impl<'a> UIText<'a> {
-    pub fn new(style: &'a UIStyle, text: &str) -> Self {
+    fn new(style: &'a UIStyle, text: &str) -> Self {
         Self {
             text: TextBundle::from_section(text, style.text.clone()),
             style,
         }
     }
 
-    pub fn with_title(mut self) -> Self {
+    fn with_title(mut self) -> Self {
         self.text.text.sections[0].style = self.style.title.clone();
         self
     }
 
-    pub fn with_style(mut self, style: Style) -> Self {
+    fn with_style(mut self, style: Style) -> Self {
         self.text.style = style;
         self
     }
 
-    pub fn add(self, parent: &mut ChildBuilder) {
+    fn add(self, parent: &mut ChildBuilder) {
         parent.spawn(self.text);
     }
 }
 
 // Button
 
-pub struct UIButton<T: Component> {
+struct UIButton<T: Component> {
     button: ButtonBundle,
     text: TextBundle,
     action: T,
 }
 
 impl<T: Component> UIButton<T> {
-    pub fn new(style: &UIStyle, text: &str, action: T) -> Self {
+    fn new(style: &UIStyle, text: &str, action: T) -> Self {
         Self {
             button: ButtonBundle {
                 style: style.button.clone(),
@@ -173,17 +180,17 @@ impl<T: Component> UIButton<T> {
         }
     }
 
-    pub fn with_width(mut self, width: Val) -> Self {
+    fn with_width(mut self, width: Val) -> Self {
         self.button.style.width = width;
         self
     }
 
-    pub fn with_font_scale(mut self, scale: f32) -> Self {
+    fn with_font_scale(mut self, scale: f32) -> Self {
         self.text.text.sections[0].style.font_size *= scale;
         self
     }
 
-    pub fn add(self, parent: &mut ChildBuilder) {
+    fn add(self, parent: &mut ChildBuilder) {
         let _text = self.text.text.sections[0].value.clone();
         let _id = parent
             .spawn((self.button, self.action))
@@ -196,13 +203,13 @@ impl<T: Component> UIButton<T> {
 
 // Option row (label text + widget)
 
-pub struct UIOption<'a> {
+struct UIOption<'a> {
     row: NodeBundle,
     label: UIText<'a>,
 }
 
 impl<'a> UIOption<'a> {
-    pub fn new(style: &'a UIStyle, label: &str) -> Self {
+    fn new(style: &'a UIStyle, label: &str) -> Self {
         Self {
             row: NodeBundle {
                 style: Style {
@@ -222,7 +229,7 @@ impl<'a> UIOption<'a> {
         }
     }
 
-    pub fn add(self, parent: &mut ChildBuilder, children: impl FnOnce(&mut ChildBuilder)) {
+    fn add(self, parent: &mut ChildBuilder, children: impl FnOnce(&mut ChildBuilder)) {
         parent.spawn(self.row).with_children(|row| {
             self.label.add(row);
             children(row);
@@ -230,7 +237,7 @@ impl<'a> UIOption<'a> {
     }
 }
 
-pub fn snake_to_upper(text: &str) -> String {
+fn snake_to_upper(text: &str) -> String {
     text.chars()
         .enumerate()
         .map(|(i, c)| {

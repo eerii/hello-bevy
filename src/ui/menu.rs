@@ -1,14 +1,9 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
 
-use crate::{
-    config::{GameOptions, Keybinds, Persistent, FONT_MULTIPLIERS, FONT_SIZES},
-    input::Bind,
-    ui::*,
-    GameState,
-};
-use bevy::prelude::*;
-use bevy::reflect::Struct;
+use crate::{ui::*, GameOptions, GameState, Keybind, Keybinds};
+use bevy::{prelude::*, reflect::Struct};
+use bevy_persistent::Persistent;
 
 // ······
 // Plugin
@@ -47,7 +42,7 @@ impl Plugin for MenuPlugin {
 }
 
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
-pub enum MenuState {
+enum MenuState {
     #[default]
     Main,
     Settings,
@@ -253,7 +248,7 @@ fn return_to_menu(
     mut game_state: ResMut<NextState<GameState>>,
     current_menu_state: Res<State<MenuState>>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
-    input: Res<Input<Bind>>,
+    input: Res<Input<Keybind>>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
     if keybinds.pause.iter().any(|bind| input.just_pressed(*bind)) {
@@ -278,11 +273,11 @@ fn remap_keybind(
         let mut bind = None;
 
         if let Some(key) = keyboard.get_pressed().next() {
-            bind = Some(Bind::Key(*key));
+            bind = Some(Keybind::Key(*key));
         } else if let Some(button) = mouse.get_pressed().find(|b| **b != MouseButton::Left) {
-            bind = Some(Bind::Mouse(*button));
+            bind = Some(Keybind::Mouse(*button));
         } else if let Some(button) = gamepad_buttons.get_pressed().next() {
-            bind = Some(Bind::Gamepad(button.button_type));
+            bind = Some(Keybind::Gamepad(button.button_type));
         }
 
         if let Some(bind) = bind {
@@ -294,7 +289,7 @@ fn remap_keybind(
                     // Remove the keybind from all fields
                     for i in 0..len {
                         if let Some(field) = keybinds.field_at_mut(i) {
-                            if let Some(value) = field.downcast_mut::<Vec<Bind>>() {
+                            if let Some(value) = field.downcast_mut::<Vec<Keybind>>() {
                                 value.retain(|b| b != &bind);
                             }
                         }
@@ -302,7 +297,7 @@ fn remap_keybind(
 
                     // Add the keybind to the field
                     if let Some(field) = keybinds.field_mut(&rebind_key.0) {
-                        if let Some(value) = field.downcast_mut::<Vec<Bind>>() {
+                        if let Some(value) = field.downcast_mut::<Vec<Keybind>>() {
                             value.push(bind);
                         }
                     }
@@ -352,7 +347,7 @@ fn layout_keybinds(mut cmd: Commands, node: Entity, style: &UIStyle, keybinds: &
 
             for (i, value) in keybinds.iter_fields().enumerate() {
                 let field_name = keybinds.name_at(i).unwrap();
-                if let Some(value) = value.downcast_ref::<Vec<Bind>>() {
+                if let Some(value) = value.downcast_ref::<Vec<Keybind>>() {
                     UIOption::new(style, field_name).add(parent, |row| {
                         let keys = value
                             .iter()

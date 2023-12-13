@@ -1,6 +1,6 @@
 # Fast build
 
-# NOTE: For maximum performance, build using a nightly compiler
+# [CHANGE]: For maximum performance, build using a nightly compiler
 # If you are using rust stable, remove the "-Zshare-generics=y" below.
 # You need to install mold for the fastest compile, else change /usr/bin/mold to lld
 
@@ -11,7 +11,7 @@ rustflags = [
     "-Zshare-generics=y"
 ]
 
-# NOTE: You must install [Mach-O LLD Port](https://lld.llvm.org/MachO/index.html) on mac
+# [CHANGE]: You must install [Mach-O LLD Port](https://lld.llvm.org/MachO/index.html) on mac
 # You can easily do this by installing llvm which includes lld with the "brew" package manager: `brew install llvm`
 
 [target.x86_64-apple-darwin]

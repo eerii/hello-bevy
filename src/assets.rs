@@ -1,7 +1,7 @@
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
 
-use crate::{config::GameOptions, ui::*, GameState};
+use crate::{ui::*, GameOptions, GameState};
 use bevy::prelude::*;
 use bevy_asset_loader::prelude::*;
 use bevy_kira_audio::AudioSource;
@@ -9,25 +9,25 @@ use bevy_persistent::Persistent;
 use iyes_progress::prelude::*;
 
 #[cfg(debug_assertions)]
-pub const SPLASH_TIME: f32 = 0.1;
+const SPLASH_TIME: f32 = 0.1;
 #[cfg(not(debug_assertions))]
-pub const SPLASH_TIME: f32 = 2.;
+const SPLASH_TIME: f32 = 2.;
 
 // ······
 // Plugin
 // ······
 
-pub struct LoadPlugin;
+pub struct AssetLoaderPlugin;
 
-impl Plugin for LoadPlugin {
+impl Plugin for AssetLoaderPlugin {
     fn build(&self, app: &mut App) {
         app.add_loading_state(LoadingState::new(GameState::Loading))
             .init_collection::<GameAssets>()
-            .add_collection_to_loading_state::<_, SampleAssets>(GameState::Loading)
+            .add_collection_to_loading_state::<_, ExampleAssets>(GameState::Loading)
             .add_plugins((ProgressPlugin::new(GameState::Loading)
                 .continue_to(GameState::Menu)
                 .track_assets(),))
-            .add_systems(OnEnter(GameState::Loading), init_splash.after(init_ui))
+            .add_systems(Update, init_splash.run_if(in_state(GameState::Loading)))
             .add_systems(OnExit(GameState::Loading), clear_loading)
             .add_systems(
                 Update,
@@ -53,9 +53,9 @@ pub struct GameAssets {
     pub font: Handle<Font>,
 }
 
-// Sample assets
+// Example assets
 #[derive(AssetCollection, Resource)]
-pub struct SampleAssets {
+pub struct ExampleAssets {
     #[asset(path = "sounds/boing.ogg")]
     pub boing: Handle<AudioSource>,
 
@@ -77,7 +77,16 @@ struct ProgressBar;
 // Systems
 // ·······
 
-fn init_splash(mut cmd: Commands, node: Query<Entity, With<UiNode>>, assets: Res<GameAssets>) {
+fn init_splash(
+    mut cmd: Commands,
+    node: Query<Entity, With<UiNode>>,
+    assets: Res<GameAssets>,
+    mut has_init: Local<bool>,
+) {
+    if *has_init {
+        return;
+    }
+
     if let Ok(node) = node.get_single() {
         if let Some(mut node) = cmd.get_entity(node) {
             node.with_children(|parent| {
@@ -94,6 +103,8 @@ fn init_splash(mut cmd: Commands, node: Query<Entity, With<UiNode>>, assets: Res
                 });
             });
         }
+
+        *has_init = true;
     }
 
     cmd.spawn(SplashTimer(Timer::from_seconds(

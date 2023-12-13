@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_kira_audio::{prelude::AudioPlugin as KiraAudioPlugin, prelude::*};
 
-use crate::{load::SampleAssets, GameState};
+use crate::{ExampleAssets, GameState};
 
 // ······
 // Plugin
@@ -32,7 +32,7 @@ struct MusicHandles {
 // ·······
 
 fn init_music(
-    assets: Res<SampleAssets>,
+    assets: Res<ExampleAssets>,
     audio: Res<Audio>,
     mut handles: ResMut<MusicHandles>,
     mut instances: ResMut<Assets<AudioInstance>>,

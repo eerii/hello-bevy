@@ -7,9 +7,10 @@ use bevy::{
 use bevy_persistent::Persistent;
 use serde::{Deserialize, Serialize};
 
-use crate::config::Keybinds;
+use crate::Keybinds;
 
 // TODO: Mouse movement and gamepad axis
+// TODO: Add touch
 
 // ······
 // Plugin
@@ -19,7 +20,7 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Input::<Bind>::default())
+        app.insert_resource(Input::<Keybind>::default())
             .add_systems(
                 PreUpdate,
                 (
@@ -38,18 +39,19 @@ impl Plugin for InputPlugin {
 // ·········
 
 #[derive(Resource, Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Reflect)]
-pub enum Bind {
+pub enum Keybind {
     Key(KeyCode),
     Mouse(MouseButton),
     Gamepad(GamepadButtonType),
 }
 
-impl ToString for Bind {
+impl ToString for Keybind {
     fn to_string(&self) -> String {
+        // TODO: Replace this with a key icon lookup
         match self {
-            Bind::Key(key) => format!("{:?}", key),
-            Bind::Mouse(button) => format!("m{:?}", button),
-            Bind::Gamepad(button) => format!("g{:?}", button).replace("DPad", ""),
+            Keybind::Key(key) => format!("{:?}", key),
+            Keybind::Mouse(button) => format!("m{:?}", button),
+            Keybind::Gamepad(button) => format!("g{:?}", button).replace("DPad", ""),
         }
     }
 }
@@ -59,14 +61,14 @@ impl ToString for Bind {
 // ·······
 
 fn handle_input_keyboard(
-    mut input: ResMut<Input<Bind>>,
+    mut input: ResMut<Input<Keybind>>,
     keybinds: Res<Persistent<Keybinds>>,
     mut keyboard: EventReader<KeyboardInput>,
 ) {
     for event in keyboard.read() {
         if let Some(event_key) = event.key_code {
             if let Some(keybind) = keybinds.all().iter().find(|bind| match bind {
-                Bind::Key(key) => key == &event_key,
+                Keybind::Key(key) => key == &event_key,
                 _ => false,
             }) {
                 match event.state {
@@ -79,13 +81,13 @@ fn handle_input_keyboard(
 }
 
 fn handle_input_mouse(
-    mut input: ResMut<Input<Bind>>,
+    mut input: ResMut<Input<Keybind>>,
     keybinds: Res<Persistent<Keybinds>>,
     mut mouse: EventReader<MouseButtonInput>,
 ) {
     for event in mouse.read() {
         if let Some(keybind) = keybinds.all().iter().find(|bind| match bind {
-            Bind::Mouse(button) => button == &event.button,
+            Keybind::Mouse(button) => button == &event.button,
             _ => false,
         }) {
             match event.state {
@@ -97,13 +99,13 @@ fn handle_input_mouse(
 }
 
 fn handle_input_gamepad(
-    mut input: ResMut<Input<Bind>>,
+    mut input: ResMut<Input<Keybind>>,
     keybinds: Res<Persistent<Keybinds>>,
     mut gamepad_buttons: EventReader<GamepadButtonInput>,
 ) {
     for event in gamepad_buttons.read() {
         if let Some(keybind) = keybinds.all().iter().find(|bind| match bind {
-            Bind::Gamepad(button) => button == &event.button.button_type,
+            Keybind::Gamepad(button) => button == &event.button.button_type,
             _ => false,
         }) {
             match event.state {
@@ -114,6 +116,6 @@ fn handle_input_gamepad(
     }
 }
 
-fn clear_input(mut input: ResMut<Input<Bind>>) {
+fn clear_input(mut input: ResMut<Input<Keybind>>) {
     input.clear();
 }

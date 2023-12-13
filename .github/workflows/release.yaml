@@ -61,16 +61,16 @@ jobs:
       - name: Optimize Wasm
         uses: NiklasEi/wasm-opt-action@v2
         with:
-          file: build/wasm/dist/*.wasm
+          file: wasm/dist/*.wasm
 
       - name: Make paths relative
         run: |
-          sed -i 's/\/${{ env.binary }}/.\/${{ env.binary }}/g' build/wasm/dist/index.html
+          sed -i 's/\/${{ env.binary }}/.\/${{ env.binary }}/g' wasm/dist/index.html
 
       - name: Package as a zip
-        working-directory: ./build/wasm/dist
+        working-directory: ./wasm/dist
         run: |
-          zip --recurse-paths ../../../${{ env.binary }}.zip .
+          zip --recurse-paths ../../${{ env.binary }}.zip .
 
       - name: Upload binaries to artifacts
         uses: actions/upload-artifact@v3
