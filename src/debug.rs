@@ -70,7 +70,7 @@ mod only_in_debug {
     // ·····
 
     // Save the scheduling graphs for system stages (disabled for wasm)
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(feature = "save_schedule")]
     pub fn save_schedule(app: &mut App) {
         use std::path::Path;
 
@@ -113,7 +113,7 @@ mod only_in_debug {
             });
     }
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(not(feature = "save_schedule"))]
     pub fn save_schedule(_: &mut App) {}
 
     #[allow(dead_code)]

@@ -1,6 +1,6 @@
 [package]
 name = "hello-bevy" # [CHANGE]: Set your project name.
-version = "0.12.4"
+version = "0.12.5"
 edition = "2021"
 description = "a bevy game template"
 exclude = ["assets", "wasm", ".data"]
@@ -14,8 +14,11 @@ opt-level = 1
 
 [features]
 dev = [
+    "bevy/file_watcher", # Enables hot reloading of assets
     "bevy/dynamic_linking", # Enables dynamic linking for faster compilation
 ]
+save_schedule = []
+mock_touch = []
 
 [dependencies]
 # The bevy engine <3

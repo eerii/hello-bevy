@@ -272,7 +272,7 @@ fn return_to_menu(
     input: Res<Input<KeyBind>>,
     keybinds: Res<Persistent<Keybinds>>,
 ) {
-    if keybinds.pause.iter().any(|bind| input.just_pressed(*bind)) {
+    if keybinds.pause.just_pressed(&input) {
         match *current_menu_state.get() {
             MenuState::Keybinds | MenuState::Visual => next_menu_state.set(MenuState::Settings),
             _ => next_menu_state.set(MenuState::Main),

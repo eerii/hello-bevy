@@ -1,7 +1,5 @@
 #![allow(clippy::too_many_arguments)]
 
-use std::cmp::Ordering;
-
 use bevy::{
     prelude::*,
     sprite::MaterialMesh2dBundle,
@@ -143,7 +141,7 @@ fn update_sample(
         }
 
         // Jump
-        if keybinds.jump.iter().any(|bind| input.just_pressed(*bind)) {
+        if keybinds.jump.just_pressed(&input) {
             player.velocity.y = JUMP_VEL;
 
             let (mut text, mut counter) = counter.single_mut();
@@ -152,20 +150,14 @@ fn update_sample(
         }
 
         // Move
-        let vel = keybinds
-            .x_axis
-            .iter()
-            .map(|bind| movement.get(*bind))
-            .sum::<f32>()
-            .clamp(-1., 1.);
-
-        player.velocity.x = vel * MOVE_VEL;
-
-        /*if player.velocity.x.abs() > MOVE_CUTOFF {
+        let vel = keybinds.x_axis.get(&movement);
+        if vel.abs() > 0. {
+            player.velocity.x = vel * MOVE_VEL;
+        } else if player.velocity.x.abs() > MOVE_CUTOFF {
             player.velocity.x *= MOVE_FACTOR;
         } else {
             player.velocity.x = 0.;
-        }*/
+        }
 
         // Update position based on velocity and add bounds
         *t += player.velocity.extend(0.) * time.delta_seconds();

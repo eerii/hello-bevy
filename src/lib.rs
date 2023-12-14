@@ -24,9 +24,9 @@ pub use crate::{
     },
     input::{
         KeyBind,
-        MouseAxis,
         MoveBind,
-        Movement
+        Movement,
+        MovementAxis,
     },
 };
 

@@ -1,11 +1,8 @@
 #!/bin/sh
 # Usage: ./run.sh [check] [release|trace|web] [args...]
 
-# Hot reloading on debug builds
-ARGS="--features bevy/file_watcher $@"
-
-# Add asset path to env
-export BEVY_ASSET_PATH=$PWD/assets
+# Debug builds
+ARGS="--features dev $@"
 
 # Check build
 if [ "$1" = "check" ]; then

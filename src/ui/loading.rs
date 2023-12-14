@@ -142,7 +142,7 @@ fn check_splash_finished(
         });
     }
 
-    return timer.finished().into();
+    timer.finished().into()
 }
 
 // ·····
