@@ -279,7 +279,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: wasm
-          path: ./builds/wasm
+          path: ./builds
 
       - name: Install butler
         run: |

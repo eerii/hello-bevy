@@ -35,10 +35,20 @@ impl Plugin for AssetLoaderPlugin {
 // They are loaded inmediately after the app is fired, no effect on loading state
 #[derive(AssetCollection, Resource)]
 pub struct CoreAssets {
+    #[cfg(not(feature = "pixel_perfect"))]
     #[asset(path = "icons/bevy.png")]
     pub bevy_icon: Handle<Image>,
 
+    #[cfg(not(feature = "pixel_perfect"))]
     #[asset(path = "fonts/sans.ttf")]
+    pub font: Handle<Font>,
+
+    #[cfg(feature = "pixel_perfect")]
+    #[asset(path = "icons/pixelbevy.png")]
+    pub bevy_icon: Handle<Image>,
+
+    #[cfg(feature = "pixel_perfect")]
+    #[asset(path = "fonts/pixel.ttf")]
     pub font: Handle<Font>,
 }
 

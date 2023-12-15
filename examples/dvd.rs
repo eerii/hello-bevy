@@ -1,7 +1,4 @@
-use bevy::{
-    prelude::*,
-    sprite::MaterialMesh2dBundle,
-};
+use bevy::prelude::*;
 use bevy_kira_audio::prelude::*;
 use bevy_persistent::Persistent;
 use hello_bevy::{
@@ -27,16 +24,12 @@ impl Plugin for SampleGamePlugin {
         app.add_event::<CollisionEvent>()
             .add_systems(
                 OnEnter(GameState::Play),
-                (
-                    init_sample.run_if(run_once()),
-                    resume_game,
-                ),
+                init_sample.run_if(run_once()),
             )
             .add_systems(
                 Update,
                 (update_sample, on_collision).run_if(in_state(GameState::Play)),
-            )
-            .add_systems(OnExit(GameState::Play), pause_game);
+            );
     }
 }
 
@@ -50,9 +43,6 @@ struct Velocity(Vec2);
 #[derive(Component)]
 struct Counter(u32);
 
-#[derive(Component)]
-struct GameCamera;
-
 // ······
 // Events
 // ······
@@ -64,24 +54,7 @@ struct CollisionEvent(Entity);
 // Systems
 // ·······
 
-fn init_sample(
-    mut cmd: Commands,
-    assets: Res<CoreAssets>,
-    opts: Res<Persistent<GameOptions>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    // Camera
-    cmd.spawn((Camera2dBundle::default(), GameCamera));
-
-    // Background
-    cmd.spawn(MaterialMesh2dBundle {
-        mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
-        transform: Transform::from_xyz(0., 0., -10.).with_scale(SIZE.extend(1.)),
-        material: materials.add(ColorMaterial::from(opts.color.darker)),
-        ..default()
-    });
-
+fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, opts: Res<Persistent<GameOptions>>) {
     // Sprites
     for velocity in [
         Vec2::new(300., 250.),
@@ -173,18 +146,6 @@ fn on_collision(
         }
 
         audio.play(assets.boing.clone()).with_volume(0.3);
-    }
-}
-
-fn resume_game(mut cam: Query<&mut Camera, With<GameCamera>>) {
-    if let Ok(mut cam) = cam.get_single_mut() {
-        cam.is_active = true;
-    }
-}
-
-fn pause_game(mut cam: Query<&mut Camera, With<GameCamera>>) {
-    if let Ok(mut cam) = cam.get_single_mut() {
-        cam.is_active = false;
     }
 }
 

@@ -17,7 +17,6 @@ use crate::{
         FONT_MULTIPLIERS,
         FONT_SIZES,
     },
-    GameState,
     MovementAxis,
 };
 
@@ -28,12 +27,7 @@ use crate::{
 pub struct DataPlugin;
 
 impl Plugin for DataPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(
-            OnEnter(GameState::Loading),
-            init_persistence,
-        );
-    }
+    fn build(&self, app: &mut App) { app.add_systems(Startup, init_persistence); }
 }
 
 // ·········
@@ -62,7 +56,6 @@ pub struct ColorPalette {
     pub light: Color,
     pub mid: Color,
     pub dark: Color,
-    pub darker: Color,
 }
 
 impl Default for ColorPalette {
@@ -78,12 +71,7 @@ impl Default for ColorPalette {
                 173.0 / 255.0,
                 118.0 / 255.0,
             ),
-            dark: Color::rgb(
-                43.0 / 255.0,
-                115.0 / 255.0,
-                77.0 / 255.0,
-            ),
-            darker: Color::rgb(55.0 / 255.0, 84.0 / 255.0, 70.0 / 255.0),
+            dark: Color::rgb(55.0 / 255.0, 84.0 / 255.0, 70.0 / 255.0),
         }
     }
 }

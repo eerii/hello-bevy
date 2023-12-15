@@ -24,31 +24,26 @@ pub struct MenuUIPlugin;
 impl Plugin for MenuUIPlugin {
     fn build(&self, app: &mut App) {
         app.add_state::<MenuState>()
-            .add_systems(OnEnter(GameState::Menu), init_menu)
+            .add_systems(
+                PreUpdate,
+                (
+                    clean_menu.run_if(state_changed::<GameState>()),
+                    clean_menu.run_if(state_changed::<MenuState>()),
+                    clean_menu.run_if(resource_changed::<Persistent<Keybinds>>()),
+                    clean_menu.run_if(resource_changed::<
+                        Persistent<GameOptions>,
+                    >()),
+                    // Non short circuiting or else
+                )
+                    .after(clean_ui),
+            )
             .add_systems(
                 Update,
                 (
                     handle_buttons.run_if(in_state(GameState::Menu)),
+                    (remap_keybind, handle_buttons).run_if(in_state(MenuState::Rebinding)),
                     return_to_menu,
                 ),
-            )
-            .add_systems(OnExit(GameState::Menu), exit_menu)
-            .add_systems(
-                PreUpdate,
-                clean_menu.run_if(
-                    in_state(GameState::Menu).and_then(
-                        state_changed::<MenuState>()
-                            .or_else(resource_changed::<
-                                Persistent<GameOptions>,
-                            >())
-                            .or_else(resource_changed::<Persistent<Keybinds>>()),
-                    ),
-                ),
-            )
-            .add_systems(OnExit(MenuState::Main), may_be_cleaned)
-            .add_systems(
-                Update,
-                (remap_keybind, handle_buttons).run_if(in_state(MenuState::Rebinding)),
             );
     }
 }
@@ -61,15 +56,11 @@ enum MenuState {
     Keybinds,
     Rebinding,
     Visual,
-    Exit,
 }
 
 // ·········
 // Resources
 // ·········
-
-#[derive(Resource)]
-struct MenuStarting;
 
 #[derive(Resource)]
 struct KeyBeingRebound(String);
@@ -97,18 +88,6 @@ enum MenuButton {
 // ·······
 // Systems
 // ·······
-
-fn init_menu(
-    mut cmd: Commands,
-    style: Res<UIStyle>,
-    mut node: Query<(Entity, &mut BackgroundColor), With<UiNode>>,
-    opts: Res<Persistent<GameOptions>>,
-) {
-    let Ok((node, mut bg)) = node.get_single_mut() else { return };
-    cmd.insert_resource(MenuStarting);
-    *bg = opts.color.darker.into();
-    layout_main(cmd, node, &style);
-}
 
 fn handle_buttons(
     mut cmd: Commands,
@@ -199,7 +178,7 @@ fn handle_buttons(
             },
             Interaction::Hovered => {
                 bg.0 = opts.color.mid;
-                text.sections[0].style.color = opts.color.darker;
+                text.sections[0].style.color = opts.color.dark;
             },
             Interaction::None => {
                 bg.0 = opts.color.light;
@@ -209,32 +188,26 @@ fn handle_buttons(
     }
 }
 
-fn may_be_cleaned(mut cmd: Commands, menu_starting: Option<Res<MenuStarting>>) {
-    if menu_starting.is_some() {
-        cmd.remove_resource::<MenuStarting>();
-    }
-}
-
 fn clean_menu(
     mut cmd: Commands,
-    state: Res<State<MenuState>>,
+    game_state: Res<State<GameState>>,
+    menu_state: Res<State<MenuState>>,
     node: Query<Entity, With<UiNode>>,
     style: Res<UIStyle>,
     opts: Res<Persistent<GameOptions>>,
     keybinds: Res<Persistent<Keybinds>>,
     rebind_key: Option<Res<KeyBeingRebound>>,
-    menu_starting: Option<Res<MenuStarting>>,
 ) {
-    if menu_starting.is_some() {
+    let Ok(node) = node.get_single() else { return };
+    if let Some(mut node) = cmd.get_entity(node) {
+        node.despawn_descendants();
+    }
+
+    if !matches!(game_state.get(), GameState::Menu) {
         return;
     }
 
-    let Ok(node) = node.get_single() else { return };
-    let Some(mut entity) = cmd.get_entity(node) else { return };
-
-    entity.despawn_descendants();
-
-    match state.get() {
+    match menu_state.get() {
         MenuState::Main => layout_main(cmd, node, &style),
         MenuState::Settings => layout_options(cmd, node, &style),
         MenuState::Keybinds => layout_keybinds(cmd, node, &style, &keybinds),
@@ -246,25 +219,9 @@ fn clean_menu(
             layout_rebinding(cmd, node, &style, &rebind_key)
         },
         MenuState::Visual => layout_visual(cmd, node, &style, &opts),
-        MenuState::Exit => {},
     }
 }
 
-fn exit_menu(
-    mut cmd: Commands,
-    mut next_state: ResMut<NextState<MenuState>>,
-    mut node: Query<(Entity, &mut BackgroundColor), With<UiNode>>,
-) {
-    next_state.set(MenuState::Exit);
-
-    let Ok((node, mut bg)) = node.get_single_mut() else { return };
-    *bg = Color::rgba(0., 0., 0., 0.).into();
-
-    let Some(mut node) = cmd.get_entity(node) else { return };
-    node.despawn_descendants();
-}
-
-// TODO: Add movement keybinds
 fn return_to_menu(
     mut game_state: ResMut<NextState<GameState>>,
     current_menu_state: Res<State<MenuState>>,

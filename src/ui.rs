@@ -2,7 +2,11 @@ mod debug;
 mod loading;
 mod menu;
 
-use bevy::prelude::*;
+use bevy::{
+    core_pipeline::clear_color::ClearColorConfig,
+    prelude::*,
+    render::view::RenderLayers,
+};
 use bevy_persistent::Persistent;
 
 use crate::{
@@ -15,9 +19,11 @@ const MENU_WIDTH: Val = Val::Px(300.);
 const MENU_ITEM_HEIGHT: Val = Val::Px(40.);
 const MENU_ITEM_GAP: Val = Val::Px(10.);
 
+pub const UI_LAYER: RenderLayers = RenderLayers::layer(1);
 pub const FONT_MULTIPLIERS: [f32; 3] = [2.0, 1.0, 0.8];
 pub const FONT_SIZES: [f32; 5] = [16.0, 20.0, 24.0, 28.0, 32.0];
 
+// TODO: Ui elements with components
 // TODO: Tweening and animation (Look into https://github.com/djeedai/bevy_tweening)
 // TODO: Rounded button corners (Requires #8973 to be merged in 0.13)
 
@@ -32,10 +38,22 @@ impl Plugin for UIPlugin {
         app.insert_resource(UIStyle::default())
             .add_systems(OnEnter(GameState::Loading), init_ui)
             .add_systems(
+                PreUpdate,
+                clean_ui.run_if(state_changed::<GameState>()),
+            )
+            .add_systems(
+                Update,
+                change_background.run_if(
+                    state_changed::<GameState>().or_else(resource_changed::<
+                        Persistent<GameOptions>,
+                    >()),
+                ),
+            )
+            .add_systems(
                 PostUpdate,
-                change_style.run_if(resource_changed::<
+                (change_style.run_if(resource_changed::<
                     Persistent<GameOptions>,
-                >()),
+                >()),),
             )
             .add_plugins((
                 menu::MenuUIPlugin,
@@ -66,7 +84,7 @@ struct UIStyle {
 // ··········
 
 #[derive(Component)]
-struct UiCam;
+struct UiCamera;
 
 #[derive(Component)]
 struct UiNode;
@@ -76,17 +94,20 @@ struct UiNode;
 // ·······
 
 fn init_ui(mut cmd: Commands) {
+    // Ui camera
     cmd.spawn((
         Camera2dBundle {
             camera: Camera {
-                order: 10,
+                order: -10,
                 ..default()
             },
             ..default()
         },
-        UiCam,
+        UI_LAYER,
+        UiCamera,
     ));
 
+    // Main node
     cmd.spawn((
         NodeBundle {
             style: Style {
@@ -100,6 +121,7 @@ fn init_ui(mut cmd: Commands) {
             },
             ..default()
         },
+        UI_LAYER,
         UiNode,
     ));
 }
@@ -138,7 +160,20 @@ fn change_style(
     style.button_bg = opts.color.light.into();
 }
 
-fn clear_ui(mut cmd: Commands, node: Query<Entity, With<UiNode>>) {
+fn change_background(
+    opts: Res<Persistent<GameOptions>>,
+    state: Res<State<GameState>>,
+    mut cam: Query<&mut Camera2d, With<UiCamera>>,
+) {
+    if let Ok(mut cam) = cam.get_single_mut() {
+        cam.clear_color = match state.get() {
+            GameState::Play => ClearColorConfig::None,
+            _ => ClearColorConfig::Custom(opts.color.dark),
+        }
+    }
+}
+
+fn clean_ui(mut cmd: Commands, node: Query<Entity, With<UiNode>>) {
     let Ok(node) = node.get_single() else { return };
     let Some(mut node) = cmd.get_entity(node) else { return };
     node.despawn_descendants();
@@ -173,7 +208,7 @@ impl<'a> UIText<'a> {
         self
     }
 
-    fn add(self, parent: &mut ChildBuilder) { parent.spawn(self.text); }
+    fn add(self, parent: &mut ChildBuilder) { parent.spawn((self.text, UI_LAYER)); }
 }
 
 // Button
@@ -210,9 +245,9 @@ impl<T: Component> UIButton<T> {
     fn add(self, parent: &mut ChildBuilder) {
         let _text = self.text.text.sections[0].value.clone();
         let _id = parent
-            .spawn((self.button, self.action))
+            .spawn((self.button, self.action, UI_LAYER))
             .with_children(|button| {
-                button.spawn(self.text);
+                button.spawn((self.text, UI_LAYER));
             })
             .id();
     }
@@ -247,7 +282,7 @@ impl<'a> UIOption<'a> {
     }
 
     fn add(self, parent: &mut ChildBuilder, children: impl FnOnce(&mut ChildBuilder)) {
-        parent.spawn(self.row).with_children(|row| {
+        parent.spawn((self.row, UI_LAYER)).with_children(|row| {
             self.label.add(row);
             children(row);
         });

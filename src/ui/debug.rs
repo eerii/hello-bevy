@@ -22,11 +22,10 @@ mod only_in_debug {
 
     impl Plugin for super::DebugUIPlugin {
         fn build(&self, app: &mut App) {
-            app.add_systems(OnEnter(GameState::Play), init_fps)
-                .add_systems(
-                    Update,
-                    update_fps.run_if(in_state(GameState::Play)),
-                );
+            app.add_systems(
+                Update,
+                update_fps.run_if(in_state(GameState::Play)),
+            );
         }
     }
 
@@ -41,45 +40,41 @@ mod only_in_debug {
     // Systems
     // ·······
 
-    fn init_fps(
+    fn update_fps(
         mut cmd: Commands,
-        node: Query<Entity, With<UiNode>>,
+        diagnostics: Res<DiagnosticsStore>,
         assets: Res<CoreAssets>,
-        fps: Query<Entity, With<FpsText>>,
+        node: Query<Entity, With<UiNode>>,
+        mut fps: Query<&mut Text, With<FpsText>>,
     ) {
-        if fps.iter().next().is_some() {
+        let Ok(mut text) = fps.get_single_mut() else {
+            let Ok(node) = node.get_single() else { return };
+            let Some(mut node) = cmd.get_entity(node) else { return };
+            node.with_children(|parent| {
+                parent.spawn((
+                    TextBundle::from_section("", TextStyle {
+                        font: assets.font.clone(),
+                        font_size: 16.0,
+                        color: Color::WHITE,
+                    })
+                    .with_style(Style {
+                        position_type: PositionType::Absolute,
+                        left: Val::Px(5.0),
+                        bottom: Val::Px(5.0),
+                        ..default()
+                    }),
+                    FpsText,
+                ));
+            });
             return;
-        }
+        };
 
-        let Ok(node) = node.get_single() else { return };
-        let Some(mut node) = cmd.get_entity(node) else { return };
-        node.with_children(|parent| {
-            parent.spawn((
-                TextBundle::from_section("", TextStyle {
-                    font: assets.font.clone(),
-                    font_size: 16.0,
-                    color: Color::WHITE,
-                })
-                .with_style(Style {
-                    position_type: PositionType::Absolute,
-                    left: Val::Px(5.0),
-                    top: Val::Px(5.0),
-                    ..default()
-                }),
-                FpsText,
-            ));
-        });
-    }
-
-    fn update_fps(diagnostics: Res<DiagnosticsStore>, mut text: Query<&mut Text, With<FpsText>>) {
-        for mut t in &mut text {
-            let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) else {
-                continue;
-            };
-            let Some(value) = fps.smoothed() else { continue };
-            t.sections[0].value = format!("FPS {:.0}", value);
-        }
+        let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) else {
+            return;
+        };
+        text.sections[0].value = format!(
+            "FPS {:.0}",
+            fps.smoothed().unwrap_or(0.0)
+        );
     }
 }
-
-// Only export this module if this is a debug build

@@ -1,9 +1,6 @@
 #![allow(clippy::too_many_arguments)]
 
-use bevy::{
-    prelude::*,
-    sprite::MaterialMesh2dBundle,
-};
+use bevy::prelude::*;
 use bevy_persistent::Persistent;
 use hello_bevy::{
     CoreAssets,
@@ -69,24 +66,7 @@ struct GameCamera;
 // Systems
 // ·······
 
-fn init_sample(
-    mut cmd: Commands,
-    assets: Res<CoreAssets>,
-    opts: Res<Persistent<GameOptions>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    // Camera
-    cmd.spawn((Camera2dBundle::default(), GameCamera));
-
-    // Background
-    cmd.spawn(MaterialMesh2dBundle {
-        mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
-        transform: Transform::from_xyz(0., 0., -10.).with_scale(SIZE.extend(1.)),
-        material: materials.add(ColorMaterial::from(opts.color.darker)),
-        ..default()
-    });
-
+fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, opts: Res<Persistent<GameOptions>>) {
     // Player
     cmd.spawn((
         SpriteBundle {

@@ -41,8 +41,7 @@ impl Plugin for InputPlugin {
                     handle_input_mouse,
                     handle_input_gamepad,
                     handle_input_touch,
-                )
-                    .run_if(resource_exists::<Persistent<Keybinds>>()),
+                ),
             )
             .add_systems(PostUpdate, clear_input);
 

@@ -17,6 +17,8 @@ dev = [
     "bevy/file_watcher", # Enables hot reloading of assets
     "bevy/dynamic_linking", # Enables dynamic linking for faster compilation
 ]
+pixel_perfect = []
+resizable = []
 save_schedule = []
 mock_touch = []
 

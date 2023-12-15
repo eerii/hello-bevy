@@ -1,5 +1,6 @@
 mod assets;
 mod audio;
+mod camera;
 mod data;
 mod debug;
 mod input;
@@ -9,7 +10,6 @@ mod utils;
 use bevy::{
     asset::AssetMetaCheck,
     prelude::*,
-    window::WindowResolution,
 };
 
 // Exports for examples
@@ -30,9 +30,9 @@ pub use crate::{
     },
 };
 
-// TODO: Port improvements from the game jam
-// TODO: Add compilation guards for extra features (such as pixel art or resizable)
-// TODO: Option for pixel perfect upscaling camera
+// [CHANGE]: Game title and resolution
+pub const GAME_TITLE: &str = "Hello Bevy!";
+pub const INITIAL_RESOLUTION: Vec2 = Vec2::new(600., 600.);
 
 // Game state
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -64,20 +64,33 @@ impl Plugin for GamePlugin {
         }
 
         // Default plugins
-        app.add_plugins(
-            DefaultPlugins.set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "Hello Bevy!".to_string(), // [CHANGE]: Game title
-                    resolution: WindowResolution::new(600., 600.),
-                    resizable: false, // Or use fit_canvas_to_parent: true for resizing on the web
-                    canvas: Some("#bevy".to_string()),
-                    prevent_default_event_handling: false,
-                    ..default()
-                }),
+        #[allow(unused_mut)]
+        let mut window_plugin = WindowPlugin {
+            primary_window: Some(Window {
+                title: GAME_TITLE.into(),
+                resolution: INITIAL_RESOLUTION.into(),
+                resizable: false,
+                canvas: Some("#bevy".to_string()),
+                prevent_default_event_handling: false,
                 ..default()
             }),
-            //.set(ImagePlugin::default_nearest()), // [CHANGE]: Use if your game is pixel art
-        );
+            ..default()
+        };
+
+        #[cfg(feature = "resizable")]
+        {
+            let win = window_plugin.primary_window.as_mut().unwrap();
+            win.resizable = true;
+            win.fit_canvas_to_parent = true;
+        }
+
+        #[cfg(not(feature = "pixel_perfect"))]
+        let image_plugin = ImagePlugin::default();
+
+        #[cfg(feature = "pixel_perfect")]
+        let image_plugin = ImagePlugin::default_nearest();
+
+        app.add_plugins(DefaultPlugins.set(window_plugin).set(image_plugin));
 
         // Game
         app.add_state::<GameState>().add_plugins((
@@ -86,6 +99,7 @@ impl Plugin for GamePlugin {
             data::DataPlugin,
             input::InputPlugin,
             audio::AudioPlugin,
+            camera::CameraPlugin,
         ));
 
         // Debug only plugins

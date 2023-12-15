@@ -25,7 +25,7 @@ impl Plugin for LoadingUIPlugin {
             Update,
             init_splash.run_if(in_state(GameState::Loading)),
         )
-        .add_systems(OnExit(GameState::Loading), clear_ui)
+        .add_systems(OnExit(GameState::Loading), clean_ui)
         .add_systems(
             Update,
             (
