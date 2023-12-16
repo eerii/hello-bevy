@@ -5,7 +5,6 @@ mod data;
 mod debug;
 mod input;
 mod ui;
-mod utils;
 
 use bevy::{
     asset::AssetMetaCheck,
@@ -23,12 +22,14 @@ pub use crate::{
         Keybinds,
     },
     input::{
+        InputMovement,
         KeyBind,
-        MoveBind,
-        Movement,
-        MovementAxis,
     },
 };
+
+// TODO: Make todo and changelog file, create a real versioning system (maybe project in gh)
+// TODO: Add example games (port the doodle jump from python, maybe something like suika)
+// TODO: Try to port to bevy-main
 
 // [CHANGE]: Game title and resolution
 pub const GAME_TITLE: &str = "Hello Bevy!";
@@ -101,12 +102,5 @@ impl Plugin for GamePlugin {
             audio::AudioPlugin,
             camera::CameraPlugin,
         ));
-
-        // Debug only plugins
-        #[cfg(debug_assertions)]
-        {
-            app.add_plugins(debug::DebugPlugin);
-            debug::save_schedule(app);
-        }
     }
 }

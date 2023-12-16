@@ -7,9 +7,9 @@ use hello_bevy::{
     GameOptions,
     GamePlugin,
     GameState,
+    InputMovement,
     KeyBind,
     Keybinds,
-    Movement,
 };
 
 const SIZE: Vec2 = Vec2::new(600., 600.);
@@ -100,7 +100,7 @@ fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, opts: Res<Persistent<
 fn update_sample(
     time: Res<Time>,
     input: Res<Input<KeyBind>>,
-    movement: Res<Movement>,
+    movement: Res<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
     mut objects: Query<(&mut Player, &mut Transform)>,
     mut counter: Query<(&mut Text, &mut Counter)>,

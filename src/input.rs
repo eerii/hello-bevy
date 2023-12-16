@@ -33,14 +33,14 @@ pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Input::<KeyBind>::default())
-            .insert_resource(Movement::default())
+            .insert_resource(InputMovement::default())
             .add_systems(
                 PreUpdate,
                 (
-                    handle_input_keyboard,
-                    handle_input_mouse,
-                    handle_input_gamepad,
-                    handle_input_touch,
+                    handle_keyboard_input,
+                    handle_mouse_input,
+                    handle_gamepad_input,
+                    handle_touch_input,
                 ),
             )
             .add_systems(PostUpdate, clear_input);
@@ -55,12 +55,12 @@ impl Plugin for InputPlugin {
 // ·········
 
 #[derive(Resource, Default)]
-pub struct Movement {
-    map: HashMap<MoveBind, f32>,
+pub struct InputMovement {
+    map: HashMap<AxisBind, f32>,
 }
 
-impl Movement {
-    fn add(&mut self, bind: MoveBind, value: f32) {
+impl InputMovement {
+    fn add(&mut self, bind: AxisBind, value: f32) {
         if value.abs() < 0.1 {
             self.map.remove(&bind);
         } else {
@@ -71,19 +71,19 @@ impl Movement {
     // Don't clear gamepad
     pub fn clear(&mut self) {
         self.map
-            .retain(|bind, _| matches!(bind, MoveBind::Gamepad(_)));
+            .retain(|bind, _| matches!(bind, AxisBind::Gamepad(_)));
     }
 
-    pub fn get(&self, bind: MoveBind) -> f32 { self.map.get(&bind).copied().unwrap_or(0.) }
+    pub fn get(&self, bind: AxisBind) -> f32 { self.map.get(&bind).copied().unwrap_or(0.) }
 }
 
 // ·······
 // Systems
 // ·······
 
-fn handle_input_keyboard(
+fn handle_keyboard_input(
     mut input: ResMut<Input<KeyBind>>,
-    mut movement: ResMut<Movement>,
+    mut movement: ResMut<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
     mut keyboard: EventReader<KeyboardInput>,
 ) {
@@ -103,7 +103,7 @@ fn handle_input_keyboard(
         }
 
         for bind in keybinds.moves() {
-            if let MoveBind::KeyAxis(a, b) = bind {
+            if let AxisBind::Key(a, b) = bind {
                 if a == &event_key {
                     match event.state {
                         ButtonState::Pressed => input.press(KeyBind::Key(*a)),
@@ -120,7 +120,7 @@ fn handle_input_keyboard(
     }
 
     for bind in keybinds.moves() {
-        if let MoveBind::KeyAxis(a, b) = bind {
+        if let AxisBind::Key(a, b) = bind {
             let mut value = 0.;
             if input.pressed(KeyBind::Key(*a)) {
                 value += 1.
@@ -132,9 +132,9 @@ fn handle_input_keyboard(
     }
 }
 
-fn handle_input_mouse(
+fn handle_mouse_input(
     mut input: ResMut<Input<KeyBind>>,
-    mut movement: ResMut<Movement>,
+    mut movement: ResMut<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
     mut mouse: EventReader<MouseButtonInput>,
     mut mouse_motion: EventReader<MouseMotion>,
@@ -155,10 +155,10 @@ fn handle_input_mouse(
 
     for event in mouse_motion.read() {
         for bind in keybinds.moves() {
-            if let MoveBind::MouseAxis(axis) = bind {
+            if let AxisBind::Mouse(axis) = bind {
                 let value = match axis {
-                    MovementAxis::X => event.delta.x,
-                    MovementAxis::Y => event.delta.y,
+                    InputAxis::X => event.delta.x,
+                    InputAxis::Y => event.delta.y,
                 };
                 movement.add(*bind, value);
             }
@@ -166,9 +166,9 @@ fn handle_input_mouse(
     }
 }
 
-fn handle_input_gamepad(
+fn handle_gamepad_input(
     mut input: ResMut<Input<KeyBind>>,
-    mut movement: ResMut<Movement>,
+    mut movement: ResMut<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
     mut gamepad_buttons: EventReader<GamepadButtonInput>,
     mut gamepad_axis: EventReader<GamepadAxisChangedEvent>,
@@ -189,7 +189,7 @@ fn handle_input_gamepad(
 
     for event in gamepad_axis.read() {
         for bind in keybinds.moves() {
-            if let MoveBind::Gamepad(axis) = bind {
+            if let AxisBind::Gamepad(axis) = bind {
                 if axis != &event.axis_type {
                     continue;
                 }
@@ -199,9 +199,9 @@ fn handle_input_gamepad(
     }
 }
 
-fn handle_input_touch(
+fn handle_touch_input(
     mut input: ResMut<Input<KeyBind>>,
-    mut movement: ResMut<Movement>,
+    mut movement: ResMut<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
     mut touch: EventReader<TouchInput>,
     mut prev_pos: Local<Option<Vec2>>,
@@ -219,7 +219,7 @@ fn handle_input_touch(
 
     for event in moved {
         for bind in keybinds.moves() {
-            if let MoveBind::TouchAxis(axis) = bind {
+            if let AxisBind::Touch(axis) = bind {
                 if !input.pressed(KeyBind::TouchPress) {
                     continue;
                 }
@@ -227,8 +227,8 @@ fn handle_input_touch(
                 let prev = prev_pos.get_or_insert(event.position);
                 let delta = event.position - *prev;
                 let value = match axis {
-                    MovementAxis::X => delta.x,
-                    MovementAxis::Y => delta.y,
+                    InputAxis::X => delta.x,
+                    InputAxis::Y => delta.y,
                 };
 
                 movement.add(*bind, value);
@@ -265,7 +265,7 @@ fn mock_touch(
     }
 }
 
-fn clear_input(mut input: ResMut<Input<KeyBind>>, mut movement: ResMut<Movement>) {
+fn clear_input(mut input: ResMut<Input<KeyBind>>, mut movement: ResMut<InputMovement>) {
     input.clear();
     movement.clear();
 }
@@ -295,23 +295,23 @@ impl ToString for KeyBind {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Reflect)]
-pub enum MovementAxis {
+pub enum InputAxis {
     X,
     Y,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Reflect)]
-pub enum MoveBind {
-    KeyAxis(KeyCode, KeyCode),
-    MouseAxis(MovementAxis),
+pub enum AxisBind {
+    Key(KeyCode, KeyCode),
+    Mouse(InputAxis),
     Gamepad(GamepadAxisType),
-    TouchAxis(MovementAxis),
+    Touch(InputAxis),
 }
 
 #[derive(Debug, Serialize, Deserialize, Reflect)]
-pub struct BindList<T>(pub Vec<T>);
+pub struct BindSet<T>(pub Vec<T>);
 
-impl BindList<KeyBind> {
+impl BindSet<KeyBind> {
     pub fn pressed(&self, input: &Input<KeyBind>) -> bool {
         self.0.iter().any(|bind| input.pressed(*bind))
     }
@@ -325,8 +325,8 @@ impl BindList<KeyBind> {
     }
 }
 
-impl BindList<MoveBind> {
-    pub fn get(&self, movement: &Movement) -> f32 {
+impl BindSet<AxisBind> {
+    pub fn get(&self, movement: &InputMovement) -> f32 {
         self.0
             .iter()
             .map(|bind| movement.get(*bind))
@@ -338,14 +338,14 @@ impl BindList<MoveBind> {
 impl Keybinds {
     pub fn keys(&self) -> Vec<&KeyBind> {
         self.iter_fields()
-            .filter_map(|f| f.downcast_ref::<BindList<KeyBind>>())
+            .filter_map(|f| f.downcast_ref::<BindSet<KeyBind>>())
             .flat_map(|f| &f.0)
             .collect()
     }
 
-    pub fn moves(&self) -> Vec<&MoveBind> {
+    pub fn moves(&self) -> Vec<&AxisBind> {
         self.iter_fields()
-            .filter_map(|f| f.downcast_ref::<BindList<MoveBind>>())
+            .filter_map(|f| f.downcast_ref::<BindSet<AxisBind>>())
             .flat_map(|f| &f.0)
             .collect()
     }

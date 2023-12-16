@@ -9,15 +9,15 @@ use serde::{
 
 use crate::{
     input::{
-        BindList,
+        AxisBind,
+        BindSet,
+        InputAxis,
         KeyBind,
-        MoveBind,
     },
     ui::{
         FONT_MULTIPLIERS,
         FONT_SIZES,
     },
-    MovementAxis,
 };
 
 // ······
@@ -84,42 +84,42 @@ pub struct GameOptions {
 
 #[derive(Resource, Serialize, Deserialize, Reflect)]
 pub struct Keybinds {
-    pub x_axis: BindList<MoveBind>,
-    pub y_axis: BindList<MoveBind>,
-    pub jump: BindList<KeyBind>,
-    pub interact: BindList<KeyBind>,
-    pub inventory: BindList<KeyBind>,
-    pub pause: BindList<KeyBind>,
+    pub x_axis: BindSet<AxisBind>,
+    pub y_axis: BindSet<AxisBind>,
+    pub jump: BindSet<KeyBind>,
+    pub interact: BindSet<KeyBind>,
+    pub inventory: BindSet<KeyBind>,
+    pub pause: BindSet<KeyBind>,
 }
 
 impl Default for Keybinds {
     fn default() -> Self {
         Self {
-            x_axis: BindList(vec![
-                MoveBind::KeyAxis(KeyCode::D, KeyCode::A),
-                MoveBind::Gamepad(GamepadAxisType::LeftStickX),
-                // MoveBind::MouseAxis(MovementAxis::X),
-                MoveBind::TouchAxis(MovementAxis::X),
+            x_axis: BindSet(vec![
+                AxisBind::Key(KeyCode::D, KeyCode::A),
+                AxisBind::Gamepad(GamepadAxisType::LeftStickX),
+                // MoveBind::MouseAxis(InputAxis::X),
+                AxisBind::Touch(InputAxis::X),
             ]),
-            y_axis: BindList(vec![
-                MoveBind::KeyAxis(KeyCode::W, KeyCode::S),
-                MoveBind::Gamepad(GamepadAxisType::LeftStickY),
+            y_axis: BindSet(vec![
+                AxisBind::Key(KeyCode::W, KeyCode::S),
+                AxisBind::Gamepad(GamepadAxisType::LeftStickY),
             ]),
-            jump: BindList(vec![
+            jump: BindSet(vec![
                 KeyBind::Key(KeyCode::Space),
                 KeyBind::Gamepad(GamepadButtonType::South),
                 KeyBind::TouchPress,
             ]),
-            interact: BindList(vec![
+            interact: BindSet(vec![
                 KeyBind::Key(KeyCode::E),
                 KeyBind::Mouse(MouseButton::Left),
                 KeyBind::Gamepad(GamepadButtonType::East),
             ]),
-            inventory: BindList(vec![
+            inventory: BindSet(vec![
                 KeyBind::Key(KeyCode::Tab),
                 KeyBind::Gamepad(GamepadButtonType::West),
             ]),
-            pause: BindList(vec![
+            pause: BindSet(vec![
                 KeyBind::Key(KeyCode::Escape),
                 KeyBind::Gamepad(GamepadButtonType::Start),
             ]),

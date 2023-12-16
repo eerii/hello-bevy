@@ -14,8 +14,8 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 - ci that checks errors and lint
 - creates binaries for web, linux, mac and windows when adding a tag
 - deploy to itch automatically
-- debug features integrated (inspector, schedule graphs)
 - remapable input manager with gamepad support
+- easy debuggins features (inspector, fps counter, tracy script)
 - asset loading with progress, audio, saving, menu...
 - hot reloading and profiling when debugging
 
@@ -79,7 +79,6 @@ i tried to be very intentional with all the plugins in this template. there is a
 
 there are also nice tools for debugging:
 
-- [bevy_mod_debugdump](https://github.com/jakobhellermann/bevy_mod_debugdump): creates system and rendering graphs to inspect dependencies
 - [bevy-inspector-egui](https://github.com/jakobhellermann/bevy-inspector-egui): imgui-like interface where you can see entities and components in real time (press I)
 
 ### license 📝

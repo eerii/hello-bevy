@@ -1,3 +1,5 @@
+// TODO: Add more egui interfaces for debugging
+
 // Constant that indicates if this is a debug build
 #[cfg(debug_assertions)]
 #[allow(dead_code)]
@@ -64,88 +66,4 @@ mod only_in_debug {
             state.inspector = !state.inspector;
         }
     }
-
-    // ·····
-    // Extra
-    // ·····
-
-    // Save the scheduling graphs for system stages (disabled for wasm)
-    #[cfg(feature = "save_schedule")]
-    pub fn save_schedule(app: &mut App) {
-        use std::path::Path;
-
-        let graph_dir = Path::new(".data").join("graphs");
-        if !graph_dir.exists() {
-            std::fs::create_dir_all(&graph_dir).expect("Failed to create graph directory");
-        }
-
-        // Render graph
-        {
-            use bevy_mod_debugdump::*;
-            let dot = render_graph_dot(app, &render_graph::Settings::default());
-            save_dot(dot, "RenderGraph".to_string());
-        }
-
-        // Schedule graphs
-        app.world
-            .resource_scope::<Schedules, _>(|world, mut schedules| {
-                use bevy_mod_debugdump::schedule_graph::*;
-
-                let ignored_ambiguities = schedules.ignored_scheduling_ambiguities.clone();
-                for (label, schedule) in schedules.iter_mut() {
-                    schedule.graph_mut().initialize(world);
-                    schedule
-                        .graph_mut()
-                        .build_schedule(
-                            world.components(),
-                            ScheduleDebugGroup.intern(),
-                            &ignored_ambiguities,
-                        )
-                        .unwrap();
-
-                    let settings = Settings {
-                        collapse_single_system_sets: true,
-                        ..default()
-                    };
-                    let dot = schedule_graph_dot(schedule, world, &settings);
-                    save_dot(dot, schedule_label(label));
-                }
-            });
-    }
-
-    #[cfg(not(feature = "save_schedule"))]
-    pub fn save_schedule(_: &mut App) {}
-
-    #[allow(dead_code)]
-    fn schedule_label(schedule: &dyn ScheduleLabel) -> String { format!("{:?}", schedule) }
-
-    #[allow(dead_code)]
-    fn save_dot(dot: String, name: String) {
-        use std::path::Path;
-
-        let graph_dir = Path::new(".data").join("graphs");
-        if !graph_dir.exists() {
-            std::fs::create_dir_all(&graph_dir).expect("Failed to create graph directory");
-        }
-
-        std::fs::write(
-            graph_dir.join(format!("{}.dot", name)),
-            dot,
-        )
-        .unwrap_or_else(|e| warn!("Failed to save graph: {}", e));
-
-        if let Err(e) = std::process::Command::new("dot")
-            .arg("-Tsvg")
-            .arg("-o")
-            .arg(graph_dir.join(format!("{}.svg", name)))
-            .arg(graph_dir.join(format!("{}.dot", name)))
-            .output()
-        {
-            warn!("Failed to convert graph to svg: {}", e);
-        }
-    }
 }
-
-// Only export this module if this is a debug build
-#[cfg(debug_assertions)]
-pub use only_in_debug::*;
