@@ -6,6 +6,7 @@ use bevy::{
     core_pipeline::clear_color::ClearColorConfig,
     prelude::*,
     render::view::RenderLayers,
+    window::WindowResized,
 };
 use bevy_persistent::Persistent;
 
@@ -112,6 +113,8 @@ fn init_ui(mut cmd: Commands) {
                 flex_direction: FlexDirection::Column,
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
+                align_self: AlignSelf::Center,
+                justify_self: JustifySelf::Center,
                 row_gap: Val::Px(12.),
                 ..default()
             },

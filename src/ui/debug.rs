@@ -1,11 +1,22 @@
+// Based on
+// - Inspector: https://github.com/jakobhellermann/bevy-inspector-egui/blob/main/crates/bevy-inspector-egui/examples/integrations/egui_dock.rs
+// - Virtual time: https://github.com/bevyengine/bevy/blob/main/examples/time/virtual_time.rs
+
 #[allow(dead_code)]
 pub struct DebugUIPlugin;
 
 #[cfg(debug_assertions)]
 mod only_in_debug {
-    use std::time::Duration;
+    use std::{
+        any::TypeId,
+        time::Duration,
+    };
 
     use bevy::{
+        asset::{
+            ReflectAsset,
+            UntypedAssetId,
+        },
         diagnostic::{
             DiagnosticsStore,
             FrameTimeDiagnosticsPlugin,
@@ -15,32 +26,66 @@ mod only_in_debug {
             input_pressed,
         },
         prelude::*,
+        reflect::TypeRegistry,
+        render::camera::CameraProjection,
         time::common_conditions::on_real_timer,
-        window::PrimaryWindow,
+        transform::TransformSystem,
+        window::{
+            PrimaryWindow,
+            WindowMode,
+        },
     };
     use bevy_inspector_egui::{
         bevy_egui::{
             EguiContext,
             EguiContexts,
             EguiPlugin,
+            EguiSet,
         },
-        bevy_inspector::hierarchy::SelectedEntities,
+        bevy_inspector::{
+            by_type_id::{
+                ui_for_asset,
+                ui_for_resource,
+            },
+            hierarchy::{
+                hierarchy_ui,
+                SelectedEntities,
+            },
+            ui_for_entities_shared_components,
+            ui_for_entity_with_children,
+        },
         egui::{
+            Context,
             FontData,
             FontDefinitions,
             FontFamily,
             FontId,
-            ScrollArea,
-            SidePanel,
+            Rect as ERect,
             TextStyle as ETextStyle,
+            Ui,
+            WidgetText,
         },
         DefaultInspectorConfigPlugin,
     };
+    use egui_dock::{
+        DockArea,
+        DockState,
+        NodeIndex,
+        Style as EStyle,
+        TabViewer,
+    };
+    use egui_gizmo::{
+        Gizmo,
+        GizmoMode,
+        GizmoOrientation,
+    };
 
-    use crate::ui::*;
+    use crate::{
+        camera::GameCamera,
+        ui::*,
+    };
 
-    const LEFT_INSPECTOR_WIDTH: f32 = 250.;
-    const RIGHT_INSPECTOR_WIDTH: f32 = 250.;
+    const INSPECTOR_OFFSET: f32 = 400.;
 
     // ······
     // Plugin
@@ -60,20 +105,28 @@ mod only_in_debug {
                 (
                     toggle_inspector.run_if(input_just_pressed(KeyCode::I)),
                     toggle_pause.run_if(input_just_pressed(KeyCode::P)),
-                    update_inspector.run_if(
-                        resource_exists::<DebugState>()
-                            .and_then(|state: Res<DebugState>| state.inspector),
-                    ),
                     (
                         update_fps_text,
                         update_speed_text,
+                        update_ui_node,
                         change_time_speed::<1>.run_if(input_pressed(KeyCode::BracketRight)),
                         change_time_speed::<-1>.run_if(input_pressed(KeyCode::BracketLeft)),
+                        change_gizmo_mode,
                     )
                         .run_if(on_real_timer(Duration::from_millis(
                             100,
                         ))),
                 ),
+            )
+            .add_systems(
+                PostUpdate,
+                (update_inspector
+                    .run_if(
+                        resource_exists::<DebugState>()
+                            .and_then(|state: Res<DebugState>| state.inspector),
+                    )
+                    .before(EguiSet::ProcessOutput)
+                    .before(TransformSystem::TransformPropagate),),
             );
         }
     }
@@ -82,9 +135,56 @@ mod only_in_debug {
     // Resources
     // ·········
 
-    #[derive(Resource, Default)]
+    #[derive(Resource)]
     struct DebugState {
         inspector: bool,
+        state: DockState<InspectorTab>,
+        viewport_rect: ERect,
+        selected_entities: SelectedEntities,
+        selection: InspectorSelection,
+        gizmo_mode: GizmoMode,
+    }
+
+    impl Default for DebugState {
+        fn default() -> Self {
+            let mut state = DockState::new(vec![InspectorTab::Game]);
+            let tree = state.main_surface_mut();
+            let [game, nodes] = tree.split_left(NodeIndex::root(), 0.2, vec![
+                InspectorTab::Nodes,
+            ]);
+            let [_, _] = tree.split_right(game, 0.75, vec![
+                InspectorTab::Inspector,
+            ]);
+            let [_, _] = tree.split_below(nodes, 0.6, vec![
+                InspectorTab::Resources,
+                InspectorTab::Assets,
+            ]);
+
+            Self {
+                inspector: false,
+                state,
+                selected_entities: SelectedEntities::default(),
+                selection: InspectorSelection::Entities,
+                viewport_rect: ERect::NOTHING,
+                gizmo_mode: GizmoMode::Translate,
+            }
+        }
+    }
+
+    impl DebugState {
+        fn render(&mut self, world: &mut World, ctx: &mut Context) {
+            let mut inspector = Inspector {
+                world,
+                viewport_rect: &mut self.viewport_rect,
+                selected_entities: &mut self.selected_entities,
+                selection: &mut self.selection,
+                gizmo_mode: self.gizmo_mode,
+            };
+
+            DockArea::new(&mut self.state)
+                .style(EStyle::from_egui(ctx.style().as_ref()))
+                .show(ctx, &mut inspector);
+        }
     }
 
     // ··········
@@ -154,15 +254,15 @@ mod only_in_debug {
         state.inspector = !state.inspector;
 
         if let Ok(mut win) = win.get_single_mut() {
+            if !matches!(win.mode, WindowMode::Windowed) {
+                return;
+            }
             let (x, y) = (
                 win.resolution.width(),
                 win.resolution.height(),
             );
-            let offset = (LEFT_INSPECTOR_WIDTH + RIGHT_INSPECTOR_WIDTH)
-                * if state.inspector { 1. } else { -1. };
+            let offset = INSPECTOR_OFFSET * if state.inspector { 1. } else { -1. };
             win.resolution.set(x + offset, y);
-
-            // TODO: Resize viewport
         }
     }
 
@@ -178,6 +278,18 @@ mod only_in_debug {
         let time_speed = (time.relative_speed() + DELTA as f32 * 0.1).clamp(0.2, 5.);
 
         time.set_relative_speed(time_speed);
+    }
+
+    fn change_gizmo_mode(input: Res<Input<KeyCode>>, mut state: ResMut<DebugState>) {
+        for (key, mode) in [
+            (KeyCode::R, GizmoMode::Rotate),
+            (KeyCode::T, GizmoMode::Translate),
+            (KeyCode::S, GizmoMode::Scale),
+        ] {
+            if input.just_pressed(key) {
+                state.gizmo_mode = mode;
+            }
+        }
     }
 
     fn update_fps_text(
@@ -258,46 +370,257 @@ mod only_in_debug {
         };
     }
 
-    fn update_inspector(world: &mut World, mut selected_entities: Local<SelectedEntities>) {
-        let mut egui_context = world
+    fn update_inspector(world: &mut World) {
+        let Ok(ctx) = world
             .query_filtered::<&mut EguiContext, With<PrimaryWindow>>()
-            .single(world)
-            .clone();
-        SidePanel::left("hierarchy")
-            .default_width(180.)
-            .show(egui_context.get_mut(), |ui| {
-                ScrollArea::vertical().show(ui, |ui| {
-                    ui.heading("Hierarchy");
+            .get_single(world)
+        else {
+            return;
+        };
+        let mut ctx = ctx.clone();
 
-                    bevy_inspector_egui::bevy_inspector::hierarchy::hierarchy_ui(
-                        world,
+        world
+            .resource_scope::<DebugState, _>(|world, mut state| state.render(world, ctx.get_mut()));
+    }
+
+    fn update_ui_node(
+        mut node: Query<&mut Style, With<UiNode>>,
+        win: Query<&Window, With<PrimaryWindow>>,
+        mut _resize_reader: EventReader<WindowResized>,
+        _state: Res<DebugState>,
+        mut only_once: Local<bool>,
+    ) {
+        let Ok(mut style) = node.get_single_mut() else { return };
+
+        if !*only_once {
+            let Ok(win) = win.get_single() else { return };
+            style.width = Val::Px(win.width());
+            style.height = Val::Px(win.height());
+            *only_once = true;
+        }
+
+        #[cfg(feature = "resizable")]
+        for e in _resize_reader.read() {
+            let offset = if _state.inspector { INSPECTOR_OFFSET } else { 0. };
+
+            style.width = Val::Px(e.width - offset);
+            style.height = Val::Px(e.height);
+        }
+    }
+
+    // ·····
+    // Extra
+    // ·····
+
+    #[derive(Debug)]
+    enum InspectorTab {
+        Game,
+        Nodes,
+        Resources,
+        Assets,
+        Inspector,
+    }
+
+    #[derive(Eq, PartialEq)]
+    enum InspectorSelection {
+        Entities,
+        Resource(TypeId, String),
+        Asset(TypeId, String, UntypedAssetId),
+    }
+
+    struct Inspector<'a> {
+        world: &'a mut World,
+        selected_entities: &'a mut SelectedEntities,
+        selection: &'a mut InspectorSelection,
+        viewport_rect: &'a mut ERect,
+        gizmo_mode: GizmoMode,
+    }
+
+    impl TabViewer for Inspector<'_> {
+        type Tab = InspectorTab;
+
+        fn title(&mut self, tab: &mut Self::Tab) -> WidgetText { format!("{:?}", tab).into() }
+
+        fn clear_background(&self, tab: &Self::Tab) -> bool { !matches!(tab, InspectorTab::Game) }
+
+        fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab) {
+            let type_registry = self.world.resource::<AppTypeRegistry>().0.clone();
+            let type_registry = type_registry.read();
+
+            match tab {
+                InspectorTab::Game => {
+                    *self.viewport_rect = ui.clip_rect();
+                    draw_gizmo(
                         ui,
-                        &mut selected_entities,
+                        self.world,
+                        self.selected_entities,
+                        self.gizmo_mode,
                     );
-
-                    ui.allocate_space(ui.available_size());
-                });
-            });
-
-        SidePanel::right("inspector")
-            .default_width(180.)
-            .show(egui_context.get_mut(), |ui| {
-                ScrollArea::vertical().show(ui, |ui| {
-                    ui.heading("Inspector");
-
-                    match selected_entities.as_slice() {
-                        &[entity] => {
-                            bevy_inspector_egui::bevy_inspector::ui_for_entity(world, entity, ui);
-                        },
-                        entities => {
-                            bevy_inspector_egui::bevy_inspector::ui_for_entities_shared_components(
-                                world, entities, ui,
-                            );
-                        },
+                },
+                InspectorTab::Nodes => {
+                    if hierarchy_ui(self.world, ui, self.selected_entities) {
+                        *self.selection = InspectorSelection::Entities;
                     }
+                },
+                InspectorTab::Resources => select_resource(ui, &type_registry, self.selection),
+                InspectorTab::Assets => select_asset(
+                    ui,
+                    &type_registry,
+                    self.world,
+                    self.selection,
+                ),
+                InspectorTab::Inspector => match *self.selection {
+                    InspectorSelection::Entities => match self.selected_entities.as_slice() {
+                        &[entity] => ui_for_entity_with_children(self.world, entity, ui),
+                        entities => ui_for_entities_shared_components(self.world, entities, ui),
+                    },
+                    InspectorSelection::Resource(type_id, ref name) => {
+                        ui.label(name);
+                        ui_for_resource(
+                            self.world,
+                            type_id,
+                            ui,
+                            name,
+                            &type_registry,
+                        )
+                    },
+                    InspectorSelection::Asset(type_id, ref name, handle) => {
+                        ui.label(name);
+                        ui_for_asset(
+                            self.world,
+                            type_id,
+                            handle,
+                            ui,
+                            &type_registry,
+                        );
+                    },
+                },
+            }
+        }
+    }
 
-                    ui.allocate_space(ui.available_size());
-                });
-            });
+    fn select_resource(
+        ui: &mut Ui,
+        type_registry: &TypeRegistry,
+        selection: &mut InspectorSelection,
+    ) {
+        let mut resources: Vec<_> = type_registry
+            .iter()
+            .filter(|registration| registration.data::<ReflectResource>().is_some())
+            .map(|registration| {
+                (
+                    registration.type_info().type_path_table().short_path(),
+                    registration.type_id(),
+                )
+            })
+            .collect();
+        resources.sort_by(|(name_a, _), (name_b, _)| name_a.cmp(name_b));
+
+        for (resource_name, type_id) in resources {
+            let selected = match *selection {
+                InspectorSelection::Resource(selected, _) => selected == type_id,
+                _ => false,
+            };
+
+            if ui.selectable_label(selected, resource_name).clicked() {
+                *selection = InspectorSelection::Resource(type_id, resource_name.to_string());
+            }
+        }
+    }
+
+    fn select_asset(
+        ui: &mut Ui,
+        type_registry: &TypeRegistry,
+        world: &World,
+        selection: &mut InspectorSelection,
+    ) {
+        let mut assets: Vec<_> = type_registry
+            .iter()
+            .filter_map(|registration| {
+                let reflect_asset = registration.data::<ReflectAsset>()?;
+                Some((
+                    registration.type_info().type_path_table().short_path(),
+                    registration.type_id(),
+                    reflect_asset,
+                ))
+            })
+            .collect();
+        assets.sort_by(|(name_a, ..), (name_b, ..)| name_a.cmp(name_b));
+
+        for (asset_name, asset_type_id, reflect_asset) in assets {
+            let handles: Vec<_> = reflect_asset.ids(world).collect();
+
+            ui.collapsing(
+                format!("{asset_name} ({})", handles.len()),
+                |ui| {
+                    for handle in handles {
+                        let selected = match *selection {
+                            InspectorSelection::Asset(_, _, selected_id) => selected_id == handle,
+                            _ => false,
+                        };
+
+                        if ui
+                            .selectable_label(selected, format!("{:?}", handle))
+                            .clicked()
+                        {
+                            *selection = InspectorSelection::Asset(
+                                asset_type_id,
+                                asset_name.to_string(),
+                                handle,
+                            );
+                        }
+                    }
+                },
+            );
+        }
+    }
+
+    fn draw_gizmo(
+        ui: &mut Ui,
+        world: &mut World,
+        selected_entities: &SelectedEntities,
+        gizmo_mode: GizmoMode,
+    ) {
+        let Ok((cam_transform, projection)) = world
+            .query_filtered::<(&GlobalTransform, &Projection), With<GameCamera>>()
+            .get_single(world)
+        else {
+            return;
+        };
+
+        let view_matrix = Mat4::from(cam_transform.affine().inverse());
+        let projection_matrix = projection.get_projection_matrix();
+
+        if selected_entities.len() != 1 {
+            return;
+        }
+
+        for selected in selected_entities.iter() {
+            let Some(transform) = world.get::<Transform>(selected) else {
+                continue;
+            };
+            let model_matrix = transform.compute_matrix();
+
+            // TODO: Beautify gizmos
+            // TODO: Gizmos in 2d
+            // TODO: Raycast selection
+            let Some(result) = Gizmo::new(selected)
+                .model_matrix(model_matrix.to_cols_array_2d())
+                .view_matrix(view_matrix.to_cols_array_2d())
+                .projection_matrix(projection_matrix.to_cols_array_2d())
+                .orientation(GizmoOrientation::Local)
+                .mode(gizmo_mode)
+                .interact(ui)
+            else {
+                continue;
+            };
+
+            let mut transform = world.get_mut::<Transform>(selected).unwrap();
+            *transform = Transform {
+                translation: Vec3::from(<[f32; 3]>::from(result.translation)),
+                rotation: Quat::from_array(<[f32; 4]>::from(result.rotation)),
+                scale: Vec3::from(<[f32; 3]>::from(result.scale)),
+            };
+        }
     }
 }

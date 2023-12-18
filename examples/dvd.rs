@@ -55,6 +55,17 @@ struct CollisionEvent(Entity);
 // ·······
 
 fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, opts: Res<Persistent<GameOptions>>) {
+    // Background
+    cmd.spawn(SpriteBundle {
+        sprite: Sprite {
+            color: opts.color.dark,
+            custom_size: Some(SIZE),
+            ..default()
+        },
+        transform: Transform::from_xyz(0., 0., -10.),
+        ..default()
+    });
+
     // Sprites
     for velocity in [
         Vec2::new(300., 250.),

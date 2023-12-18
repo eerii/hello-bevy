@@ -16,6 +16,7 @@ pub use crate::{
         CoreAssets,
         ExampleAssets,
     },
+    camera::GameCamera,
     data::{
         GameOptions,
         Keybinds,

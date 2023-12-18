@@ -68,6 +68,17 @@ struct GameCamera;
 // ·······
 
 fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, opts: Res<Persistent<GameOptions>>) {
+    // Background
+    cmd.spawn(SpriteBundle {
+        sprite: Sprite {
+            color: opts.color.dark,
+            custom_size: Some(SIZE),
+            ..default()
+        },
+        transform: Transform::from_xyz(0., 0., -10.),
+        ..default()
+    });
+
     // Player
     cmd.spawn((
         SpriteBundle {

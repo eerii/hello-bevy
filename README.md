@@ -3,9 +3,10 @@
 an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projects.
 
 <p float="left">
-  <img src="https://github.com/eerii/hello-bevy/assets/22449369/5f736632-75ac-40ef-bd8e-3a66dc57a68a" width="20%" />
-  <img src="https://github.com/eerii/hello-bevy/assets/22449369/f20dd7f6-3d91-4f22-8291-af287a12eaa3" width="20%" />
-  <img src="https://github.com/eerii/hello-bevy/assets/22449369/ed8f0c5c-1ca9-41ee-aa48-ab97c69b3887" width="20%" />
+  <img src="https://github.com/eerii/hello-bevy/assets/22449369/5f736632-75ac-40ef-bd8e-3a66dc57a68a" height="150px" />
+  <img src="https://github.com/eerii/hello-bevy/assets/22449369/f20dd7f6-3d91-4f22-8291-af287a12eaa3" height="150px" />
+  <img src="https://github.com/eerii/hello-bevy/assets/22449369/ed8f0c5c-1ca9-41ee-aa48-ab97c69b3887" height="150px" />
+  <img src="https://github.com/eerii/hello-bevy/assets/22449369/d4207538-73cb-4bb9-b463-9b345887a118" height="150px" />
 </p>
 
 ### features 🌿
