@@ -37,7 +37,7 @@ impl Plugin for CameraPlugin {
 // ··········
 
 #[derive(Component)]
-struct GameCamera;
+pub struct GameCamera;
 
 // ·······
 // Systems

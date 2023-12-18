@@ -84,7 +84,7 @@ struct UIStyle {
 // ··········
 
 #[derive(Component)]
-struct UiCamera;
+pub struct UiCamera;
 
 #[derive(Component)]
 struct UiNode;

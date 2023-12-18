@@ -39,6 +39,7 @@ impl Plugin for SampleGamePlugin {
                 resume_game,
             ),
         )
+        .register_type::<Player>()
         .add_systems(
             Update,
             update_sample.run_if(in_state(GameState::Play)),
@@ -51,7 +52,7 @@ impl Plugin for SampleGamePlugin {
 // Components
 // ··········
 
-#[derive(Component)]
+#[derive(Reflect, Component, Default)]
 struct Player {
     velocity: Vec2,
 }

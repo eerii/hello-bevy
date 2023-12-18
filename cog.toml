@@ -1,0 +1,29 @@
+pre_bump_hooks = [
+    "echo 'bumping o {{version}}'",
+    "cargo bump {{version}}",
+]
+
+post_bump_hooks = [
+    "git push",
+    "git push origin {{version}}",
+    # "cargo publish"
+]
+
+[changelog]
+path = "CHANGELOG.md"
+template = "remote"
+remote = "github.com"
+repository = "hello-bevy" # [CHANGE]: Repository name
+owner = "eerii"
+authors = [
+  { signature = "eri", username = "eerii" },
+]
+
+[git_hooks.commit-msg]
+script = """#!/bin/bash
+set -e
+cog verify --file $1
+cog check
+cargo fmt -v --all --check
+cargo clippy
+"""
