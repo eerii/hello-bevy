@@ -23,10 +23,6 @@ pub const UI_LAYER: RenderLayers = RenderLayers::layer(1);
 pub const FONT_MULTIPLIERS: [f32; 3] = [2.0, 1.0, 0.8];
 pub const FONT_SIZES: [f32; 5] = [16.0, 20.0, 24.0, 28.0, 32.0];
 
-// TODO: Ui elements with components
-// TODO: Tweening and animation (Look into https://github.com/djeedai/bevy_tweening)
-// TODO: Rounded button corners (Requires #8973 to be merged in 0.13)
-
 // ······
 // Plugin
 // ······
@@ -212,6 +208,7 @@ impl<'a> UIText<'a> {
 }
 
 // Button
+// TODO: Rounded button corners (Requires #8973 to be merged in 0.13)
 
 struct UIButton<T: Component> {
     button: ButtonBundle,

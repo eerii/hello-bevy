@@ -284,7 +284,6 @@ pub enum KeyBind {
 
 impl ToString for KeyBind {
     fn to_string(&self) -> String {
-        // TODO: Replace this with a key icon lookup, maybe use the ones from kenney once released
         match self {
             KeyBind::Key(key) => format!("{:?}", key),
             KeyBind::Mouse(button) => format!("m{:?}", button),

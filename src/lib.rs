@@ -26,11 +26,6 @@ pub use crate::{
     },
 };
 
-// TODO: Make todo and changelog file, create a real versioning system (maybe project in gh)
-// TODO: Add example games (port the doodle jump from python, maybe something like suika)
-// TODO: Try to port to bevy-main
-// TODO: Separate input and camera into crates
-
 // [CHANGE]: Game title and resolution
 pub const GAME_TITLE: &str = "Hello Bevy!";
 pub const INITIAL_RESOLUTION: Vec2 = Vec2::new(600., 600.);

@@ -3,12 +3,19 @@ pub struct DebugUIPlugin;
 
 #[cfg(debug_assertions)]
 mod only_in_debug {
+    use std::time::Duration;
+
     use bevy::{
         diagnostic::{
             DiagnosticsStore,
             FrameTimeDiagnosticsPlugin,
         },
+        input::common_conditions::{
+            input_just_pressed,
+            input_pressed,
+        },
         prelude::*,
+        time::common_conditions::on_real_timer,
         window::PrimaryWindow,
     };
     use bevy_inspector_egui::{
@@ -32,6 +39,9 @@ mod only_in_debug {
 
     use crate::ui::*;
 
+    const LEFT_INSPECTOR_WIDTH: f32 = 250.;
+    const RIGHT_INSPECTOR_WIDTH: f32 = 250.;
+
     // ······
     // Plugin
     // ······
@@ -48,12 +58,21 @@ mod only_in_debug {
             .add_systems(
                 Update,
                 (
-                    handle_keys,
-                    update_fps,
+                    toggle_inspector.run_if(input_just_pressed(KeyCode::I)),
+                    toggle_pause.run_if(input_just_pressed(KeyCode::P)),
                     update_inspector.run_if(
                         resource_exists::<DebugState>()
                             .and_then(|state: Res<DebugState>| state.inspector),
                     ),
+                    (
+                        update_fps_text,
+                        update_speed_text,
+                        change_time_speed::<1>.run_if(input_pressed(KeyCode::BracketRight)),
+                        change_time_speed::<-1>.run_if(input_pressed(KeyCode::BracketLeft)),
+                    )
+                        .run_if(on_real_timer(Duration::from_millis(
+                            100,
+                        ))),
                 ),
             );
         }
@@ -74,6 +93,9 @@ mod only_in_debug {
 
     #[derive(Component)]
     struct FpsText;
+
+    #[derive(Component)]
+    struct SpeedText;
 
     // ·······
     // Systems
@@ -125,26 +147,47 @@ mod only_in_debug {
         ctx.set_style(style);
     }
 
-    fn handle_keys(
+    fn toggle_inspector(
         mut state: ResMut<DebugState>,
-        mut _win: Query<&mut Window>,
-        keys: Res<Input<KeyCode>>,
+        mut win: Query<&mut Window, With<PrimaryWindow>>,
     ) {
-        if keys.just_pressed(KeyCode::I) {
-            state.inspector = !state.inspector;
-        }
+        state.inspector = !state.inspector;
 
-        // TODO: Resize window / Viewport
+        if let Ok(mut win) = win.get_single_mut() {
+            let (x, y) = (
+                win.resolution.width(),
+                win.resolution.height(),
+            );
+            let offset = (LEFT_INSPECTOR_WIDTH + RIGHT_INSPECTOR_WIDTH)
+                * if state.inspector { 1. } else { -1. };
+            win.resolution.set(x + offset, y);
+
+            // TODO: Resize viewport
+        }
     }
 
-    fn update_fps(
+    fn toggle_pause(mut time: ResMut<Time<Virtual>>) {
+        if time.is_paused() {
+            time.unpause();
+        } else {
+            time.pause();
+        }
+    }
+
+    fn change_time_speed<const DELTA: i8>(mut time: ResMut<Time<Virtual>>) {
+        let time_speed = (time.relative_speed() + DELTA as f32 * 0.1).clamp(0.2, 5.);
+
+        time.set_relative_speed(time_speed);
+    }
+
+    fn update_fps_text(
         mut cmd: Commands,
         diagnostics: Res<DiagnosticsStore>,
         assets: Res<CoreAssets>,
         node: Query<Entity, With<UiNode>>,
-        mut fps: Query<&mut Text, With<FpsText>>,
+        mut text: Query<&mut Text, With<FpsText>>,
     ) {
-        let Ok(mut text) = fps.get_single_mut() else {
+        let Ok(mut text) = text.get_single_mut() else {
             let Ok(node) = node.get_single() else { return };
             let Some(mut node) = cmd.get_entity(node) else { return };
             node.with_children(|parent| {
@@ -173,6 +216,46 @@ mod only_in_debug {
             "FPS {:.0}",
             fps.smoothed().unwrap_or(0.0)
         );
+    }
+
+    fn update_speed_text(
+        mut cmd: Commands,
+        time: Res<Time<Virtual>>,
+        assets: Res<CoreAssets>,
+        node: Query<Entity, With<UiNode>>,
+        mut text: Query<&mut Text, With<SpeedText>>,
+    ) {
+        let Ok(mut text) = text.get_single_mut() else {
+            let Ok(node) = node.get_single() else { return };
+            let Some(mut node) = cmd.get_entity(node) else { return };
+            node.with_children(|parent| {
+                parent.spawn((
+                    TextBundle::from_section("", TextStyle {
+                        font: assets.font.clone(),
+                        font_size: 16.0,
+                        color: Color::WHITE,
+                    })
+                    .with_style(Style {
+                        position_type: PositionType::Absolute,
+                        right: Val::Px(5.0),
+                        bottom: Val::Px(5.0),
+                        ..default()
+                    }),
+                    SpeedText,
+                ));
+            });
+            return;
+        };
+
+        let speed = time.relative_speed();
+
+        text.sections[0].value = if time.is_paused() {
+            "Paused".into()
+        } else if speed == 1. {
+            "".into()
+        } else {
+            format!("Speed {:.1}", speed)
+        };
     }
 
     fn update_inspector(world: &mut World, mut selected_entities: Local<SelectedEntities>) {
@@ -216,7 +299,5 @@ mod only_in_debug {
                     ui.allocate_space(ui.available_size());
                 });
             });
-
-        // TODO: Assets & resources
     }
 }

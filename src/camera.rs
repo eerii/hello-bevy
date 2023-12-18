@@ -9,8 +9,6 @@ use crate::{
     GameState,
 };
 
-// TODO: Option for pixel perfect smooth upscaling camera
-
 // ······
 // Plugin
 // ······
