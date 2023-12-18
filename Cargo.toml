@@ -1,16 +1,16 @@
 [package]
 name = "hello-bevy" # [CHANGE]: Set your project name.
-version = "0.12.2"
+version = "0.12.3"
 edition = "2021"
 description = "a bevy game template"
 exclude = ["assets", "wasm", ".data"]
 
+[profile.dev]
+opt-level = 1
+
 [profile.dev.package."*"]
 opt-level = 3 # Improves performance when developing, but slows down first compilation significantly
 debug = false # Disabled debug symbols for dependencies
-
-[profile.dev]
-opt-level = 1
 
 [features]
 dev = [

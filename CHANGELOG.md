@@ -1,12 +1,11 @@
-## Unreleased ([5a632e3..e3093ed](https://github.com/eerii/hello-bevy/compare/5a632e3..e3093ed))
+## [0.12.3](https://github.com/eerii/hello-bevy/compare/0.12.2..0.12.3) - 2023-12-18
 #### Features
-- improve inspector ui 👓 - ([e3093ed](https://github.com/eerii/hello-bevy/commit/e3093ed92a2e3dfff5c0a952c136eb05d5f57755)) - [@eerii](https://github.com/eerii)
+- improve inspector ui 👓 - ([cab3a21](https://github.com/eerii/hello-bevy/commit/cab3a21b997c664ca187726e6c551cf2a37927aa)) - [@eerii](https://github.com/eerii)
 - migrate improvements from jam 🧃 - ([12fd8b3](https://github.com/eerii/hello-bevy/commit/12fd8b366300211b9913eda686f1971adcc63c7a)) - [@eerii](https://github.com/eerii)
 #### Refactoring
 - changed input class names 🐢 - ([5fbfdb6](https://github.com/eerii/hello-bevy/commit/5fbfdb6e898cc07b4c90d39c9ea0af88eaebaa78)) - [@eerii](https://github.com/eerii)
 
 - - -
-
 ## 0.12.2 - 2023-12-18
 #### Features
 - touch input 🖐🏼️ - ([3663e70](https://github.com/eerii/hello-bevy/commit/3663e707031ad613289f7a878acbcc0375ed27f6)) - [@eerii](https://github.com/eerii)
@@ -17,7 +16,6 @@
 - contained ui module 📦 - ([5d95fe0](https://github.com/eerii/hello-bevy/commit/5d95fe036f92228a341c38d88b4279b8e496a63c)) - [@eerii](https://github.com/eerii)
 
 - - -
-
 ## 0.12.1 - 2023-12-18
 #### Bug Fixes
 #### Features
@@ -35,7 +33,6 @@
 - single ui camera 📷 - ([d4c90ff](https://github.com/eerii/hello-bevy/commit/d4c90ff8860ae0951340b508a9b7f2305621578f)) - [@eerii](https://github.com/eerii)
 
 - - -
-
 ## 0.12.0 - 2023-12-18
 #### Bug Fixes
 - web build and ci ‍❄️ - ([d9ffa06](https://github.com/eerii/hello-bevy/commit/d9ffa066d9b32b6cbe9a35ce23606e8da5344bf0)) - [@eerii](https://github.com/eerii)
@@ -46,7 +43,6 @@
 - pause game ⏸️ - ([f6168ff](https://github.com/eerii/hello-bevy/commit/f6168fffc21ba13a080a6b91d618ea0458394a53)) - [@eerii](https://github.com/eerii)
 
 - - -
-
 ## 0.11.0 - 2023-04-18
 #### Features
 - more plugins and debug utils 🦕 - ([af0f927](https://github.com/eerii/hello-bevy/commit/af0f9278d15a187be93c847896ffb9ed39ebd792)) - [@eerii](https://github.com/eerii)
