@@ -6,7 +6,6 @@ use bevy::{
     core_pipeline::clear_color::ClearColorConfig,
     prelude::*,
     render::view::RenderLayers,
-    window::WindowResized,
 };
 use bevy_persistent::Persistent;
 
@@ -20,7 +19,7 @@ const MENU_WIDTH: Val = Val::Px(300.);
 const MENU_ITEM_HEIGHT: Val = Val::Px(40.);
 const MENU_ITEM_GAP: Val = Val::Px(10.);
 
-pub const UI_LAYER: RenderLayers = RenderLayers::layer(1);
+pub const UI_LAYER: RenderLayers = RenderLayers::layer(10);
 pub const FONT_MULTIPLIERS: [f32; 3] = [2.0, 1.0, 0.8];
 pub const FONT_SIZES: [f32; 5] = [16.0, 20.0, 24.0, 28.0, 32.0];
 
@@ -81,7 +80,7 @@ struct UIStyle {
 // ··········
 
 #[derive(Component)]
-pub struct UiCamera;
+struct UiCamera;
 
 #[derive(Component)]
 struct UiNode;
@@ -95,12 +94,13 @@ fn init_ui(mut cmd: Commands) {
     cmd.spawn((
         Camera2dBundle {
             camera: Camera {
-                order: -10,
+                order: 10,
                 ..default()
             },
             ..default()
         },
         UI_LAYER,
+        UiCameraConfig { show_ui: true },
         UiCamera,
     ));
 

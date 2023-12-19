@@ -19,7 +19,7 @@ dev = [
 ]
 pixel_perfect = []
 resizable = []
-save_schedule = []
+3d_camera = []
 mock_touch = []
 
 [dependencies]
@@ -29,8 +29,8 @@ mock_touch = []
 bevy = { version = "0.12", default-features = false, features = [
     "animation", "bevy_asset", "bevy_gilrs", "bevy_scene", "bevy_winit",
     "bevy_core_pipeline", "bevy_pbr", "bevy_gltf", "bevy_render", "bevy_sprite",
-    "bevy_text", "bevy_ui", "multi-threaded", "png", "hdr", "x11", "bevy_gizmos",
-    "tonemapping_luts", "default_font", "webgl2", "serialize"
+    "bevy_text", "bevy_ui", "multi-threaded", "png", "hdr", "x11", "wayland",
+    "bevy_gizmos", "tonemapping_luts", "default_font", "webgl2", "serialize", 
 ]} 
 bevy_asset_loader = { version = "0.18", features = [ "progress_tracking" ] } # Better asset loader
 bevy_embedded_assets = { version = "0.9" } # Embed assets in binary
@@ -46,3 +46,11 @@ serde = { version = "1.0", features = ["derive"] }
 bevy-inspector-egui = { version = "0.21" } # Inspector
 egui_dock = { version = "0.8" }
 egui-gizmo = { version = "0.12" }
+
+[[example]]
+name = "dvd"
+required-features = ["resizable"]
+
+[[example]]
+name = "jump"
+required-features = ["pixel_perfect"]

@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use bevy_persistent::Persistent;
 use hello_bevy::{
     CoreAssets,
+    GameAppConfig,
     GameOptions,
     GamePlugin,
     GameState,
@@ -12,17 +13,25 @@ use hello_bevy::{
     Keybinds,
 };
 
-const SIZE: Vec2 = Vec2::new(600., 600.);
 const INITIAL_VEL: Vec2 = Vec2::new(0., 250.);
-const GRAVITY: f32 = -10000.;
-const JUMP_VEL: f32 = 2000.;
-const MOVE_VEL: f32 = 700.;
-const BOUNCE_CUTOFF: f32 = 100.;
+const GRAVITY: f32 = -2000.;
+const JUMP_VEL: f32 = 400.;
+const MOVE_VEL: f32 = 250.;
+const BOUNCE_CUTOFF: f32 = 50.;
 const BOUNCE_FACTOR: f32 = 0.2;
-const MOVE_CUTOFF: f32 = 100.;
+const MOVE_CUTOFF: f32 = 50.;
 const MOVE_FACTOR: f32 = 0.85;
 
-fn main() { App::new().add_plugins((GamePlugin, SampleGamePlugin)).run(); }
+fn main() {
+    App::new()
+        .insert_resource(GameAppConfig {
+            initial_window_res: Vec2::new(600., 600.),
+            initial_game_res: Vec2::new(128., 128.),
+            ..default()
+        })
+        .add_plugins((GamePlugin, SampleGamePlugin))
+        .run();
+}
 
 // ······
 // Plugin
@@ -55,6 +64,7 @@ impl Plugin for SampleGamePlugin {
 #[derive(Reflect, Component, Default)]
 struct Player {
     velocity: Vec2,
+    remainder: Vec2,
 }
 
 #[derive(Component)]
@@ -67,12 +77,17 @@ struct GameCamera;
 // Systems
 // ·······
 
-fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, opts: Res<Persistent<GameOptions>>) {
+fn init_sample(
+    mut cmd: Commands,
+    app_config: Res<GameAppConfig>,
+    assets: Res<CoreAssets>,
+    opts: Res<Persistent<GameOptions>>,
+) {
     // Background
     cmd.spawn(SpriteBundle {
         sprite: Sprite {
             color: opts.color.dark,
-            custom_size: Some(SIZE),
+            custom_size: Some(app_config.initial_game_res),
             ..default()
         },
         transform: Transform::from_xyz(0., 0., -10.),
@@ -83,15 +98,12 @@ fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, opts: Res<Persistent<
     cmd.spawn((
         SpriteBundle {
             texture: assets.bevy_icon.clone(),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(96., 96.)),
-                ..default()
-            },
             transform: Transform::from_translation(Vec3::new(0., 0., 1.)),
             ..default()
         },
         Player {
             velocity: INITIAL_VEL,
+            remainder: Vec2::ZERO,
         },
     ));
 
@@ -100,9 +112,10 @@ fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, opts: Res<Persistent<
         Text2dBundle {
             text: Text::from_section("0", TextStyle {
                 font: assets.font.clone(),
-                font_size: 192.,
+                font_size: 60.,
                 color: opts.color.mid,
             }),
+            transform: Transform::from_xyz(5.3, 0.3, 0.),
             ..default()
         },
         Counter(0),
@@ -111,20 +124,24 @@ fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, opts: Res<Persistent<
 
 fn update_sample(
     time: Res<Time>,
+    app_config: Res<GameAppConfig>,
     input: Res<Input<KeyBind>>,
     movement: Res<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
     mut objects: Query<(&mut Player, &mut Transform)>,
     mut counter: Query<(&mut Text, &mut Counter)>,
 ) {
+    let Vec2 { x: gx, y: gy } = app_config.initial_game_res;
+
     for (mut player, mut trans) in objects.iter_mut() {
-        let t = &mut trans.translation;
+        let mut pos = trans.translation.xy();
+        pos += player.remainder;
 
         // Gravity
-        if t.y > -SIZE.y * 0.4 {
+        if pos.y > -gy * 0.4 {
             player.velocity.y += GRAVITY * time.delta_seconds();
         } else {
-            t.y = -SIZE.y * 0.4;
+            pos.y = -gy * 0.4;
             if player.velocity.y.abs() > BOUNCE_CUTOFF {
                 player.velocity.y = player.velocity.y.abs() * BOUNCE_FACTOR;
             } else {
@@ -142,9 +159,9 @@ fn update_sample(
         }
 
         // Move
-        let vel = keybinds.x_axis.get(&movement);
-        if vel.abs() > 0. {
-            player.velocity.x = vel * MOVE_VEL;
+        let dir = keybinds.x_axis.get(&movement);
+        if dir.abs() > 0. {
+            player.velocity.x = dir * MOVE_VEL;
         } else if player.velocity.x.abs() > MOVE_CUTOFF {
             player.velocity.x *= MOVE_FACTOR;
         } else {
@@ -152,9 +169,13 @@ fn update_sample(
         }
 
         // Update position based on velocity and add bounds
-        *t += player.velocity.extend(0.) * time.delta_seconds();
-        t.y = t.y.max(-SIZE.y * 0.4);
-        t.x = (t.x + SIZE.x * 0.5).rem_euclid(SIZE.x) - SIZE.x * 0.5;
+        pos += player.velocity * time.delta_seconds();
+        pos.y = pos.y.max(-gy * 0.4);
+        pos.x = (pos.x + gx * 0.5).rem_euclid(gx) - gx * 0.5;
+
+        // Floor and save remainder
+        trans.translation = pos.floor().extend(1.);
+        player.remainder = pos - trans.translation.xy();
     }
 }
 

@@ -1,17 +1,28 @@
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    window::{
+        PrimaryWindow,
+        WindowResized,
+    },
+};
 use bevy_kira_audio::prelude::*;
 use bevy_persistent::Persistent;
 use hello_bevy::{
     CoreAssets,
     ExampleAssets,
+    FinalCamera,
+    GameAppConfig,
     GameOptions,
     GamePlugin,
     GameState,
 };
 
-const SIZE: Vec2 = Vec2::new(600., 600.);
-
-fn main() { App::new().add_plugins((GamePlugin, SampleGamePlugin)).run(); }
+fn main() {
+    App::new()
+        .insert_resource(GameAppConfig::default())
+        .add_plugins((GamePlugin, SampleGamePlugin))
+        .run();
+}
 
 // ······
 // Plugin
@@ -28,10 +39,17 @@ impl Plugin for SampleGamePlugin {
             )
             .add_systems(
                 Update,
-                (update_sample, on_collision).run_if(in_state(GameState::Play)),
+                (update_sample, on_collision, on_resize).run_if(in_state(GameState::Play)),
             );
     }
 }
+
+// ·········
+// Resources
+// ·········
+
+#[derive(Resource)]
+struct Bounds(Vec2);
 
 // ··········
 // Components
@@ -42,6 +60,9 @@ struct Velocity(Vec2);
 
 #[derive(Component)]
 struct Counter(u32);
+
+#[derive(Component)]
+struct Background;
 
 // ······
 // Events
@@ -54,17 +75,30 @@ struct CollisionEvent(Entity);
 // Systems
 // ·······
 
-fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, opts: Res<Persistent<GameOptions>>) {
+fn init_sample(
+    mut cmd: Commands,
+    assets: Res<CoreAssets>,
+    opts: Res<Persistent<GameOptions>>,
+    win: Query<&Window, With<PrimaryWindow>>,
+) {
+    let Ok(win) = win.get_single() else { return };
+
+    let size = Vec2::new(win.width(), win.height());
+    cmd.insert_resource(Bounds(size));
+
     // Background
-    cmd.spawn(SpriteBundle {
-        sprite: Sprite {
-            color: opts.color.dark,
-            custom_size: Some(SIZE),
+    cmd.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: opts.color.dark,
+                custom_size: Some(size),
+                ..default()
+            },
+            transform: Transform::from_xyz(0., 0., -10.),
             ..default()
         },
-        transform: Transform::from_xyz(0., 0., -10.),
-        ..default()
-    });
+        Background,
+    ));
 
     // Sprites
     for velocity in [
@@ -102,6 +136,7 @@ fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, opts: Res<Persistent<
 
 fn update_sample(
     time: Res<Time>,
+    bounds: Res<Bounds>,
     mut objects: Query<(
         Entity,
         &mut Transform,
@@ -110,7 +145,7 @@ fn update_sample(
     )>,
     mut event_collision: EventWriter<CollisionEvent>,
 ) {
-    let win_bound = Rect::from_center_size(Vec2::ZERO, SIZE);
+    let win_bound = Rect::from_center_size(Vec2::ZERO, bounds.0);
 
     for (entity, mut trans, mut vel, sprite) in objects.iter_mut() {
         // Update position based on velocity
@@ -135,6 +170,12 @@ fn update_sample(
             t.y += (obj_bound.height() - intersection.y) * vel.0.y.signum();
             event_collision.send(CollisionEvent(entity));
         }
+
+        // If it is completely gone, teleport to the start
+        if t.x.abs() > bounds.0.x * 0.5 || t.y.abs() > bounds.0.y * 0.5 {
+            t.x = 0.;
+            t.y = 0.;
+        }
     }
 }
 
@@ -148,15 +189,39 @@ fn on_collision(
     let (mut text, mut counter) = counter.single_mut();
 
     // On each collision, increase the counter, change the spirte color and play audio
-    for CollisionEvent(entity) in event_collision.read() {
+    for CollisionEvent(e) in event_collision.read() {
         counter.0 += 1;
         text.sections[0].value = counter.0.to_string();
 
-        if let Ok(mut sprite) = objects.get_mut(*entity) {
+        if let Ok(mut sprite) = objects.get_mut(*e) {
             sprite.color = random_color();
         }
 
         audio.play(assets.boing.clone()).with_volume(0.3);
+    }
+}
+
+fn on_resize(
+    mut bounds: ResMut<Bounds>,
+    cam: Query<&Camera, With<FinalCamera>>,
+    win: Query<&mut Window, With<PrimaryWindow>>,
+    mut bg: Query<&mut Sprite, With<Background>>,
+    mut event_resize: EventReader<WindowResized>,
+) {
+    let Ok(win) = win.get_single() else { return };
+    let Ok(cam) = cam.get_single() else { return };
+
+    for e in event_resize.read() {
+        let size = if let Some(viewport) = cam.viewport.as_ref() {
+            viewport.physical_size.as_vec2() / win.scale_factor() as f32
+        } else {
+            Vec2::new(e.width, e.height)
+        };
+
+        bounds.0 = size;
+        for mut sprite in bg.iter_mut() {
+            sprite.custom_size = Some(size);
+        }
     }
 }
 

@@ -10,13 +10,18 @@ use bevy::{
     prelude::*,
 };
 
+// TODO: Add a lot of comments
+
 // Exports for examples
 pub use crate::{
     assets::{
         CoreAssets,
         ExampleAssets,
     },
-    camera::GameCamera,
+    camera::{
+        FinalCamera,
+        GameCamera,
+    },
     data::{
         GameOptions,
         Keybinds,
@@ -26,10 +31,6 @@ pub use crate::{
         KeyBind,
     },
 };
-
-// [CHANGE]: Game title and resolution
-pub const GAME_TITLE: &str = "Hello Bevy!";
-pub const INITIAL_RESOLUTION: Vec2 = Vec2::new(600., 600.);
 
 // Game state
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
@@ -43,8 +44,31 @@ pub enum GameState {
 // Main game plugin
 pub struct GamePlugin;
 
+#[derive(Resource, Clone)]
+pub struct GameAppConfig {
+    pub game_title: &'static str,
+    pub initial_window_res: Vec2,
+    #[cfg(feature = "pixel_perfect")]
+    pub initial_game_res: Vec2,
+}
+
+impl Default for GameAppConfig {
+    fn default() -> Self {
+        Self {
+            game_title: "Hello bevy!",
+            initial_window_res: Vec2::new(600., 600.),
+            #[cfg(feature = "pixel_perfect")]
+            initial_game_res: Vec2::new(600., 600.),
+        }
+    }
+}
+
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
+        app.world
+            .get_resource_or_insert_with(GameAppConfig::default);
+        let config = app.world.resource::<GameAppConfig>().clone();
+
         // Fix web builds for now
         app.insert_resource(AssetMetaCheck::Never);
 
@@ -64,8 +88,8 @@ impl Plugin for GamePlugin {
         #[allow(unused_mut)]
         let mut window_plugin = WindowPlugin {
             primary_window: Some(Window {
-                title: GAME_TITLE.into(),
-                resolution: INITIAL_RESOLUTION.into(),
+                title: config.game_title.into(),
+                resolution: config.initial_window_res.into(),
                 resizable: false,
                 canvas: Some("#bevy".to_string()),
                 prevent_default_event_handling: false,

@@ -27,12 +27,15 @@ mod only_in_debug {
         },
         prelude::*,
         reflect::TypeRegistry,
-        render::camera::CameraProjection,
+        render::camera::{
+            CameraProjection,
+            Viewport,
+        },
         time::common_conditions::on_real_timer,
         transform::TransformSystem,
         window::{
             PrimaryWindow,
-            WindowMode,
+            WindowResized,
         },
     };
     use bevy_inspector_egui::{
@@ -41,6 +44,7 @@ mod only_in_debug {
             EguiContexts,
             EguiPlugin,
             EguiSet,
+            EguiSettings,
         },
         bevy_inspector::{
             by_type_id::{
@@ -59,9 +63,7 @@ mod only_in_debug {
             FontData,
             FontDefinitions,
             FontFamily,
-            FontId,
             Rect as ERect,
-            TextStyle as ETextStyle,
             Ui,
             WidgetText,
         },
@@ -81,7 +83,10 @@ mod only_in_debug {
     };
 
     use crate::{
-        camera::GameCamera,
+        camera::{
+            FinalCamera,
+            GameCamera,
+        },
         ui::*,
     };
 
@@ -120,13 +125,16 @@ mod only_in_debug {
             )
             .add_systems(
                 PostUpdate,
-                (update_inspector
-                    .run_if(
-                        resource_exists::<DebugState>()
-                            .and_then(|state: Res<DebugState>| state.inspector),
-                    )
-                    .before(EguiSet::ProcessOutput)
-                    .before(TransformSystem::TransformPropagate),),
+                (
+                    update_inspector
+                        .run_if(
+                            resource_exists::<DebugState>()
+                                .and_then(|state: Res<DebugState>| state.inspector),
+                        )
+                        .before(EguiSet::ProcessOutput)
+                        .before(TransformSystem::TransformPropagate),
+                    update_camera_viewport.run_if(resource_changed::<DebugState>()),
+                ),
             );
         }
     }
@@ -218,52 +226,30 @@ mod only_in_debug {
             .or_default()
             .insert(0, "sans".to_owned());
 
-        let mut style = (*ctx.style()).clone();
-        style.text_styles = [
-            (
-                ETextStyle::Heading,
-                FontId::new(13.0, FontFamily::Proportional),
-            ),
-            (
-                ETextStyle::Body,
-                FontId::new(10.0, FontFamily::Proportional),
-            ),
-            (
-                ETextStyle::Monospace,
-                FontId::new(10.0, FontFamily::Proportional),
-            ),
-            (
-                ETextStyle::Button,
-                FontId::new(10.0, FontFamily::Proportional),
-            ),
-            (
-                ETextStyle::Small,
-                FontId::new(8.0, FontFamily::Proportional),
-            ),
-        ]
-        .into();
-
         ctx.set_fonts(fonts);
-        ctx.set_style(style);
     }
 
     fn toggle_inspector(
         mut state: ResMut<DebugState>,
-        mut win: Query<&mut Window, With<PrimaryWindow>>,
+        mut win: Query<(Entity, &mut Window), With<PrimaryWindow>>,
+        mut event_resize: EventWriter<WindowResized>,
     ) {
         state.inspector = !state.inspector;
 
-        if let Ok(mut win) = win.get_single_mut() {
-            if !matches!(win.mode, WindowMode::Windowed) {
-                return;
-            }
-            let (x, y) = (
-                win.resolution.width(),
-                win.resolution.height(),
-            );
-            let offset = INSPECTOR_OFFSET * if state.inspector { 1. } else { -1. };
-            win.resolution.set(x + offset, y);
-        }
+        let Ok((entity, mut win)) = win.get_single_mut() else { return };
+
+        let (x, y) = (
+            win.resolution.width(),
+            win.resolution.height(),
+        );
+        let offset = INSPECTOR_OFFSET * if state.inspector { 1. } else { -1. };
+
+        win.resolution.set(x + offset, y);
+        event_resize.send(WindowResized {
+            window: entity,
+            width: x + offset,
+            height: y,
+        });
     }
 
     fn toggle_pause(mut time: ResMut<Time<Virtual>>) {
@@ -316,6 +302,7 @@ mod only_in_debug {
                         ..default()
                     }),
                     FpsText,
+                    UI_LAYER,
                 ));
             });
             return;
@@ -354,6 +341,7 @@ mod only_in_debug {
                         ..default()
                     }),
                     SpeedText,
+                    UI_LAYER,
                 ));
             });
             return;
@@ -386,6 +374,7 @@ mod only_in_debug {
     fn update_ui_node(
         mut node: Query<&mut Style, With<UiNode>>,
         win: Query<&Window, With<PrimaryWindow>>,
+        cam: Query<&Camera, With<FinalCamera>>,
         mut _resize_reader: EventReader<WindowResized>,
         _state: Res<DebugState>,
         mut only_once: Local<bool>,
@@ -394,8 +383,16 @@ mod only_in_debug {
 
         if !*only_once {
             let Ok(win) = win.get_single() else { return };
-            style.width = Val::Px(win.width());
-            style.height = Val::Px(win.height());
+            let Ok(cam) = cam.get_single() else { return };
+
+            let size = if let Some(viewport) = cam.viewport.as_ref() {
+                viewport.physical_size.as_vec2() / win.scale_factor() as f32
+            } else {
+                Vec2::new(win.width(), win.height())
+            };
+
+            style.width = Val::Px(size.x);
+            style.height = Val::Px(size.y);
             *only_once = true;
         }
 
@@ -406,6 +403,37 @@ mod only_in_debug {
             style.width = Val::Px(e.width - offset);
             style.height = Val::Px(e.height);
         }
+    }
+
+    fn update_camera_viewport(
+        state: Res<DebugState>,
+        egui_settings: Res<EguiSettings>,
+        mut cam: Query<&mut Camera, With<FinalCamera>>,
+        win: Query<&mut Window, With<PrimaryWindow>>,
+    ) {
+        let Ok(win) = win.get_single() else { return };
+        let Ok(mut cam) = cam.get_single_mut() else { return };
+
+        let scale_factor = win.scale_factor() * egui_settings.scale_factor;
+
+        let viewport_size = state.viewport_rect.size() * scale_factor as f32;
+        if !state.inspector || !viewport_size.x.is_normal() || !viewport_size.y.is_normal() {
+            cam.viewport = None;
+            return;
+        }
+        let viewport_pos = state.viewport_rect.left_top().to_vec2() * scale_factor as f32;
+
+        cam.viewport = Some(Viewport {
+            physical_position: UVec2::new(
+                viewport_pos.x as u32,
+                viewport_pos.y as u32,
+            ),
+            physical_size: UVec2::new(
+                viewport_size.x as u32,
+                viewport_size.y as u32,
+            ),
+            depth: 0.0..1.0,
+        });
     }
 
     // ·····
