@@ -1,10 +1,3 @@
-## [0.12.3](https://github.com/eerii/hello-bevy/compare/0.12.2..0.12.3) - 2023-12-18
-#### Features
-- improve inspector ui 👓 - ([cab3a21](https://github.com/eerii/hello-bevy/commit/cab3a21b997c664ca187726e6c551cf2a37927aa)) - [@eerii](https://github.com/eerii)
-- migrate improvements from jam 🧃 - ([12fd8b3](https://github.com/eerii/hello-bevy/commit/12fd8b366300211b9913eda686f1971adcc63c7a)) - [@eerii](https://github.com/eerii)
-#### Refactoring
-- changed input class names 🐢 - ([5fbfdb6](https://github.com/eerii/hello-bevy/commit/5fbfdb6e898cc07b4c90d39c9ea0af88eaebaa78)) - [@eerii](https://github.com/eerii)
-
 - - -
 ## [0.12.4](https://github.com/eerii/hello-bevy/compare/0.12.3..0.12.4) - 2023-12-19
 #### Documentation
@@ -15,7 +8,14 @@
 - debug utils (speed, inspector) ⏰ - ([33a6b84](https://github.com/eerii/hello-bevy/commit/33a6b847791112e7ca2ce661852c3acb73098549)) - [@eerii](https://github.com/eerii)
 
 - - -
+## [0.12.3](https://github.com/eerii/hello-bevy/compare/0.12.2..0.12.3) - 2023-12-18
+#### Features
+- improve inspector ui 👓 - ([cab3a21](https://github.com/eerii/hello-bevy/commit/cab3a21b997c664ca187726e6c551cf2a37927aa)) - [@eerii](https://github.com/eerii)
+- migrate improvements from jam 🧃 - ([12fd8b3](https://github.com/eerii/hello-bevy/commit/12fd8b366300211b9913eda686f1971adcc63c7a)) - [@eerii](https://github.com/eerii)
+#### Refactoring
+- changed input class names 🐢 - ([5fbfdb6](https://github.com/eerii/hello-bevy/commit/5fbfdb6e898cc07b4c90d39c9ea0af88eaebaa78)) - [@eerii](https://github.com/eerii)
 
+- - -
 ## 0.12.2 - 2023-12-18
 #### Features
 - touch input 🖐🏼️ - ([3663e70](https://github.com/eerii/hello-bevy/commit/3663e707031ad613289f7a878acbcc0375ed27f6)) - [@eerii](https://github.com/eerii)
