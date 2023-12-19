@@ -148,8 +148,8 @@ fn init_camera(
 
     #[cfg(feature = "3d_camera")]
     let camera_bundle = Camera3dBundle {
-        camera,
-        transform: Transform::from_xyz(0.0, 0.0, -10.0),
+        camera: _camera,
+        transform: Transform::from_xyz(0.0, 0.0, 10.0),
         ..default()
     };
 

@@ -1,6 +1,6 @@
 [package]
 name = "hello-bevy" # [CHANGE]: Set your project name.
-version = "0.12.3"
+version = "0.12.4"
 edition = "2021"
 description = "a bevy game template"
 exclude = ["assets", "wasm", ".data"]
@@ -54,3 +54,7 @@ required-features = ["resizable"]
 [[example]]
 name = "jump"
 required-features = ["pixel_perfect"]
+
+[[example]]
+name = "tri"
+required-features = ["3d_camera", "pixel_perfect"]

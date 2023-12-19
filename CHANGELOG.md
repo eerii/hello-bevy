@@ -6,6 +6,16 @@
 - changed input class names 🐢 - ([5fbfdb6](https://github.com/eerii/hello-bevy/commit/5fbfdb6e898cc07b4c90d39c9ea0af88eaebaa78)) - [@eerii](https://github.com/eerii)
 
 - - -
+## [0.12.4](https://github.com/eerii/hello-bevy/compare/0.12.3..0.12.4) - 2023-12-19
+#### Documentation
+- add 3d example 🧶 - ([be8feaa](https://github.com/eerii/hello-bevy/commit/be8feaa55c90115f50c204733c88aa9dcaddef6d)) - [@eerii](https://github.com/eerii)
+#### Features
+- pixel perfect camera 👾 - ([e42eb34](https://github.com/eerii/hello-bevy/commit/e42eb347beaa1fdfe1e02f2804ba7db1774e240a)) - [@eerii](https://github.com/eerii)
+- docking inspector 🚢 - ([c3aab4b](https://github.com/eerii/hello-bevy/commit/c3aab4b0f024b890d16e01b6414dbdf8c0809ef8)) - [@eerii](https://github.com/eerii)
+- debug utils (speed, inspector) ⏰ - ([33a6b84](https://github.com/eerii/hello-bevy/commit/33a6b847791112e7ca2ce661852c3acb73098549)) - [@eerii](https://github.com/eerii)
+
+- - -
+
 ## 0.12.2 - 2023-12-18
 #### Features
 - touch input 🖐🏼️ - ([3663e70](https://github.com/eerii/hello-bevy/commit/3663e707031ad613289f7a878acbcc0375ed27f6)) - [@eerii](https://github.com/eerii)
