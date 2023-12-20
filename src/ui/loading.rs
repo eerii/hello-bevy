@@ -17,9 +17,9 @@ const SPLASH_TIME: f32 = 2.;
 // Plugin
 // ······
 
-pub struct LoadingUIPlugin;
+pub struct LoadingUiPlugin;
 
-impl Plugin for LoadingUIPlugin {
+impl Plugin for LoadingUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,

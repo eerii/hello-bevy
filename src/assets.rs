@@ -8,6 +8,11 @@ use iyes_progress::prelude::*;
 
 use crate::GameState;
 
+#[cfg(feature = "menu")]
+const NEXT_STATE: GameState = GameState::Menu;
+#[cfg(not(feature = "menu"))]
+const NEXT_STATE: GameState = GameState::Play;
+
 // ······
 // Plugin
 // ······
@@ -21,7 +26,7 @@ impl Plugin for AssetLoaderPlugin {
             .add_collection_to_loading_state::<_, ExampleAssets>(GameState::Loading)
             .add_plugins(
                 ProgressPlugin::new(GameState::Loading)
-                    .continue_to(GameState::Menu)
+                    .continue_to(NEXT_STATE)
                     .track_assets(),
             );
     }

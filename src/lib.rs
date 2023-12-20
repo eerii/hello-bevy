@@ -116,7 +116,7 @@ impl Plugin for GamePlugin {
         // Game
         app.add_state::<GameState>().add_plugins((
             assets::AssetLoaderPlugin,
-            ui::UIPlugin,
+            ui::UiPlugin,
             data::DataPlugin,
             input::InputPlugin,
             audio::AudioPlugin,

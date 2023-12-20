@@ -2,7 +2,7 @@
 # Usage: ./run.sh [check] [release|trace|web] [args...]
 
 # Debug builds
-ARGS="--features dev $@"
+ARGS="--features dev --no-default-features $@"
 
 # Check build
 if [ "$1" = "check" ]; then

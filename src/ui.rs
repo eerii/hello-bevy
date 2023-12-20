@@ -17,6 +17,7 @@ use crate::{
 
 const MENU_WIDTH: Val = Val::Px(300.);
 const MENU_ITEM_HEIGHT: Val = Val::Px(40.);
+#[allow(dead_code)]
 const MENU_ITEM_GAP: Val = Val::Px(10.);
 
 pub const UI_LAYER: RenderLayers = RenderLayers::layer(10);
@@ -27,9 +28,9 @@ pub const FONT_SIZES: [f32; 5] = [16.0, 20.0, 24.0, 28.0, 32.0];
 // Plugin
 // ······
 
-pub struct UIPlugin;
+pub struct UiPlugin;
 
-impl Plugin for UIPlugin {
+impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(UIStyle::default())
             .add_systems(OnEnter(GameState::Loading), init_ui)
@@ -51,13 +52,13 @@ impl Plugin for UIPlugin {
                     Persistent<GameOptions>,
                 >()),),
             )
-            .add_plugins((
-                menu::MenuUIPlugin,
-                loading::LoadingUIPlugin,
-            ));
+            .add_plugins(loading::LoadingUiPlugin);
 
         #[cfg(debug_assertions)]
-        app.add_plugins(debug::DebugUIPlugin);
+        app.add_plugins(debug::DebugUiPlugin);
+
+        #[cfg(features = "menu")]
+        app.add_plugins(menu::MenuUiPlugin);
     }
 }
 
@@ -190,6 +191,7 @@ struct UIText<'a> {
 }
 
 impl<'a> UIText<'a> {
+    #[allow(dead_code)]
     fn new(style: &'a UIStyle, text: &str) -> Self {
         Self {
             text: TextBundle::from_section(text, style.text.clone()),
@@ -197,16 +199,19 @@ impl<'a> UIText<'a> {
         }
     }
 
+    #[allow(dead_code)]
     fn with_title(mut self) -> Self {
         self.text.text.sections[0].style = self.style.title.clone();
         self
     }
 
+    #[allow(dead_code)]
     fn with_style(mut self, style: Style) -> Self {
         self.text.style = style;
         self
     }
 
+    #[allow(dead_code)]
     fn add(self, parent: &mut ChildBuilder) { parent.spawn((self.text, UI_LAYER)); }
 }
 
@@ -220,6 +225,7 @@ struct UIButton<T: Component> {
 }
 
 impl<T: Component> UIButton<T> {
+    #[allow(dead_code)]
     fn new(style: &UIStyle, text: &str, action: T) -> Self {
         Self {
             button: ButtonBundle {
@@ -232,16 +238,19 @@ impl<T: Component> UIButton<T> {
         }
     }
 
+    #[allow(dead_code)]
     fn with_width(mut self, width: Val) -> Self {
         self.button.style.width = width;
         self
     }
 
+    #[allow(dead_code)]
     fn with_font_scale(mut self, scale: f32) -> Self {
         self.text.text.sections[0].style.font_size *= scale;
         self
     }
 
+    #[allow(dead_code)]
     fn add(self, parent: &mut ChildBuilder) {
         let _text = self.text.text.sections[0].value.clone();
         let _id = parent
@@ -261,6 +270,7 @@ struct UIOption<'a> {
 }
 
 impl<'a> UIOption<'a> {
+    #[allow(dead_code)]
     fn new(style: &'a UIStyle, label: &str) -> Self {
         Self {
             row: NodeBundle {
@@ -281,6 +291,7 @@ impl<'a> UIOption<'a> {
         }
     }
 
+    #[allow(dead_code)]
     fn add(self, parent: &mut ChildBuilder, children: impl FnOnce(&mut ChildBuilder)) {
         parent.spawn((self.row, UI_LAYER)).with_children(|row| {
             self.label.add(row);

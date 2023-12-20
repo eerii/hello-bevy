@@ -3,10 +3,10 @@
 // - Virtual time: https://github.com/bevyengine/bevy/blob/main/examples/time/virtual_time.rs
 
 #[allow(dead_code)]
-pub struct DebugUIPlugin;
+pub struct DebugUiPlugin;
 
 #[cfg(debug_assertions)]
-mod only_in_debug {
+mod _debug {
     use std::{
         any::TypeId,
         time::Duration,
@@ -96,7 +96,7 @@ mod only_in_debug {
     // Plugin
     // ······
 
-    impl Plugin for super::DebugUIPlugin {
+    impl Plugin for super::DebugUiPlugin {
         fn build(&self, app: &mut App) {
             app.add_plugins((
                 FrameTimeDiagnosticsPlugin,
