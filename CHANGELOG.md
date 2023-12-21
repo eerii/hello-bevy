@@ -1,33 +1,31 @@
 - - -
-## [0.12.4](https://github.com/eerii/hello-bevy/compare/0.12.3..0.12.4) - 2023-12-19
+## [0.12.3](https://github.com/eerii/hello-bevy/compare/0.12.2..0.12.3) - 2023-12-19
 #### Documentation
 - add 3d example 🧶 - ([be8feaa](https://github.com/eerii/hello-bevy/commit/be8feaa55c90115f50c204733c88aa9dcaddef6d)) - [@eerii](https://github.com/eerii)
 #### Features
+- reworked ui abstraction 🛰️ - ([4754d3e](https://github.com/eerii/hello-bevy/commit/4754d3ec264d58e8640bba5951c4e4f2a7336941)) - [@eerii](https://github.com/eerii)
 - pixel perfect camera 👾 - ([e42eb34](https://github.com/eerii/hello-bevy/commit/e42eb347beaa1fdfe1e02f2804ba7db1774e240a)) - [@eerii](https://github.com/eerii)
 - docking inspector 🚢 - ([c3aab4b](https://github.com/eerii/hello-bevy/commit/c3aab4b0f024b890d16e01b6414dbdf8c0809ef8)) - [@eerii](https://github.com/eerii)
 - debug utils (speed, inspector) ⏰ - ([33a6b84](https://github.com/eerii/hello-bevy/commit/33a6b847791112e7ca2ce661852c3acb73098549)) - [@eerii](https://github.com/eerii)
+#### Miscellaneous Chores
+- fix changelog 📂 - ([678331f](https://github.com/eerii/hello-bevy/commit/678331fc997f2f06ebcb1471001b1f3657274a95)) - [@eerii](https://github.com/eerii)
 
 - - -
-## [0.12.3](https://github.com/eerii/hello-bevy/compare/0.12.2..0.12.3) - 2023-12-18
-#### Features
-- improve inspector ui 👓 - ([cab3a21](https://github.com/eerii/hello-bevy/commit/cab3a21b997c664ca187726e6c551cf2a37927aa)) - [@eerii](https://github.com/eerii)
-- migrate improvements from jam 🧃 - ([12fd8b3](https://github.com/eerii/hello-bevy/commit/12fd8b366300211b9913eda686f1971adcc63c7a)) - [@eerii](https://github.com/eerii)
-#### Refactoring
-- changed input class names 🐢 - ([5fbfdb6](https://github.com/eerii/hello-bevy/commit/5fbfdb6e898cc07b4c90d39c9ea0af88eaebaa78)) - [@eerii](https://github.com/eerii)
-
-- - -
+## [0.12.2](https://github.com/eerii/hello-bevy/compare/0.12.1..0.12.2) - 2023-12-18
 ## 0.12.2 - 2023-12-18
 #### Features
 - touch input 🖐🏼️ - ([3663e70](https://github.com/eerii/hello-bevy/commit/3663e707031ad613289f7a878acbcc0375ed27f6)) - [@eerii](https://github.com/eerii)
 - input movement axis 🎮 - ([2716595](https://github.com/eerii/hello-bevy/commit/271659506955334129b2c8d9e51aa871f92e300c)) - [@eerii](https://github.com/eerii)
 - custom format 🍸 - ([3e06462](https://github.com/eerii/hello-bevy/commit/3e0646205cfd4fd21cf6f3392ca8d05d09977dd9)) - [@eerii](https://github.com/eerii)
 - quality of life 🌳 - ([4c59fe6](https://github.com/eerii/hello-bevy/commit/4c59fe6cf0ce1a587a907a0c102ad1fc8a2e5deb)) - [@eerii](https://github.com/eerii)
+- improve inspector ui 👓 - ([cab3a21](https://github.com/eerii/hello-bevy/commit/cab3a21b997c664ca187726e6c551cf2a37927aa)) - [@eerii](https://github.com/eerii)
+- migrate improvements from jam 🧃 - ([12fd8b3](https://github.com/eerii/hello-bevy/commit/12fd8b366300211b9913eda686f1971adcc63c7a)) - [@eerii](https://github.com/eerii)
 #### Refactoring
 - contained ui module 📦 - ([5d95fe0](https://github.com/eerii/hello-bevy/commit/5d95fe036f92228a341c38d88b4279b8e496a63c)) - [@eerii](https://github.com/eerii)
+- changed input class names 🐢 - ([5fbfdb6](https://github.com/eerii/hello-bevy/commit/5fbfdb6e898cc07b4c90d39c9ea0af88eaebaa78)) - [@eerii](https://github.com/eerii)
 
 - - -
 ## 0.12.1 - 2023-12-18
-#### Bug Fixes
 #### Features
 - audio 🎸 - ([4c1e9b6](https://github.com/eerii/hello-bevy/commit/4c1e9b66a4d5760615e8b94d42e953c95d690c1b)) - [@eerii](https://github.com/eerii)
 - better input 🎮 - ([8aedd65](https://github.com/eerii/hello-bevy/commit/8aedd6546c586b641601c2daafbde4c874e90f95)) - [@eerii](https://github.com/eerii)
