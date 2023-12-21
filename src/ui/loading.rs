@@ -121,7 +121,7 @@ fn check_progress(
 fn check_splash_finished(
     mut cmd: Commands,
     time: Res<Time>,
-    style: Res<UIStyle>,
+    style: Res<UiStyle>,
     opts: Res<Persistent<GameOptions>>,
     progress: Res<ProgressCounter>,
     node: Query<Entity, With<UiNode>>,
@@ -137,7 +137,7 @@ fn check_splash_finished(
         let Ok(node) = node.get_single() else { return false.into() };
         let Some(mut node) = cmd.get_entity(node) else { return false.into() };
         node.with_children(|parent| {
-            UIText::new(&style, "Loading...").with_title().add(parent);
+            UiText::new(&style, "Loading...").add(parent);
             progress_bar(parent, &opts, percent);
         });
     }

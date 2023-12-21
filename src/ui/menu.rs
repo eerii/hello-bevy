@@ -13,13 +13,14 @@ mod _menu {
     use bevy_persistent::Persistent;
 
     use crate::{
+        input::BindSet,
         ui::*,
         GameOptions,
         GameState,
         KeyBind,
         Keybinds,
     };
- 
+
     // ······
     // Plugin
     // ······
@@ -197,7 +198,7 @@ mod _menu {
         game_state: Res<State<GameState>>,
         menu_state: Res<State<MenuState>>,
         node: Query<Entity, With<UiNode>>,
-        style: Res<UIStyle>,
+        style: Res<UiStyle>,
         opts: Res<Persistent<GameOptions>>,
         keybinds: Res<Persistent<Keybinds>>,
         rebind_key: Option<Res<KeyBeingRebound>>,
@@ -293,85 +294,71 @@ mod _menu {
     // Extra
     // ·····
 
-    fn layout_main(mut cmd: Commands, node: Entity, style: &UIStyle) {
+    fn layout_main(mut cmd: Commands, node: Entity, style: &UiStyle) {
         let Some(mut node) = cmd.get_entity(node) else { return };
 
         node.with_children(|parent| {
-            UIText::new(style, "Hello Bevy").with_title().add(parent);
-
-            UIButton::new(style, "Play", MenuButton::Play).add(parent);
-            UIButton::new(
-                style,
-                "Settings",
-                MenuButton::GoSettings,
-            )
-            .add(parent);
+            UiText::new_title(style, "Hello Bevy").add(parent);
+            UiButton::new(style, "Play").add_with(parent, MenuButton::Play);
+            UiButton::new(style, "Settings").add_with(parent, MenuButton::GoSettings);
         });
     }
 
-    fn layout_options(mut cmd: Commands, node: Entity, style: &UIStyle) {
+    fn layout_options(mut cmd: Commands, node: Entity, style: &UiStyle) {
         let Some(mut node) = cmd.get_entity(node) else { return };
 
         node.with_children(|parent| {
-            UIText::new(style, "Settings").with_title().add(parent);
-
-            UIButton::new(
-                style,
-                "Keybinds",
-                MenuButton::GoKeybinds,
-            )
-            .add(parent);
-            UIButton::new(style, "Visual", MenuButton::GoVisual).add(parent);
-
-            UIButton::new(style, "Back", MenuButton::GoMain).add(parent);
+            UiText::new_title(style, "Settings").add(parent);
+            UiButton::new(style, "Keybinds").add_with(parent, MenuButton::GoKeybinds);
+            UiButton::new(style, "Visual").add_with(parent, MenuButton::GoVisual);
+            UiButton::new(style, "Back").add_with(parent, MenuButton::GoMain);
         });
     }
 
-    fn layout_keybinds(mut cmd: Commands, node: Entity, style: &UIStyle, keybinds: &Keybinds) {
+    fn layout_keybinds(mut cmd: Commands, node: Entity, style: &UiStyle, keybinds: &Keybinds) {
         let Some(mut node) = cmd.get_entity(node) else { return };
 
         node.with_children(|parent| {
-            UIText::new(style, "Keybinds").with_title().add(parent);
+            UiText::new_title(style, "Keybinds").add(parent);
 
             // TODO: Scrollable section (Requires #8104 to be merged in 0.13)
+            // TODO: Fix for multiple key types
+            // TODO: Add key icons
             for (i, value) in keybinds.iter_fields().enumerate() {
                 let field_name = keybinds.name_at(i).unwrap();
-                let Some(value) = value.downcast_ref::<Vec<KeyBind>>() else { continue };
+                let Some(value) = value.downcast_ref::<BindSet<KeyBind>>() else { continue };
 
-                UIOption::new(style, field_name).add(parent, |row| {
-                    let keys = value
-                        .iter()
-                        .map(|bind| bind.to_string())
-                        .collect::<Vec<_>>()
-                        .join(", ");
+                UiOption::new(style, field_name)
+                    .add(parent)
+                    .with_children(|row| {
+                        let keys = value
+                            .0
+                            .iter()
+                            .map(|bind| bind.to_string())
+                            .collect::<Vec<_>>()
+                            .join(", ");
 
-                    UIButton::new(
-                        style,
-                        &keys,
-                        MenuButton::RemapKeybind(field_name.to_string()),
-                    )
-                    .with_width(Val::Px(128.))
-                    .with_font_scale(0.7)
-                    .add(row);
-                });
+                        UiButton::new(style, &keys)
+                            .with_style(Style {
+                                width: Val::Px(128.),
+                                ..default()
+                            })
+                            .add_with(
+                                row,
+                                MenuButton::RemapKeybind(field_name.to_string()),
+                            );
+                    });
             }
-
-            UIButton::new(
-                style,
-                "Reset",
-                MenuButton::ResetKeybinds,
-            )
-            .add(parent);
-
-            UIButton::new(style, "Back", MenuButton::GoSettings).add(parent);
+            UiButton::new(style, "Reset").add_with(parent, MenuButton::ResetKeybinds);
+            UiButton::new(style, "Back").add_with(parent, MenuButton::GoSettings);
         });
     }
 
-    fn layout_rebinding(mut cmd: Commands, node: Entity, style: &UIStyle, key: &str) {
+    fn layout_rebinding(mut cmd: Commands, node: Entity, style: &UiStyle, key: &str) {
         let Some(mut node) = cmd.get_entity(node) else { return };
 
         node.with_children(|parent| {
-            UIText::new(
+            UiText::new(
                 style,
                 &format!(
                     "Press a key or button for {}",
@@ -380,68 +367,47 @@ mod _menu {
             )
             .add(parent);
 
-            UIButton::new(style, "Back", MenuButton::GoKeybinds).add(parent);
+            UiButton::new(style, "Back").add_with(parent, MenuButton::GoKeybinds);
         });
     }
 
-    fn layout_visual(mut cmd: Commands, node: Entity, style: &UIStyle, opts: &GameOptions) {
+    fn layout_visual(mut cmd: Commands, node: Entity, style: &UiStyle, opts: &GameOptions) {
         let Some(mut node) = cmd.get_entity(node) else { return };
 
         node.with_children(|parent| {
-            UIText::new(style, "Visual settings")
-                .with_title()
-                .add(parent);
+            UiText::new_title(style, "Visual settings").add(parent);
 
             for (i, value) in opts.font_size.iter_fields().enumerate() {
                 let field_name = opts.font_size.name_at(i).unwrap().to_string();
                 let Some(value) = value.downcast_ref::<f32>() else { continue };
 
-                UIOption::new(style, &format!("font_{}", field_name)).add(parent, |row| {
-                    UIButton::new(
-                        style,
-                        &format!("{}", value),
-                        MenuButton::ChangeFont(field_name),
-                    )
-                    .with_width(Val::Px(40.))
-                    .add(row);
-                });
+                UiOption::new(style, &format!("font_{}", field_name))
+                    .add(parent)
+                    .with_children(|row| {
+                        UiButton::new(style, &format!("{}", value))
+                            .with_style(Style {
+                                width: Val::Px(40.),
+                                ..default()
+                            })
+                            .add_with(row, MenuButton::ChangeFont(field_name));
+                    });
             }
 
-            for (i, value) in opts.color.iter_fields().enumerate() {
+            /*for (i, value) in opts.color.iter_fields().enumerate() {
                 let field_name = format!(
                     "color_{}",
                     opts.color.name_at(i).unwrap()
                 );
                 let Some(value) = value.downcast_ref::<Color>() else { continue };
 
-                UIOption::new(style, &field_name).add(parent, |row| {
-                    UIButton::new(
-                        style,
-                        &format!("{:.0}", value.r() * 255.),
-                        MenuButton::ChangeColor(field_name.clone(), "r".to_string()),
-                    )
-                    .with_width(Val::Px(40.))
-                    .add(row);
+                UiOption::new(style, &field_name)
+                    .add(parent)
+                    .with_children(|row| {
+                        // TODO: Color picker
+                    });
+            }*/
 
-                    UIButton::new(
-                        style,
-                        &format!("{:.0}", value.g() * 255.),
-                        MenuButton::ChangeColor(field_name.clone(), "g".to_string()),
-                    )
-                    .with_width(Val::Px(40.))
-                    .add(row);
-
-                    UIButton::new(
-                        style,
-                        &format!("{:.0}", value.b() * 255.),
-                        MenuButton::ChangeColor(field_name.clone(), "b".to_string()),
-                    )
-                    .with_width(Val::Px(40.))
-                    .add(row);
-                });
-            }
-
-            UIButton::new(style, "Back", MenuButton::GoSettings).add(parent);
+            UiButton::new(style, "Back").add_with(parent, MenuButton::GoSettings);
         });
     }
 }

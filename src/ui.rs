@@ -1,9 +1,12 @@
+#![allow(dead_code)]
+
 mod debug;
 mod loading;
 mod menu;
 
 use bevy::{
     core_pipeline::clear_color::ClearColorConfig,
+    ecs::system::EntityCommands,
     prelude::*,
     render::view::RenderLayers,
 };
@@ -32,7 +35,7 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(UIStyle::default())
+        app.insert_resource(UiStyle::default())
             .add_systems(OnEnter(GameState::Loading), init_ui)
             .add_systems(
                 PreUpdate,
@@ -57,7 +60,7 @@ impl Plugin for UiPlugin {
         #[cfg(debug_assertions)]
         app.add_plugins(debug::DebugUiPlugin);
 
-        #[cfg(features = "menu")]
+        #[cfg(feature = "menu")]
         app.add_plugins(menu::MenuUiPlugin);
     }
 }
@@ -67,7 +70,7 @@ impl Plugin for UiPlugin {
 // ·········
 
 #[derive(Resource, Default)]
-struct UIStyle {
+struct UiStyle {
     title: TextStyle,
     text: TextStyle,
     button_text: TextStyle,
@@ -127,7 +130,7 @@ fn init_ui(mut cmd: Commands) {
 }
 
 fn change_style(
-    mut style: ResMut<UIStyle>,
+    mut style: ResMut<UiStyle>,
     opts: Res<Persistent<GameOptions>>,
     assets: Res<CoreAssets>,
 ) {
@@ -185,95 +188,109 @@ fn clean_ui(mut cmd: Commands, node: Query<Entity, With<UiNode>>) {
 
 // Text
 
-struct UIText<'a> {
-    text: TextBundle,
-    style: &'a UIStyle,
+struct UiText {
+    bundle: TextBundle,
 }
 
-impl<'a> UIText<'a> {
-    #[allow(dead_code)]
-    fn new(style: &'a UIStyle, text: &str) -> Self {
+impl UiText {
+    fn new(style: &UiStyle, text: &str) -> Self {
         Self {
-            text: TextBundle::from_section(text, style.text.clone()),
-            style,
+            bundle: TextBundle::from_section(text, style.text.clone()),
         }
     }
 
-    #[allow(dead_code)]
-    fn with_title(mut self) -> Self {
-        self.text.text.sections[0].style = self.style.title.clone();
-        self
+    fn new_title(style: &UiStyle, text: &str) -> Self {
+        Self {
+            bundle: TextBundle::from_section(text, style.title.clone()),
+        }
     }
 
-    #[allow(dead_code)]
     fn with_style(mut self, style: Style) -> Self {
-        self.text.style = style;
+        self.bundle.style = style;
         self
     }
 
-    #[allow(dead_code)]
-    fn add(self, parent: &mut ChildBuilder) { parent.spawn((self.text, UI_LAYER)); }
+    fn with_size(mut self, size: f32) -> Self {
+        self.bundle.text.sections[0].style.font_size = size;
+        self
+    }
+
+    fn add<'w, 's, 'b>(
+        self,
+        parent: &'b mut ChildBuilder<'w, 's, '_>,
+    ) -> EntityCommands<'w, 's, 'b> {
+        parent.spawn((self.bundle, UI_LAYER))
+    }
+
+    fn add_with<'w, 's, 'b, T: Component>(
+        self,
+        parent: &'b mut ChildBuilder<'w, 's, '_>,
+        tag: T,
+    ) -> EntityCommands<'w, 's, 'b> {
+        parent.spawn((self.bundle, UI_LAYER, tag))
+    }
 }
 
 // Button
 // TODO: Rounded button corners (Requires #8973 to be merged in 0.13)
 
-struct UIButton<T: Component> {
-    button: ButtonBundle,
-    text: TextBundle,
-    action: T,
+struct UiButton {
+    bundle: ButtonBundle,
+    text: UiText,
 }
 
-impl<T: Component> UIButton<T> {
-    #[allow(dead_code)]
-    fn new(style: &UIStyle, text: &str, action: T) -> Self {
+impl UiButton {
+    fn new(style: &UiStyle, text: &str) -> Self {
         Self {
-            button: ButtonBundle {
+            bundle: ButtonBundle {
                 style: style.button.clone(),
                 background_color: style.button_bg,
                 ..default()
             },
-            text: TextBundle::from_section(text, style.button_text.clone()),
-            action,
+            text: UiText::new(style, text),
         }
     }
 
-    #[allow(dead_code)]
-    fn with_width(mut self, width: Val) -> Self {
-        self.button.style.width = width;
+    fn with_style(mut self, style: Style) -> Self {
+        self.bundle.style = style;
         self
     }
 
-    #[allow(dead_code)]
-    fn with_font_scale(mut self, scale: f32) -> Self {
-        self.text.text.sections[0].style.font_size *= scale;
-        self
+    fn add<'w, 's, 'b>(
+        self,
+        parent: &'b mut ChildBuilder<'w, 's, '_>,
+    ) -> EntityCommands<'w, 's, 'b> {
+        let mut button = parent.spawn((self.bundle, UI_LAYER));
+        button.with_children(|parent| {
+            self.text.add(parent);
+        });
+        button
     }
 
-    #[allow(dead_code)]
-    fn add(self, parent: &mut ChildBuilder) {
-        let _text = self.text.text.sections[0].value.clone();
-        let _id = parent
-            .spawn((self.button, self.action, UI_LAYER))
-            .with_children(|button| {
-                button.spawn((self.text, UI_LAYER));
-            })
-            .id();
+    fn add_with<'w, 's, 'b, T: Component>(
+        self,
+        parent: &'b mut ChildBuilder<'w, 's, '_>,
+        tag: T,
+    ) -> EntityCommands<'w, 's, 'b> {
+        let mut button = parent.spawn((self.bundle, UI_LAYER, tag));
+        button.with_children(|parent| {
+            self.text.add(parent);
+        });
+        button
     }
 }
 
 // Option row (label text + widget)
 
-struct UIOption<'a> {
-    row: NodeBundle,
-    label: UIText<'a>,
+struct UiOption {
+    bundle: NodeBundle,
+    text: UiText,
 }
 
-impl<'a> UIOption<'a> {
-    #[allow(dead_code)]
-    fn new(style: &'a UIStyle, label: &str) -> Self {
+impl UiOption {
+    fn new(style: &UiStyle, label: &str) -> Self {
         Self {
-            row: NodeBundle {
+            bundle: NodeBundle {
                 style: Style {
                     width: MENU_WIDTH,
                     column_gap: MENU_ITEM_GAP,
@@ -284,19 +301,27 @@ impl<'a> UIOption<'a> {
                 },
                 ..default()
             },
-            label: UIText::new(style, &snake_to_upper(label)).with_style(Style {
+            text: UiText::new(style, label).with_style(Style {
                 flex_grow: 1.,
                 ..default()
             }),
         }
     }
 
-    #[allow(dead_code)]
-    fn add(self, parent: &mut ChildBuilder, children: impl FnOnce(&mut ChildBuilder)) {
-        parent.spawn((self.row, UI_LAYER)).with_children(|row| {
-            self.label.add(row);
-            children(row);
+    fn with_style(mut self, style: Style) -> Self {
+        self.bundle.style = style;
+        self
+    }
+
+    fn add<'w, 's, 'b>(
+        self,
+        parent: &'b mut ChildBuilder<'w, 's, '_>,
+    ) -> EntityCommands<'w, 's, 'b> {
+        let mut row = parent.spawn((self.bundle, UI_LAYER));
+        row.with_children(|parent| {
+            self.text.add(parent);
         });
+        row
     }
 }
 

@@ -281,7 +281,7 @@ mod _debug {
     fn update_fps_text(
         mut cmd: Commands,
         diagnostics: Res<DiagnosticsStore>,
-        assets: Res<CoreAssets>,
+        style: Res<UiStyle>,
         node: Query<Entity, With<UiNode>>,
         mut text: Query<&mut Text, With<FpsText>>,
     ) {
@@ -289,21 +289,15 @@ mod _debug {
             let Ok(node) = node.get_single() else { return };
             let Some(mut node) = cmd.get_entity(node) else { return };
             node.with_children(|parent| {
-                parent.spawn((
-                    TextBundle::from_section("", TextStyle {
-                        font: assets.font.clone(),
-                        font_size: 16.0,
-                        color: Color::WHITE,
-                    })
+                UiText::new(&style, "")
                     .with_style(Style {
                         position_type: PositionType::Absolute,
-                        left: Val::Px(5.0),
-                        bottom: Val::Px(5.0),
+                        left: Val::Px(5.),
+                        bottom: Val::Px(5.),
                         ..default()
-                    }),
-                    FpsText,
-                    UI_LAYER,
-                ));
+                    })
+                    .with_size(16.)
+                    .add_with(parent, FpsText);
             });
             return;
         };
@@ -320,7 +314,7 @@ mod _debug {
     fn update_speed_text(
         mut cmd: Commands,
         time: Res<Time<Virtual>>,
-        assets: Res<CoreAssets>,
+        style: Res<UiStyle>,
         node: Query<Entity, With<UiNode>>,
         mut text: Query<&mut Text, With<SpeedText>>,
     ) {
@@ -328,21 +322,15 @@ mod _debug {
             let Ok(node) = node.get_single() else { return };
             let Some(mut node) = cmd.get_entity(node) else { return };
             node.with_children(|parent| {
-                parent.spawn((
-                    TextBundle::from_section("", TextStyle {
-                        font: assets.font.clone(),
-                        font_size: 16.0,
-                        color: Color::WHITE,
-                    })
+                UiText::new(&style, "")
                     .with_style(Style {
                         position_type: PositionType::Absolute,
-                        right: Val::Px(5.0),
-                        bottom: Val::Px(5.0),
+                        right: Val::Px(5.),
+                        bottom: Val::Px(5.),
                         ..default()
-                    }),
-                    SpeedText,
-                    UI_LAYER,
-                ));
+                    })
+                    .with_size(16.)
+                    .add_with(parent, SpeedText);
             });
             return;
         };

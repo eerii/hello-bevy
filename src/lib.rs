@@ -1,3 +1,5 @@
+#![feature(type_changing_struct_update)]
+
 mod assets;
 mod audio;
 mod camera;
