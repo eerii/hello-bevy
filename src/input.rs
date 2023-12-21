@@ -32,7 +32,7 @@ pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Input::<KeyBind>::default())
+        app.insert_resource(ButtonInput::<KeyBind>::default())
             .insert_resource(InputMovement::default())
             .add_systems(
                 PreUpdate,
@@ -82,17 +82,15 @@ impl InputMovement {
 // ·······
 
 fn handle_keyboard_input(
-    mut input: ResMut<Input<KeyBind>>,
+    mut input: ResMut<ButtonInput<KeyBind>>,
     mut movement: ResMut<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
     mut keyboard: EventReader<KeyboardInput>,
 ) {
     for event in keyboard.read() {
-        let Some(event_key) = event.key_code else { continue };
-
         for bind in keybinds.keys() {
             if let KeyBind::Key(key) = bind {
-                if key != &event_key {
+                if key != &event.key_code {
                     continue;
                 }
                 match event.state {
@@ -104,12 +102,12 @@ fn handle_keyboard_input(
 
         for bind in keybinds.moves() {
             if let AxisBind::Key(a, b) = bind {
-                if a == &event_key {
+                if a == &event.key_code {
                     match event.state {
                         ButtonState::Pressed => input.press(KeyBind::Key(*a)),
                         ButtonState::Released => input.release(KeyBind::Key(*a)),
                     }
-                } else if b == &event_key {
+                } else if b == &event.key_code {
                     match event.state {
                         ButtonState::Pressed => input.press(KeyBind::Key(*b)),
                         ButtonState::Released => input.release(KeyBind::Key(*b)),
@@ -133,7 +131,7 @@ fn handle_keyboard_input(
 }
 
 fn handle_mouse_input(
-    mut input: ResMut<Input<KeyBind>>,
+    mut input: ResMut<ButtonInput<KeyBind>>,
     mut movement: ResMut<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
     mut mouse: EventReader<MouseButtonInput>,
@@ -167,7 +165,7 @@ fn handle_mouse_input(
 }
 
 fn handle_gamepad_input(
-    mut input: ResMut<Input<KeyBind>>,
+    mut input: ResMut<ButtonInput<KeyBind>>,
     mut movement: ResMut<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
     mut gamepad_buttons: EventReader<GamepadButtonInput>,
@@ -200,7 +198,7 @@ fn handle_gamepad_input(
 }
 
 fn handle_touch_input(
-    mut input: ResMut<Input<KeyBind>>,
+    mut input: ResMut<ButtonInput<KeyBind>>,
     mut movement: ResMut<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
     mut touch: EventReader<TouchInput>,
@@ -240,7 +238,7 @@ fn handle_touch_input(
 
 #[cfg(feature = "mock_touch")]
 fn mock_touch(
-    mouse: Res<Input<MouseButton>>,
+    mouse: Res<ButtonInput<MouseButton>>,
     mut touch_events: EventWriter<TouchInput>,
     win: Query<&Window>,
 ) {
@@ -265,7 +263,7 @@ fn mock_touch(
     }
 }
 
-fn clear_input(mut input: ResMut<Input<KeyBind>>, mut movement: ResMut<InputMovement>) {
+fn clear_input(mut input: ResMut<ButtonInput<KeyBind>>, mut movement: ResMut<InputMovement>) {
     input.clear();
     movement.clear();
 }
@@ -311,15 +309,15 @@ pub enum AxisBind {
 pub struct BindSet<T>(pub Vec<T>);
 
 impl BindSet<KeyBind> {
-    pub fn pressed(&self, input: &Input<KeyBind>) -> bool {
+    pub fn pressed(&self, input: &ButtonInput<KeyBind>) -> bool {
         self.0.iter().any(|bind| input.pressed(*bind))
     }
 
-    pub fn just_pressed(&self, input: &Input<KeyBind>) -> bool {
+    pub fn just_pressed(&self, input: &ButtonInput<KeyBind>) -> bool {
         self.0.iter().any(|bind| input.just_pressed(*bind))
     }
 
-    pub fn just_released(&self, input: &Input<KeyBind>) -> bool {
+    pub fn just_released(&self, input: &ButtonInput<KeyBind>) -> bool {
         self.0.iter().any(|bind| input.just_released(*bind))
     }
 }

@@ -96,13 +96,13 @@ impl Default for Keybinds {
     fn default() -> Self {
         Self {
             x_axis: BindSet(vec![
-                AxisBind::Key(KeyCode::D, KeyCode::A),
+                AxisBind::Key(KeyCode::KeyD, KeyCode::KeyA),
                 AxisBind::Gamepad(GamepadAxisType::LeftStickX),
                 // MoveBind::MouseAxis(InputAxis::X),
                 AxisBind::Touch(InputAxis::X),
             ]),
             y_axis: BindSet(vec![
-                AxisBind::Key(KeyCode::W, KeyCode::S),
+                AxisBind::Key(KeyCode::KeyW, KeyCode::KeyS),
                 AxisBind::Gamepad(GamepadAxisType::LeftStickY),
             ]),
             jump: BindSet(vec![
@@ -111,7 +111,7 @@ impl Default for Keybinds {
                 KeyBind::TouchPress,
             ]),
             interact: BindSet(vec![
-                KeyBind::Key(KeyCode::E),
+                KeyBind::Key(KeyCode::KeyE),
                 KeyBind::Mouse(MouseButton::Left),
                 KeyBind::Gamepad(GamepadButtonType::East),
             ]),

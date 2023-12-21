@@ -27,7 +27,7 @@ mod _menu {
 
     impl Plugin for super::MenuUiPlugin {
         fn build(&self, app: &mut App) {
-            app.add_state::<MenuState>()
+            app.init_state::<MenuState>()
                 .add_systems(
                     PreUpdate,
                     (
@@ -231,7 +231,7 @@ mod _menu {
         mut game_state: ResMut<NextState<GameState>>,
         current_menu_state: Res<State<MenuState>>,
         mut next_menu_state: ResMut<NextState<MenuState>>,
-        input: Res<Input<KeyBind>>,
+        input: Res<ButtonInput<KeyBind>>,
         keybinds: Res<Persistent<Keybinds>>,
     ) {
         if keybinds.pause.just_pressed(&input) {
@@ -248,9 +248,9 @@ mod _menu {
         mut menu_state: ResMut<NextState<MenuState>>,
         rebind_key: Option<Res<KeyBeingRebound>>,
         mut keybinds: ResMut<Persistent<Keybinds>>,
-        keyboard: Res<Input<KeyCode>>,
-        mouse: Res<Input<MouseButton>>,
-        gamepad_buttons: Res<Input<GamepadButton>>,
+        keyboard: Res<ButtonInput<KeyCode>>,
+        mouse: Res<ButtonInput<MouseButton>>,
+        gamepad_buttons: Res<ButtonInput<GamepadButton>>,
     ) {
         let Some(rebind_key) = rebind_key.as_ref() else { return };
         let mut bind = None;

@@ -1,6 +1,6 @@
 [package]
 name = "hello-bevy" # [CHANGE]: Set your project name.
-version = "0.12.4"
+version = "0.12.5"
 edition = "2021"
 description = "a bevy game template"
 exclude = ["assets", "wasm", ".data"]
@@ -27,29 +27,53 @@ menu = []
 mock_touch = []
 
 [dependencies]
-# The bevy engine <3
-# Default feautres are disabled because we are using audio from a different source (kira)
-# We also add trace_tracy for profiling
-bevy = { version = "0.12", default-features = false, features = [
-    "animation", "bevy_asset", "bevy_gilrs", "bevy_scene", "bevy_winit",
-    "bevy_core_pipeline", "bevy_pbr", "bevy_gltf", "bevy_render", "bevy_sprite",
-    "bevy_text", "bevy_ui", "multi-threaded", "png", "hdr", "x11", "wayland",
-    "bevy_gizmos", "tonemapping_luts", "default_font", "webgl2", "serialize", 
-]} 
-bevy_asset_loader = { version = "0.18", features = [ "progress_tracking" ] } # Better asset loader
-bevy_embedded_assets = { version = "0.9" } # Embed assets in binary
-bevy_kira_audio = { version =  "0.18" } # Improved audio library
-iyes_progress = { version = "0.10", features = [ "assets" ] } # Track loading and game state
-bevy-persistent = { version = "0.4", features = ["toml"] } # Persistent values (for saving)
+bevy_asset_loader = { git = "https://github.com/eerii/bevy_asset_loader", features = [ "progress_tracking" ] } # Better asset loader
+bevy_embedded_assets = { git = "https://github.com/vleue/bevy_embedded_assets" } # Embed assets in binary
+bevy_kira_audio = { git = "https://github.com/NiklasEi/bevy_kira_audio" } # Improved audio library
+iyes_progress = { git = "https://github.com/IyesGames/iyes_progress", features = [ "assets" ] } # Track loading and game state
+bevy-persistent = { git = "https://github.com/umut-sahin/bevy-persistent", features = ["toml"] } # Persistent values (for saving)
 
 # Core
 rand = { version = "0.8" }
 serde = { version = "1.0", features = ["derive"] }
 
 # Debug
-bevy-inspector-egui = { version = "0.21" } # Inspector
-egui_dock = { version = "0.8" }
-egui-gizmo = { version = "0.12" }
+bevy-inspector-egui = { git = "https://github.com/eerii/bevy-inspector-egui" } # Inspector
+egui-gizmo = { git = "https://github.com/urholaukkarinen/egui-gizmo" }
+egui_dock = { version = "0.9" }
+
+[dependencies.bevy]
+# The bevy engine <3
+# Default feautres are disabled because we are using audio from a different source (kira)
+# We also add trace_tracy for profiling
+git = "https://github.com/bevyengine/bevy"
+default-features = false
+features = [
+    "animation", "bevy_asset", "bevy_gilrs", "bevy_scene", "bevy_winit",
+    "bevy_core_pipeline", "bevy_pbr", "bevy_gltf", "bevy_render", "bevy_sprite",
+    "bevy_text", "bevy_ui", "multi-threaded", "png", "hdr", "x11", "wayland",
+    "bevy_gizmos", "tonemapping_luts", "default_font", "webgl2", "serialize", 
+]
+
+[patch.crates-io]
+bevy = { git = "https://github.com/bevyengine/bevy" }
+bevy_app = { git = "https://github.com/bevyengine/bevy" }
+bevy_asset = { git = "https://github.com/bevyengine/bevy" }
+bevy_core = { git = "https://github.com/bevyengine/bevy" }
+bevy_core_pipeline = { git = "https://github.com/bevyengine/bevy" }
+bevy_ecs = { git = "https://github.com/bevyengine/bevy" }
+bevy_hierarchy = { git = "https://github.com/bevyengine/bevy" }
+bevy_log = { git = "https://github.com/bevyengine/bevy" }
+bevy_math = { git = "https://github.com/bevyengine/bevy" }
+bevy_pbr = { git = "https://github.com/bevyengine/bevy" }
+bevy_reflect = { git = "https://github.com/bevyengine/bevy" }
+bevy_render = { git = "https://github.com/bevyengine/bevy" }
+bevy_time = { git = "https://github.com/bevyengine/bevy" }
+bevy_utils = { git = "https://github.com/bevyengine/bevy" }
+bevy_window = { git = "https://github.com/bevyengine/bevy" }
+
+bevy_egui = { git = "https://github.com/eerii/bevy_egui.git" }
+iyes_progress = { git = "https://github.com/IyesGames/iyes_progress" }
 
 [[example]]
 name = "dvd"

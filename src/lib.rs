@@ -116,7 +116,7 @@ impl Plugin for GamePlugin {
         app.add_plugins(DefaultPlugins.set(window_plugin).set(image_plugin));
 
         // Game
-        app.add_state::<GameState>().add_plugins((
+        app.init_state::<GameState>().add_plugins((
             assets::AssetLoaderPlugin,
             ui::UiPlugin,
             data::DataPlugin,

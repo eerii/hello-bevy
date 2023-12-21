@@ -108,8 +108,8 @@ mod _debug {
             .add_systems(
                 Update,
                 (
-                    toggle_inspector.run_if(input_just_pressed(KeyCode::I)),
-                    toggle_pause.run_if(input_just_pressed(KeyCode::P)),
+                    toggle_inspector.run_if(input_just_pressed(KeyCode::KeyI)),
+                    toggle_pause.run_if(input_just_pressed(KeyCode::KeyP)),
                     (
                         update_fps_text,
                         update_speed_text,
@@ -266,11 +266,11 @@ mod _debug {
         time.set_relative_speed(time_speed);
     }
 
-    fn change_gizmo_mode(input: Res<Input<KeyCode>>, mut state: ResMut<DebugState>) {
+    fn change_gizmo_mode(input: Res<ButtonInput<KeyCode>>, mut state: ResMut<DebugState>) {
         for (key, mode) in [
-            (KeyCode::R, GizmoMode::Rotate),
-            (KeyCode::T, GizmoMode::Translate),
-            (KeyCode::S, GizmoMode::Scale),
+            (KeyCode::KeyR, GizmoMode::Rotate),
+            (KeyCode::KeyT, GizmoMode::Translate),
+            (KeyCode::KeyS, GizmoMode::Scale),
         ] {
             if input.just_pressed(key) {
                 state.gizmo_mode = mode;
@@ -402,7 +402,7 @@ mod _debug {
         let Ok(win) = win.get_single() else { return };
         let Ok(mut cam) = cam.get_single_mut() else { return };
 
-        let scale_factor = win.scale_factor() * egui_settings.scale_factor;
+        let scale_factor = win.scale_factor() * egui_settings.scale_factor as f32;
 
         let viewport_size = state.viewport_rect.size() * scale_factor as f32;
         if !state.inspector || !viewport_size.x.is_normal() || !viewport_size.y.is_normal() {
@@ -621,9 +621,9 @@ mod _debug {
             // TODO: Gizmos in 2d
             // TODO: Raycast selection
             let Some(result) = Gizmo::new(selected)
-                .model_matrix(model_matrix.to_cols_array_2d())
-                .view_matrix(view_matrix.to_cols_array_2d())
-                .projection_matrix(projection_matrix.to_cols_array_2d())
+                .model_matrix(model_matrix.to_cols_array_2d().into())
+                .view_matrix(view_matrix.to_cols_array_2d().into())
+                .projection_matrix(projection_matrix.to_cols_array_2d().into())
                 .orientation(GizmoOrientation::Local)
                 .mode(gizmo_mode)
                 .interact(ui)

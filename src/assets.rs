@@ -21,14 +21,15 @@ pub struct AssetLoaderPlugin;
 
 impl Plugin for AssetLoaderPlugin {
     fn build(&self, app: &mut App) {
-        app.add_loading_state(LoadingState::new(GameState::Loading))
-            .init_collection::<CoreAssets>()
-            .add_collection_to_loading_state::<_, ExampleAssets>(GameState::Loading)
-            .add_plugins(
-                ProgressPlugin::new(GameState::Loading)
-                    .continue_to(NEXT_STATE)
-                    .track_assets(),
-            );
+        app.add_loading_state(
+            LoadingState::new(GameState::Loading).load_collection::<ExampleAssets>(),
+        )
+        .init_collection::<CoreAssets>()
+        .add_plugins(
+            ProgressPlugin::new(GameState::Loading)
+                .continue_to(NEXT_STATE)
+                .track_assets(),
+        );
     }
 }
 
