@@ -104,7 +104,6 @@ impl Plugin for GamePlugin {
         {
             let win = window_plugin.primary_window.as_mut().unwrap();
             win.resizable = true;
-            win.fit_canvas_to_parent = true;
         }
 
         #[cfg(not(feature = "pixel_perfect"))]

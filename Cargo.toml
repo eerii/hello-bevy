@@ -86,3 +86,7 @@ required-features = ["pixel_perfect"]
 [[example]]
 name = "tri"
 required-features = ["3d_camera", "pixel_perfect"]
+
+[[example]]
+name = "shader"
+required-features = []
