@@ -121,7 +121,7 @@ fn init_sample(
 fn update_sample(
     time: Res<Time>,
     app_config: Res<GameAppConfig>,
-    input: Res<Input<KeyBind>>,
+    input: Res<ButtonInput<KeyBind>>,
     movement: Res<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
     mut objects: Query<(&mut Player, &mut Transform)>,

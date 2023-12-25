@@ -374,7 +374,7 @@ mod _debug {
             let Ok(cam) = cam.get_single() else { return };
 
             let size = if let Some(viewport) = cam.viewport.as_ref() {
-                viewport.physical_size.as_vec2() / win.scale_factor() as f32
+                viewport.physical_size.as_vec2() / win.scale_factor()
             } else {
                 Vec2::new(win.width(), win.height())
             };
@@ -404,12 +404,12 @@ mod _debug {
 
         let scale_factor = win.scale_factor() * egui_settings.scale_factor as f32;
 
-        let viewport_size = state.viewport_rect.size() * scale_factor as f32;
+        let viewport_size = state.viewport_rect.size() * scale_factor;
         if !state.inspector || !viewport_size.x.is_normal() || !viewport_size.y.is_normal() {
             cam.viewport = None;
             return;
         }
-        let viewport_pos = state.viewport_rect.left_top().to_vec2() * scale_factor as f32;
+        let viewport_pos = state.viewport_rect.left_top().to_vec2() * scale_factor;
 
         cam.viewport = Some(Viewport {
             physical_position: UVec2::new(

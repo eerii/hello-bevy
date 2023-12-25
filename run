@@ -7,14 +7,16 @@ ARGS="--features dev --no-default-features $@"
 # Check build
 if [ "$1" = "check" ]; then
     shift
+    ARGS="--features dev --no-default-features $@"
     cargo fmt --all
-    cargo clippy --allow-dirty --allow-staged --fix
+    cargo clippy --allow-dirty --allow-staged --fix $ARGS
     exit
 fi
 
 # Local web build
 if [ "$1" = "web" ]; then
     shift
+    ARGS="--features dev --no-default-features $@"
     trunk serve $ARGS
     exit
 fi

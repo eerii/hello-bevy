@@ -213,7 +213,7 @@ fn on_resize(
 
     for e in event_resize.read() {
         let size = if let Some(viewport) = cam.viewport.as_ref() {
-            viewport.physical_size.as_vec2() / win.scale_factor() as f32
+            viewport.physical_size.as_vec2() / win.scale_factor()
         } else {
             Vec2::new(e.width, e.height)
         };
