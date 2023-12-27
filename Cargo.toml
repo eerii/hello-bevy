@@ -81,7 +81,7 @@ required-features = []
 
 [[example]]
 name = "jump"
-required-features = ["pixel_perfect"]
+required-features = []
 
 [[example]]
 name = "tri"

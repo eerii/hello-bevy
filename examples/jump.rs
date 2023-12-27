@@ -1,10 +1,17 @@
 #![allow(clippy::too_many_arguments)]
 
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    sprite::collide_aabb::{
+        collide,
+        Collision,
+    },
+};
 use bevy_persistent::Persistent;
 use hello_bevy::{
     CoreAssets,
     GameAppConfig,
+    GameCamera,
     GameOptions,
     GamePlugin,
     GameState,
@@ -12,21 +19,31 @@ use hello_bevy::{
     KeyBind,
     Keybinds,
 };
+use rand::Rng;
 
-const INITIAL_VEL: Vec2 = Vec2::new(0., 250.);
-const GRAVITY: f32 = -2000.;
-const JUMP_VEL: f32 = 400.;
-const MOVE_VEL: f32 = 250.;
-const BOUNCE_CUTOFF: f32 = 50.;
-const BOUNCE_FACTOR: f32 = 0.2;
-const MOVE_CUTOFF: f32 = 50.;
-const MOVE_FACTOR: f32 = 0.85;
+const LEVEL_SIZE: Vec2 = Vec2::new(600., 600.);
+const PLAYER_SIZE: Vec2 = Vec2::new(72., 72.);
+const PLATFORM_SIZE: Vec2 = Vec2::new(125., 25.);
+const SPACE_BETWEEN_PLATFORMS: u32 = 150;
+
+const INITIAL_VEL: Vec2 = Vec2::new(0., 1000.);
+const GRAVITY: f32 = -8000.;
+const JUMP_VEL: f32 = 1800.;
+const MOVE_VEL: f32 = 800.;
+const BOUNCE_CUTOFF: f32 = 150.;
+const BOUNCE_FACTOR: f32 = 0.3;
+const MOVE_CUTOFF: f32 = 100.;
+const MOVE_FACTOR: f32 = 0.75;
+const MAX_JUMPS: u8 = 1;
+
+const CAMERA_VEL: f32 = 20.;
+const JUMP_BUFFER: f32 = 0.1;
 
 fn main() {
     App::new()
         .insert_resource(GameAppConfig {
             initial_window_res: Vec2::new(600., 600.),
-            initial_game_res: Vec2::new(128., 128.),
+            // initial_game_res: LEVEL_SIZE,
             ..default()
         })
         .add_plugins((GamePlugin, SampleGamePlugin))
@@ -41,16 +58,34 @@ pub struct SampleGamePlugin;
 
 impl Plugin for SampleGamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            OnEnter(GameState::Play),
-            init_sample.run_if(run_once()),
-        )
-        .register_type::<Player>()
-        .add_systems(
-            Update,
-            update_sample.run_if(in_state(GameState::Play)),
-        );
+        app.insert_resource(PlatformInfo::default())
+            .add_systems(
+                PreUpdate,
+                init_sample.run_if(in_state(GameState::Play).and_then(run_once())),
+            )
+            .add_systems(
+                Update,
+                (
+                    update_player,
+                    update_camera,
+                    update_counter,
+                    spawn_platforms,
+                    check_game_over,
+                )
+                    .run_if(in_state(GameState::Play)),
+            )
+            .add_systems(OnEnter(GameState::End), restart_game)
+            .register_type::<Player>();
     }
+}
+
+// ·········
+// Resources
+// ·········
+
+#[derive(Resource, Default)]
+struct PlatformInfo {
+    last_platform: u32,
 }
 
 // ··········
@@ -61,13 +96,24 @@ impl Plugin for SampleGamePlugin {
 struct Player {
     velocity: Vec2,
     remainder: Vec2,
+    max_height: f32,
+    jumps_left: u8,
+    jump_buffer: Option<Timer>,
 }
 
 #[derive(Component)]
-struct Counter(u32);
+struct Platform;
 
 #[derive(Component)]
-struct GameCamera;
+struct Floor;
+
+#[derive(Component, Default)]
+struct Counter(u32);
+
+#[derive(Component, Default)]
+struct CameraFollow {
+    target_pos: f32,
+}
 
 // ·······
 // Systems
@@ -75,32 +121,54 @@ struct GameCamera;
 
 fn init_sample(
     mut cmd: Commands,
-    app_config: Res<GameAppConfig>,
     assets: Res<CoreAssets>,
     opts: Res<Persistent<GameOptions>>,
+    cam: Query<Entity, With<GameCamera>>,
 ) {
     // Background
-    cmd.spawn(SpriteBundle {
-        sprite: Sprite {
-            color: opts.color.dark,
-            custom_size: Some(app_config.initial_game_res),
+    cmd.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: opts.color.dark,
+                custom_size: Some(LEVEL_SIZE),
+                ..default()
+            },
+            transform: Transform::from_xyz(0., 0., -10.),
             ..default()
         },
-        transform: Transform::from_xyz(0., 0., -10.),
-        ..default()
-    });
+        CameraFollow::default(),
+    ));
 
     // Player
     cmd.spawn((
         SpriteBundle {
             texture: assets.bevy_icon.clone(),
-            transform: Transform::from_translation(Vec3::new(0., 0., 1.)),
+            transform: Transform::from_translation(Vec3::new(0., -32., 1.)),
+            sprite: Sprite {
+                custom_size: Some(PLAYER_SIZE),
+                ..default()
+            },
             ..default()
         },
         Player {
             velocity: INITIAL_VEL,
-            remainder: Vec2::ZERO,
+            ..default()
         },
+    ));
+
+    // Floor
+    cmd.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                color: opts.color.light,
+                custom_size: Some(Vec2::new(LEVEL_SIZE.x, 32.)),
+                ..default()
+            },
+            transform: Transform::from_xyz(0., -LEVEL_SIZE.y * 0.5 + 16., 0.),
+            ..default()
+        },
+        Platform,
+        Floor,
     ));
 
     // Counter
@@ -108,69 +176,213 @@ fn init_sample(
         Text2dBundle {
             text: Text::from_section("0", TextStyle {
                 font: assets.font.clone(),
-                font_size: 60.,
+                font_size: 150.,
                 color: opts.color.mid,
             }),
-            transform: Transform::from_xyz(5.3, 0.3, 0.),
+            transform: Transform::from_xyz(5.3, 0.3, -1.),
             ..default()
         },
-        Counter(0),
+        Counter::default(),
+        CameraFollow::default(),
     ));
+
+    let Ok(cam) = cam.get_single() else { return };
+    cmd.entity(cam).insert(CameraFollow::default());
 }
 
-fn update_sample(
+fn update_player(
     time: Res<Time>,
-    app_config: Res<GameAppConfig>,
     input: Res<ButtonInput<KeyBind>>,
     movement: Res<InputMovement>,
     keybinds: Res<Persistent<Keybinds>>,
-    mut objects: Query<(&mut Player, &mut Transform)>,
-    mut counter: Query<(&mut Text, &mut Counter)>,
+    mut player: Query<(&mut Player, &mut Transform)>,
+    platforms: Query<(&Sprite, &Transform), (With<Platform>, Without<Player>)>,
 ) {
-    let Vec2 { x: gx, y: gy } = app_config.initial_game_res;
+    let Ok((mut player, mut trans)) = player.get_single_mut() else { return };
 
-    for (mut player, mut trans) in objects.iter_mut() {
-        let mut pos = trans.translation.xy();
-        pos += player.remainder;
+    let mut pos = trans.translation.xy();
+    pos += player.remainder;
 
-        // Gravity
-        if pos.y > -gy * 0.4 {
-            player.velocity.y += GRAVITY * time.delta_seconds();
+    // Gravity
+    player.velocity.y += GRAVITY * time.delta_seconds();
+
+    // Jump
+    if keybinds.jump.just_pressed(&input) {
+        if player.jumps_left > 0 {
+            player.velocity.y = JUMP_VEL;
+            player.jumps_left -= 1;
         } else {
-            pos.y = -gy * 0.4;
-            if player.velocity.y.abs() > BOUNCE_CUTOFF {
-                player.velocity.y = player.velocity.y.abs() * BOUNCE_FACTOR;
-            } else {
-                player.velocity.y = 0.;
+            player.jump_buffer = Some(Timer::from_seconds(
+                JUMP_BUFFER,
+                TimerMode::Once,
+            ));
+        }
+    }
+
+    if let Some(buffer) = player.jump_buffer.as_mut() {
+        if !buffer.tick(time.delta()).finished() && player.jumps_left > 0 {
+            player.velocity.y = JUMP_VEL;
+            player.jumps_left -= 1;
+        }
+    };
+
+    // Move
+    let dir = keybinds.x_axis.get(&movement);
+    if dir.abs() > 0. {
+        player.velocity.x = dir * MOVE_VEL;
+    } else if player.velocity.x.abs() > MOVE_CUTOFF {
+        player.velocity.x *= MOVE_FACTOR;
+    } else {
+        player.velocity.x = 0.;
+    }
+
+    // Update position based on velocity and add bounds
+    pos += player.velocity * time.delta_seconds();
+    pos.y = pos.y.max(-LEVEL_SIZE.y * 0.4);
+    pos.x = (pos.x + LEVEL_SIZE.x * 0.5).rem_euclid(LEVEL_SIZE.x) - LEVEL_SIZE.x * 0.5;
+
+    // Check collisions
+    if player.velocity.y <= 0. {
+        for (sprite, platform) in platforms.iter() {
+            let size = sprite.custom_size.unwrap_or(PLATFORM_SIZE);
+
+            if let Some(collision) = collide(
+                pos.extend(0.),
+                PLAYER_SIZE,
+                platform.translation,
+                size,
+            ) {
+                match collision {
+                    Collision::Top | Collision::Inside => {
+                        pos.y = platform.translation.y + size.y * 0.5 + PLAYER_SIZE.y * 0.5;
+                        player.jumps_left = MAX_JUMPS;
+
+                        if player.velocity.y.abs() > BOUNCE_CUTOFF {
+                            player.velocity.y = player.velocity.y.abs() * BOUNCE_FACTOR;
+                        } else {
+                            player.velocity.y = 0.;
+                        }
+                    },
+                    _ => {},
+                }
             }
         }
+    }
 
-        // Jump
-        if keybinds.jump.just_pressed(&input) {
-            player.velocity.y = JUMP_VEL;
+    // Floor and save remainder
+    trans.translation = pos.floor().extend(1.);
+    player.remainder = pos - trans.translation.xy();
 
-            let (mut text, mut counter) = counter.single_mut();
-            counter.0 += 1;
-            text.sections[0].value = counter.0.to_string();
-        }
+    // Update max height
+    player.max_height = player
+        .max_height
+        .max(trans.translation.y + LEVEL_SIZE.y * 0.5);
+}
 
-        // Move
-        let dir = keybinds.x_axis.get(&movement);
-        if dir.abs() > 0. {
-            player.velocity.x = dir * MOVE_VEL;
-        } else if player.velocity.x.abs() > MOVE_CUTOFF {
-            player.velocity.x *= MOVE_FACTOR;
-        } else {
-            player.velocity.x = 0.;
-        }
+fn update_camera(
+    time: Res<Time>,
+    mut cam: Query<(&mut Transform, &mut CameraFollow)>,
+    player: Query<&Player>,
+) {
+    let Ok(player) = player.get_single() else { return };
 
-        // Update position based on velocity and add bounds
-        pos += player.velocity * time.delta_seconds();
-        pos.y = pos.y.max(-gy * 0.4);
-        pos.x = (pos.x + gx * 0.5).rem_euclid(gx) - gx * 0.5;
+    for (mut trans, mut follow) in cam.iter_mut() {
+        let vel = (CAMERA_VEL * follow.target_pos / LEVEL_SIZE.y).powf(0.8);
 
-        // Floor and save remainder
-        trans.translation = pos.floor().extend(1.);
-        player.remainder = pos - trans.translation.xy();
+        follow.target_pos = (follow.target_pos + vel * time.delta_seconds())
+            .max(player.max_height - LEVEL_SIZE.y * 0.5);
+
+        trans.translation.y = lerp(
+            trans.translation.y,
+            follow.target_pos,
+            0.5,
+        );
     }
 }
+
+fn update_counter(mut counter: Query<(&mut Counter, &mut Text)>, player: Query<&Player>) {
+    let Ok((mut counter, mut text)) = counter.get_single_mut() else { return };
+    let Ok(player) = player.get_single() else { return };
+
+    counter.0 = (player.max_height as u32 / SPACE_BETWEEN_PLATFORMS).saturating_sub(1);
+    text.sections[0].value = counter.0.to_string();
+}
+
+fn spawn_platforms(
+    mut cmd: Commands,
+    mut info: ResMut<PlatformInfo>,
+    opts: Res<Persistent<GameOptions>>,
+    player: Query<&Player>,
+) {
+    let Ok(player) = player.get_single() else { return };
+
+    while info.last_platform * SPACE_BETWEEN_PLATFORMS
+        < (player.max_height + LEVEL_SIZE.y * 0.5) as u32
+    {
+        info.last_platform += 1;
+        let x = (rand::thread_rng().gen::<f32>() - 0.5) * LEVEL_SIZE.x;
+
+        cmd.spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    color: opts.color.light,
+                    custom_size: Some(PLATFORM_SIZE),
+                    ..default()
+                },
+                transform: Transform::from_xyz(
+                    x.round(),
+                    info.last_platform as f32 * SPACE_BETWEEN_PLATFORMS as f32 - LEVEL_SIZE.y * 0.5,
+                    0.,
+                ),
+                ..default()
+            },
+            Platform,
+        ));
+    }
+}
+
+fn check_game_over(
+    mut state: ResMut<NextState<GameState>>,
+    player: Query<&Transform, With<Player>>,
+    cam: Query<&CameraFollow, With<GameCamera>>,
+) {
+    let Ok(player) = player.get_single() else { return };
+    let Ok(cam) = cam.get_single() else { return };
+
+    if player.translation.y < cam.target_pos - LEVEL_SIZE.y * 0.5 {
+        state.set(GameState::End);
+    }
+}
+
+fn restart_game(
+    mut cmd: Commands,
+    mut state: ResMut<NextState<GameState>>,
+    mut info: ResMut<PlatformInfo>,
+    mut player: Query<(&mut Player, &mut Transform)>,
+    mut follow: Query<&mut CameraFollow>,
+    platforms: Query<Entity, (With<Platform>, Without<Floor>)>,
+) {
+    let Ok((mut player, mut trans)) = player.get_single_mut() else {
+        return;
+    };
+
+    player.max_height = 0.;
+    trans.translation.y = -32.;
+
+    for mut follow in follow.iter_mut() {
+        *follow = CameraFollow::default();
+    }
+
+    info.last_platform = 0;
+    for platform in platforms.iter() {
+        cmd.entity(platform).despawn();
+    }
+
+    state.set(GameState::Play);
+}
+
+// ·····
+// Extra
+// ·····
+
+fn lerp(a: f32, b: f32, t: f32) -> f32 { a + (b - a) * t }

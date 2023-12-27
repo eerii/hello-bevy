@@ -61,17 +61,9 @@ pub struct ColorPalette {
 impl Default for ColorPalette {
     fn default() -> Self {
         Self {
-            light: Color::rgb(
-                245.0 / 255.0,
-                237.0 / 255.0,
-                200.0 / 255.0,
-            ),
-            mid: Color::rgb(
-                69.0 / 255.0,
-                173.0 / 255.0,
-                118.0 / 255.0,
-            ),
-            dark: Color::rgb(55.0 / 255.0, 84.0 / 255.0, 70.0 / 255.0),
+            light: Color::hex("#547bb3").unwrap(),
+            mid: Color::hex("#3b4363").unwrap(),
+            dark: Color::hex("#191d30").unwrap(),
         }
     }
 }

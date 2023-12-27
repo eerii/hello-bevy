@@ -41,6 +41,7 @@ pub enum GameState {
     Loading,
     Menu,
     Play,
+    End,
 }
 
 // Main game plugin
