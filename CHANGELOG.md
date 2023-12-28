@@ -12,7 +12,6 @@
 
 - - -
 ## [0.12.2](https://github.com/eerii/hello-bevy/compare/0.12.1..0.12.2) - 2023-12-18
-## 0.12.2 - 2023-12-18
 #### Features
 - touch input 🖐🏼️ - ([3663e70](https://github.com/eerii/hello-bevy/commit/3663e707031ad613289f7a878acbcc0375ed27f6)) - [@eerii](https://github.com/eerii)
 - input movement axis 🎮 - ([2716595](https://github.com/eerii/hello-bevy/commit/271659506955334129b2c8d9e51aa871f92e300c)) - [@eerii](https://github.com/eerii)

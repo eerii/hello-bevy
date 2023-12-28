@@ -1,5 +1,5 @@
-name: release
 # Based on https://github.com/bevyengine/bevy_github_ci_template/blob/main/.github/workflows/release.yaml
+name: release
 
 on:
   push:
@@ -16,6 +16,7 @@ env:
   binary: hello-bevy # [CHANGE]: This needs to match the project name in cargo.toml
   add_binaries_to_github_release: true
   itch_target: eerii/hello-bevy # [CHANGE]: If you want to deploy to itch, set this as your username/project-url
+  features: "release" # [CHANGE]: Add features here if you need them
 
 jobs:
   get-version:
@@ -60,7 +61,7 @@ jobs:
 
       - name: Build
         run: |
-          trunk build --release
+          trunk build --release --no-default-features --features ${{ env.features }}
 
       - name: Optimize Wasm
         uses: NiklasEi/wasm-opt-action@v2
@@ -116,7 +117,7 @@ jobs:
 
       - name: Build
         run: |
-          cargo build --release --target x86_64-unknown-linux-gnu
+          cargo build --release --target x86_64-unknown-linux-gnu --no-default-features --features ${{ env.features }}
 
       - name: Prepare package
         run: |
@@ -165,7 +166,7 @@ jobs:
 
       - name: Build
         run: |
-          cargo build --release --target x86_64-pc-windows-msvc
+          cargo build --release --target x86_64-pc-windows-msvc --no-default-features --features ${{ env.features }}
 
       - name: Prepare package
         run: |
@@ -214,7 +215,7 @@ jobs:
 
       - name: Build release for Apple Silicon
         run: |
-          SDKROOT=$(xcrun -sdk macosx --show-sdk-path) cargo build --release --target=aarch64-apple-darwin
+          SDKROOT=$(xcrun -sdk macosx --show-sdk-path) cargo build --release --target=aarch64-apple-darwin --no-default-features --features ${{ env.features }}
 
       - name: Install rust toolchain for Apple x86
         uses: dtolnay/rust-toolchain@nightly
@@ -223,7 +224,7 @@ jobs:
 
       - name: Build release for x86 Apple
         run: |
-          SDKROOT=$(xcrun -sdk macosx --show-sdk-path) cargo build --release --target=x86_64-apple-darwin
+          SDKROOT=$(xcrun -sdk macosx --show-sdk-path) cargo build --release --target=x86_64-apple-darwin --no-default-features --features ${{ env.features }}
 
       - name: Create Universal Binary
         run: |
@@ -282,7 +283,6 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          name: wasm
           path: ./builds
 
       - name: Install butler
@@ -296,6 +296,8 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.ITCH_API_KEY }}
         run: |
+          echo "Uploading to itch.io"
+          echo $(ls builds)
           for channel in $(ls builds); do
             ./butler push \
                 --fix-permissions \

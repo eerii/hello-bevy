@@ -2,21 +2,10 @@
 
 use bevy::{
     prelude::*,
-    render::render_resource::{
-        AsBindGroup,
-        ShaderRef,
-    },
-    sprite::{
-        Material2d,
-        Material2dPlugin,
-        MaterialMesh2dBundle,
-    },
+    render::render_resource::{AsBindGroup, ShaderRef},
+    sprite::{Material2d, Material2dPlugin, MaterialMesh2dBundle},
 };
-use hello_bevy::{
-    GameAppConfig,
-    GamePlugin,
-    GameState,
-};
+use hello_bevy::{GameAppConfig, GamePlugin, GameState};
 
 fn main() {
     App::new()
@@ -55,7 +44,9 @@ pub struct CustomMaterial {
 }
 
 impl Material2d for CustomMaterial {
-    fn fragment_shader() -> ShaderRef { "shaders/test.wgsl".into() }
+    fn fragment_shader() -> ShaderRef {
+        "shaders/test.wgsl".into()
+    }
 }
 
 // ·······

@@ -2,25 +2,16 @@ use std::collections::HashMap;
 
 use bevy::{
     input::{
-        gamepad::{
-            GamepadAxisChangedEvent,
-            GamepadButtonInput,
-        },
+        gamepad::{GamepadAxisChangedEvent, GamepadButtonInput},
         keyboard::KeyboardInput,
-        mouse::{
-            MouseButtonInput,
-            MouseMotion,
-        },
+        mouse::{MouseButtonInput, MouseMotion},
         touch::TouchPhase,
         ButtonState,
     },
     prelude::*,
 };
 use bevy_persistent::Persistent;
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::{Deserialize, Serialize};
 
 use crate::Keybinds;
 
@@ -74,7 +65,9 @@ impl InputMovement {
             .retain(|bind, _| matches!(bind, AxisBind::Gamepad(_)));
     }
 
-    pub fn get(&self, bind: AxisBind) -> f32 { self.map.get(&bind).copied().unwrap_or(0.) }
+    pub fn get(&self, bind: AxisBind) -> f32 {
+        self.map.get(&bind).copied().unwrap_or(0.)
+    }
 }
 
 // ·······

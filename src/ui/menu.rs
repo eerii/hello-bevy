@@ -6,20 +6,10 @@ pub struct MenuUiPlugin;
 
 #[cfg(feature = "menu")]
 mod _menu {
-    use bevy::{
-        prelude::*,
-        reflect::Struct,
-    };
+    use bevy::{prelude::*, reflect::Struct};
     use bevy_persistent::Persistent;
 
-    use crate::{
-        input::BindSet,
-        ui::*,
-        GameOptions,
-        GameState,
-        KeyBind,
-        Keybinds,
-    };
+    use crate::{input::BindSet, ui::*, GameOptions, GameState, KeyBind, Keybinds};
 
     // ······
     // Plugin
@@ -34,9 +24,7 @@ mod _menu {
                         clean_menu.run_if(state_changed::<GameState>()),
                         clean_menu.run_if(state_changed::<MenuState>()),
                         clean_menu.run_if(resource_changed::<Persistent<Keybinds>>()),
-                        clean_menu.run_if(resource_changed::<
-                            Persistent<GameOptions>,
-                        >()),
+                        clean_menu.run_if(resource_changed::<Persistent<GameOptions>>()),
                         // Non short circuiting or else
                     )
                         .after(clean_ui),
@@ -99,12 +87,7 @@ mod _menu {
         mut menu_state: ResMut<NextState<MenuState>>,
         mut text: Query<&mut Text>,
         mut buttons: Query<
-            (
-                &Interaction,
-                &MenuButton,
-                &Children,
-                &mut BackgroundColor,
-            ),
+            (&Interaction, &MenuButton, &Children, &mut BackgroundColor),
             Changed<Interaction>,
         >,
         mut opts: ResMut<Persistent<GameOptions>>,
@@ -124,34 +107,31 @@ mod _menu {
                     match button {
                         MenuButton::Play => {
                             game_state.set(GameState::Play);
-                        },
+                        }
                         MenuButton::GoMain => {
                             menu_state.set(MenuState::Main);
-                        },
+                        }
                         MenuButton::GoSettings => {
                             menu_state.set(MenuState::Settings);
-                        },
+                        }
                         MenuButton::GoKeybinds => {
                             menu_state.set(MenuState::Keybinds);
-                        },
+                        }
                         MenuButton::GoVisual => {
                             menu_state.set(MenuState::Visual);
-                        },
+                        }
                         MenuButton::RemapKeybind(key) => {
                             menu_state.set(MenuState::Rebinding);
                             cmd.insert_resource(KeyBeingRebound(key.clone()));
-                        },
+                        }
                         MenuButton::ResetKeybinds => {
                             keybinds
                                 .revert_to_default()
                                 .unwrap_or_else(|e| error!("Failed to reset keybinds: {}", e));
-                        },
+                        }
                         MenuButton::ChangeFont(name) => {
                             opts.update(|opts| {
-                                assert_eq!(
-                                    FONT_MULTIPLIERS.len(),
-                                    opts.font_size.field_len()
-                                );
+                                assert_eq!(FONT_MULTIPLIERS.len(), opts.font_size.field_len());
                                 for (i, mult) in FONT_MULTIPLIERS
                                     .iter()
                                     .enumerate()
@@ -175,20 +155,20 @@ mod _menu {
                                 }
                             })
                             .unwrap_or_else(|e| error!("Failed to change font size: {}", e));
-                        },
+                        }
                         MenuButton::ChangeColor(..) => {
                             // TODO: Change color (Needs either a color picker or an input field)
-                        },
+                        }
                     }
-                },
+                }
                 Interaction::Hovered => {
                     bg.0 = opts.color.mid;
                     text.sections[0].style.color = opts.color.dark;
-                },
+                }
                 Interaction::None => {
                     bg.0 = opts.color.light;
                     text.sections[0].style.color = opts.color.dark;
-                },
+                }
             }
         }
     }
@@ -222,7 +202,7 @@ mod _menu {
                     None => "none".to_string(),
                 };
                 layout_rebinding(cmd, node, &style, &rebind_key)
-            },
+            }
             MenuState::Visual => layout_visual(cmd, node, &style, &opts),
         }
     }
@@ -252,7 +232,9 @@ mod _menu {
         mouse: Res<ButtonInput<MouseButton>>,
         gamepad_buttons: Res<ButtonInput<GamepadButton>>,
     ) {
-        let Some(rebind_key) = rebind_key.as_ref() else { return };
+        let Some(rebind_key) = rebind_key.as_ref() else {
+            return;
+        };
         let mut bind = None;
 
         if let Some(key) = keyboard.get_pressed().next() {
@@ -264,24 +246,29 @@ mod _menu {
         }
 
         let Some(bind) = bind else { return };
-        info!(
-            "Remapping {} to {:?}",
-            rebind_key.0, bind
-        );
+        info!("Remapping {} to {:?}", rebind_key.0, bind);
         keybinds
             .update(|keybinds| {
                 let len = keybinds.field_len();
 
                 // Remove the keybind from all fields
                 for i in 0..len {
-                    let Some(field) = keybinds.field_at_mut(i) else { continue };
-                    let Some(value) = field.downcast_mut::<Vec<KeyBind>>() else { continue };
+                    let Some(field) = keybinds.field_at_mut(i) else {
+                        continue;
+                    };
+                    let Some(value) = field.downcast_mut::<Vec<KeyBind>>() else {
+                        continue;
+                    };
                     value.retain(|b| b != &bind);
                 }
 
                 // Add the keybind to the field
-                let Some(field) = keybinds.field_mut(&rebind_key.0) else { return };
-                let Some(value) = field.downcast_mut::<Vec<KeyBind>>() else { return };
+                let Some(field) = keybinds.field_mut(&rebind_key.0) else {
+                    return;
+                };
+                let Some(value) = field.downcast_mut::<Vec<KeyBind>>() else {
+                    return;
+                };
                 value.push(bind);
             })
             .unwrap_or_else(|e| error!("Failed to remap keybind: {}", e));
@@ -295,7 +282,9 @@ mod _menu {
     // ·····
 
     fn layout_main(mut cmd: Commands, node: Entity, style: &UiStyle) {
-        let Some(mut node) = cmd.get_entity(node) else { return };
+        let Some(mut node) = cmd.get_entity(node) else {
+            return;
+        };
 
         node.with_children(|parent| {
             UiText::new_title(style, "Hello Bevy").add(parent);
@@ -305,7 +294,9 @@ mod _menu {
     }
 
     fn layout_options(mut cmd: Commands, node: Entity, style: &UiStyle) {
-        let Some(mut node) = cmd.get_entity(node) else { return };
+        let Some(mut node) = cmd.get_entity(node) else {
+            return;
+        };
 
         node.with_children(|parent| {
             UiText::new_title(style, "Settings").add(parent);
@@ -316,7 +307,9 @@ mod _menu {
     }
 
     fn layout_keybinds(mut cmd: Commands, node: Entity, style: &UiStyle, keybinds: &Keybinds) {
-        let Some(mut node) = cmd.get_entity(node) else { return };
+        let Some(mut node) = cmd.get_entity(node) else {
+            return;
+        };
 
         node.with_children(|parent| {
             UiText::new_title(style, "Keybinds").add(parent);
@@ -326,7 +319,9 @@ mod _menu {
             // TODO: Add key icons
             for (i, value) in keybinds.iter_fields().enumerate() {
                 let field_name = keybinds.name_at(i).unwrap();
-                let Some(value) = value.downcast_ref::<BindSet<KeyBind>>() else { continue };
+                let Some(value) = value.downcast_ref::<BindSet<KeyBind>>() else {
+                    continue;
+                };
 
                 UiOption::new(style, field_name)
                     .add(parent)
@@ -343,10 +338,7 @@ mod _menu {
                                 width: Val::Px(128.),
                                 ..default()
                             })
-                            .add_with(
-                                row,
-                                MenuButton::RemapKeybind(field_name.to_string()),
-                            );
+                            .add_with(row, MenuButton::RemapKeybind(field_name.to_string()));
                     });
             }
             UiButton::new(style, "Reset").add_with(parent, MenuButton::ResetKeybinds);
@@ -355,15 +347,14 @@ mod _menu {
     }
 
     fn layout_rebinding(mut cmd: Commands, node: Entity, style: &UiStyle, key: &str) {
-        let Some(mut node) = cmd.get_entity(node) else { return };
+        let Some(mut node) = cmd.get_entity(node) else {
+            return;
+        };
 
         node.with_children(|parent| {
             UiText::new(
                 style,
-                &format!(
-                    "Press a key or button for {}",
-                    snake_to_upper(key)
-                ),
+                &format!("Press a key or button for {}", snake_to_upper(key)),
             )
             .add(parent);
 
@@ -372,14 +363,18 @@ mod _menu {
     }
 
     fn layout_visual(mut cmd: Commands, node: Entity, style: &UiStyle, opts: &GameOptions) {
-        let Some(mut node) = cmd.get_entity(node) else { return };
+        let Some(mut node) = cmd.get_entity(node) else {
+            return;
+        };
 
         node.with_children(|parent| {
             UiText::new_title(style, "Visual settings").add(parent);
 
             for (i, value) in opts.font_size.iter_fields().enumerate() {
                 let field_name = opts.font_size.name_at(i).unwrap().to_string();
-                let Some(value) = value.downcast_ref::<f32>() else { continue };
+                let Some(value) = value.downcast_ref::<f32>() else {
+                    continue;
+                };
 
                 UiOption::new(style, &format!("font_{}", field_name))
                     .add(parent)

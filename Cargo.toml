@@ -13,17 +13,23 @@ opt-level = 3 # Improves performance when developing, but slows down first compi
 debug = false # Disabled debug symbols for dependencies
 
 [features]
-default = [
-    "menu"
-]
-dev = [
+default = [ # Only in debug
+    "inspector",
     "bevy/file_watcher", # Enables hot reloading of assets
     "bevy/dynamic_linking", # Enables dynamic linking for faster compilation
+]
+release = [ # Only in release
+    "menu"
+]
+trace = [ # For tracing support
+    "release",
+    "bevy/trace_tracy"
 ]
 pixel_perfect = []
 resizable = []
 3d_camera = []
 menu = []
+inspector = []
 mock_touch = []
 
 [dependencies]

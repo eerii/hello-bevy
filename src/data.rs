@@ -2,22 +2,11 @@ use std::path::Path;
 
 use bevy::prelude::*;
 pub use bevy_persistent::prelude::*;
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::{Deserialize, Serialize};
 
 use crate::{
-    input::{
-        AxisBind,
-        BindSet,
-        InputAxis,
-        KeyBind,
-    },
-    ui::{
-        FONT_MULTIPLIERS,
-        FONT_SIZES,
-    },
+    input::{AxisBind, BindSet, InputAxis, KeyBind},
+    ui::{FONT_MULTIPLIERS, FONT_SIZES},
 };
 
 // ······
@@ -27,7 +16,9 @@ use crate::{
 pub struct DataPlugin;
 
 impl Plugin for DataPlugin {
-    fn build(&self, app: &mut App) { app.add_systems(Startup, init_persistence); }
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, init_persistence);
+    }
 }
 
 // ·········

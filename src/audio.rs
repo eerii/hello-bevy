@@ -1,13 +1,7 @@
 use bevy::prelude::*;
-use bevy_kira_audio::prelude::{
-    AudioPlugin as KiraAudioPlugin,
-    *,
-};
+use bevy_kira_audio::prelude::{AudioPlugin as KiraAudioPlugin, *};
 
-use crate::{
-    ExampleAssets,
-    GameState,
-};
+use crate::{ExampleAssets, GameState};
 
 // ······
 // Plugin
@@ -48,7 +42,7 @@ fn init_music(
             if let Some(inst) = instances.get_mut(h) {
                 inst.resume(default());
             }
-        },
+        }
         None => {
             handles.ambient_music = Some(
                 audio
@@ -58,12 +52,16 @@ fn init_music(
                     .handle(),
             );
             audio.stop(); // [CHANGE]: Ambient music is disabled by default
-        },
+        }
     }
 }
 
 fn pause_music(handles: Res<MusicHandles>, mut instances: ResMut<Assets<AudioInstance>>) {
-    let Some(ref handle) = handles.ambient_music else { return };
-    let Some(inst) = instances.get_mut(handle) else { return };
+    let Some(ref handle) = handles.ambient_music else {
+        return;
+    };
+    let Some(inst) = instances.get_mut(handle) else {
+        return;
+    };
     inst.pause(default());
 }

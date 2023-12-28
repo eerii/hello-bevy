@@ -13,12 +13,11 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 
 - uses bevy main (0.13) and has curated plugin support
 - ci that checks errors and lint
-- creates binaries for web, linux, mac and windows when adding a tag
+- creates binaries for web, linux, mac and windows when releasing a tag
 - deploy to itch automatically
 - remapable input manager with gamepad support
-- easy debuggins features (inspector, fps counter, tracy script)
+- easy debuggins features (inspector, fps counter, tracy script, hot reloading)
 - asset loading with progress, audio, saving, menu...
-- hot reloading and profiling when debugging
 
 ### how to use it ✨
 
@@ -32,22 +31,19 @@ this project is configured to use dynamic linking and fast recompiling by defaul
 in order to have the fastest compile, you may install [mold](https://github.com/rui314/mold) and use rust nightly (`rustup default nightly`).
 if you don't want some of these features, go to [.cargo/config](.cargo/config) and follow the instructions, or remove it to disable optimizations all together.
 
-to run a debug build use cargo or the provided script:
+to run a debug build use cargo:
 
 ```sh
-./run [args...] # This calls cargo run with some extra options
-./run [release|tracy] [args...] # You can also do a release build or a profiling one with tracy
-cargo run # If you are not using unix, you can simply use cargo run (check the script for all the optional parameters)
+cargo run
 ```
 
 and to start a local web build, use trunk:
 
 ```sh
-./run web # This calls trunk serve
-trunk serve # You can use it directly
+trunk serve
 ```
 
-you can also play around with some of the included examples with `./run --example <name>` (or `cargo run --example <name>`).
+you can also play around with some of the included examples with `cargo run --example <name>`.
 
 ### release 🌻
 
@@ -62,6 +58,27 @@ if you want to also deploy this build to itch, go to the repository settings > s
 
 ```
 ITCH_API_KEY = [your api key]
+```
+
+to run a release build locally:
+
+```sh
+cargo run --release --no-default-features --features release
+```
+
+### tracing 📈
+
+bevy has built in support for the [tracy](https://github.com/wolfpld/tracy) profiler. you can profile your game easily:
+
+```sh
+tracy-capture -o capture.tracy &
+cargo run --release --no-default-features --features trace
+```
+
+and then view the result with:
+
+```sh
+tracy capture.tracy
 ```
 
 ### other projects 💖

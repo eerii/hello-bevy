@@ -5,88 +5,36 @@
 #[allow(dead_code)]
 pub struct DebugUiPlugin;
 
-#[cfg(debug_assertions)]
+#[cfg(all(debug_assertions, feature = "inspector"))]
 mod _debug {
-    use std::{
-        any::TypeId,
-        time::Duration,
-    };
+    use std::{any::TypeId, time::Duration};
 
     use bevy::{
-        asset::{
-            ReflectAsset,
-            UntypedAssetId,
-        },
-        diagnostic::{
-            DiagnosticsStore,
-            FrameTimeDiagnosticsPlugin,
-        },
-        input::common_conditions::{
-            input_just_pressed,
-            input_pressed,
-        },
+        asset::{ReflectAsset, UntypedAssetId},
+        diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+        input::common_conditions::{input_just_pressed, input_pressed},
         prelude::*,
         reflect::TypeRegistry,
-        render::camera::{
-            CameraProjection,
-            Viewport,
-        },
+        render::camera::{CameraProjection, Viewport},
         time::common_conditions::on_real_timer,
         transform::TransformSystem,
-        window::{
-            PrimaryWindow,
-            WindowResized,
-        },
+        window::{PrimaryWindow, WindowResized},
     };
     use bevy_inspector_egui::{
-        bevy_egui::{
-            EguiContext,
-            EguiContexts,
-            EguiPlugin,
-            EguiSet,
-            EguiSettings,
-        },
+        bevy_egui::{EguiContext, EguiContexts, EguiPlugin, EguiSet, EguiSettings},
         bevy_inspector::{
-            by_type_id::{
-                ui_for_asset,
-                ui_for_resource,
-            },
-            hierarchy::{
-                hierarchy_ui,
-                SelectedEntities,
-            },
-            ui_for_entities_shared_components,
-            ui_for_entity_with_children,
+            by_type_id::{ui_for_asset, ui_for_resource},
+            hierarchy::{hierarchy_ui, SelectedEntities},
+            ui_for_entities_shared_components, ui_for_entity_with_children,
         },
-        egui::{
-            Context,
-            FontData,
-            FontDefinitions,
-            FontFamily,
-            Rect as ERect,
-            Ui,
-            WidgetText,
-        },
+        egui::{Context, FontData, FontDefinitions, FontFamily, Rect as ERect, Ui, WidgetText},
         DefaultInspectorConfigPlugin,
     };
-    use egui_dock::{
-        DockArea,
-        DockState,
-        NodeIndex,
-        Style as EStyle,
-        TabViewer,
-    };
-    use egui_gizmo::{
-        Gizmo,
-        GizmoMode,
-        GizmoOrientation,
-    };
+    use egui_dock::{DockArea, DockState, NodeIndex, Style as EStyle, TabViewer};
+    use egui_gizmo::{Gizmo, GizmoMode, GizmoOrientation};
 
     use crate::{
-        camera::{
-            FinalCamera,
-            GameCamera,
-        },
+        camera::{FinalCamera, GameCamera},
         ui::*,
     };
 
@@ -118,9 +66,7 @@ mod _debug {
                         change_time_speed::<-1>.run_if(input_pressed(KeyCode::BracketLeft)),
                         change_gizmo_mode,
                     )
-                        .run_if(on_real_timer(Duration::from_millis(
-                            100,
-                        ))),
+                        .run_if(on_real_timer(Duration::from_millis(100))),
                 ),
             )
             .add_systems(
@@ -157,16 +103,13 @@ mod _debug {
         fn default() -> Self {
             let mut state = DockState::new(vec![InspectorTab::Game]);
             let tree = state.main_surface_mut();
-            let [game, nodes] = tree.split_left(NodeIndex::root(), 0.2, vec![
-                InspectorTab::Nodes,
-            ]);
-            let [_, _] = tree.split_right(game, 0.75, vec![
-                InspectorTab::Inspector,
-            ]);
-            let [_, _] = tree.split_below(nodes, 0.6, vec![
-                InspectorTab::Resources,
-                InspectorTab::Assets,
-            ]);
+            let [game, nodes] = tree.split_left(NodeIndex::root(), 0.2, vec![InspectorTab::Nodes]);
+            let [_, _] = tree.split_right(game, 0.75, vec![InspectorTab::Inspector]);
+            let [_, _] = tree.split_below(
+                nodes,
+                0.6,
+                vec![InspectorTab::Resources, InspectorTab::Assets],
+            );
 
             Self {
                 inspector: false,
@@ -215,9 +158,7 @@ mod _debug {
         let mut fonts = FontDefinitions::default();
         fonts.font_data.insert(
             "sans".to_owned(),
-            FontData::from_static(include_bytes!(
-                "../../assets/fonts/sans.ttf"
-            )),
+            FontData::from_static(include_bytes!("../../assets/fonts/sans.ttf")),
         );
 
         fonts
@@ -236,12 +177,11 @@ mod _debug {
     ) {
         state.inspector = !state.inspector;
 
-        let Ok((entity, mut win)) = win.get_single_mut() else { return };
+        let Ok((entity, mut win)) = win.get_single_mut() else {
+            return;
+        };
 
-        let (x, y) = (
-            win.resolution.width(),
-            win.resolution.height(),
-        );
+        let (x, y) = (win.resolution.width(), win.resolution.height());
         let offset = INSPECTOR_OFFSET * if state.inspector { 1. } else { -1. };
 
         win.resolution.set(x + offset, y);
@@ -287,7 +227,9 @@ mod _debug {
     ) {
         let Ok(mut text) = text.get_single_mut() else {
             let Ok(node) = node.get_single() else { return };
-            let Some(mut node) = cmd.get_entity(node) else { return };
+            let Some(mut node) = cmd.get_entity(node) else {
+                return;
+            };
             node.with_children(|parent| {
                 UiText::new(&style, "")
                     .with_style(Style {
@@ -305,10 +247,7 @@ mod _debug {
         let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) else {
             return;
         };
-        text.sections[0].value = format!(
-            "FPS {:.0}",
-            fps.smoothed().unwrap_or(0.0)
-        );
+        text.sections[0].value = format!("FPS {:.0}", fps.smoothed().unwrap_or(0.0));
     }
 
     fn update_speed_text(
@@ -320,7 +259,9 @@ mod _debug {
     ) {
         let Ok(mut text) = text.get_single_mut() else {
             let Ok(node) = node.get_single() else { return };
-            let Some(mut node) = cmd.get_entity(node) else { return };
+            let Some(mut node) = cmd.get_entity(node) else {
+                return;
+            };
             node.with_children(|parent| {
                 UiText::new(&style, "")
                     .with_style(Style {
@@ -367,7 +308,9 @@ mod _debug {
         _state: Res<DebugState>,
         mut only_once: Local<bool>,
     ) {
-        let Ok(mut style) = node.get_single_mut() else { return };
+        let Ok(mut style) = node.get_single_mut() else {
+            return;
+        };
 
         if !*only_once {
             let Ok(win) = win.get_single() else { return };
@@ -386,7 +329,11 @@ mod _debug {
 
         #[cfg(feature = "resizable")]
         for e in _resize_reader.read() {
-            let offset = if _state.inspector { INSPECTOR_OFFSET } else { 0. };
+            let offset = if _state.inspector {
+                INSPECTOR_OFFSET
+            } else {
+                0.
+            };
 
             style.width = Val::Px(e.width - offset);
             style.height = Val::Px(e.height);
@@ -400,7 +347,9 @@ mod _debug {
         win: Query<&mut Window, With<PrimaryWindow>>,
     ) {
         let Ok(win) = win.get_single() else { return };
-        let Ok(mut cam) = cam.get_single_mut() else { return };
+        let Ok(mut cam) = cam.get_single_mut() else {
+            return;
+        };
 
         let scale_factor = win.scale_factor() * egui_settings.scale_factor as f32;
 
@@ -412,14 +361,8 @@ mod _debug {
         let viewport_pos = state.viewport_rect.left_top().to_vec2() * scale_factor;
 
         cam.viewport = Some(Viewport {
-            physical_position: UVec2::new(
-                viewport_pos.x as u32,
-                viewport_pos.y as u32,
-            ),
-            physical_size: UVec2::new(
-                viewport_size.x as u32,
-                viewport_size.y as u32,
-            ),
+            physical_position: UVec2::new(viewport_pos.x as u32, viewport_pos.y as u32),
+            physical_size: UVec2::new(viewport_size.x as u32, viewport_size.y as u32),
             depth: 0.0..1.0,
         });
     }
@@ -455,9 +398,13 @@ mod _debug {
     impl TabViewer for Inspector<'_> {
         type Tab = InspectorTab;
 
-        fn title(&mut self, tab: &mut Self::Tab) -> WidgetText { format!("{:?}", tab).into() }
+        fn title(&mut self, tab: &mut Self::Tab) -> WidgetText {
+            format!("{:?}", tab).into()
+        }
 
-        fn clear_background(&self, tab: &Self::Tab) -> bool { !matches!(tab, InspectorTab::Game) }
+        fn clear_background(&self, tab: &Self::Tab) -> bool {
+            !matches!(tab, InspectorTab::Game)
+        }
 
         fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab) {
             let type_registry = self.world.resource::<AppTypeRegistry>().0.clone();
@@ -466,25 +413,17 @@ mod _debug {
             match tab {
                 InspectorTab::Game => {
                     *self.viewport_rect = ui.clip_rect();
-                    draw_gizmo(
-                        ui,
-                        self.world,
-                        self.selected_entities,
-                        self.gizmo_mode,
-                    );
-                },
+                    draw_gizmo(ui, self.world, self.selected_entities, self.gizmo_mode);
+                }
                 InspectorTab::Nodes => {
                     if hierarchy_ui(self.world, ui, self.selected_entities) {
                         *self.selection = InspectorSelection::Entities;
                     }
-                },
+                }
                 InspectorTab::Resources => select_resource(ui, &type_registry, self.selection),
-                InspectorTab::Assets => select_asset(
-                    ui,
-                    &type_registry,
-                    self.world,
-                    self.selection,
-                ),
+                InspectorTab::Assets => {
+                    select_asset(ui, &type_registry, self.world, self.selection)
+                }
                 InspectorTab::Inspector => match *self.selection {
                     InspectorSelection::Entities => match self.selected_entities.as_slice() {
                         &[entity] => ui_for_entity_with_children(self.world, entity, ui),
@@ -492,24 +431,12 @@ mod _debug {
                     },
                     InspectorSelection::Resource(type_id, ref name) => {
                         ui.label(name);
-                        ui_for_resource(
-                            self.world,
-                            type_id,
-                            ui,
-                            name,
-                            &type_registry,
-                        )
-                    },
+                        ui_for_resource(self.world, type_id, ui, name, &type_registry)
+                    }
                     InspectorSelection::Asset(type_id, ref name, handle) => {
                         ui.label(name);
-                        ui_for_asset(
-                            self.world,
-                            type_id,
-                            handle,
-                            ui,
-                            &type_registry,
-                        );
-                    },
+                        ui_for_asset(self.world, type_id, handle, ui, &type_registry);
+                    }
                 },
             }
         }
@@ -566,28 +493,25 @@ mod _debug {
         for (asset_name, asset_type_id, reflect_asset) in assets {
             let handles: Vec<_> = reflect_asset.ids(world).collect();
 
-            ui.collapsing(
-                format!("{asset_name} ({})", handles.len()),
-                |ui| {
-                    for handle in handles {
-                        let selected = match *selection {
-                            InspectorSelection::Asset(_, _, selected_id) => selected_id == handle,
-                            _ => false,
-                        };
+            ui.collapsing(format!("{asset_name} ({})", handles.len()), |ui| {
+                for handle in handles {
+                    let selected = match *selection {
+                        InspectorSelection::Asset(_, _, selected_id) => selected_id == handle,
+                        _ => false,
+                    };
 
-                        if ui
-                            .selectable_label(selected, format!("{:?}", handle))
-                            .clicked()
-                        {
-                            *selection = InspectorSelection::Asset(
-                                asset_type_id,
-                                asset_name.to_string(),
-                                handle,
-                            );
-                        }
+                    if ui
+                        .selectable_label(selected, format!("{:?}", handle))
+                        .clicked()
+                    {
+                        *selection = InspectorSelection::Asset(
+                            asset_type_id,
+                            asset_name.to_string(),
+                            handle,
+                        );
                     }
-                },
-            );
+                }
+            });
         }
     }
 

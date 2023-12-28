@@ -5,18 +5,12 @@ mod loading;
 mod menu;
 
 use bevy::{
-    core_pipeline::clear_color::ClearColorConfig,
-    ecs::system::EntityCommands,
-    prelude::*,
+    core_pipeline::clear_color::ClearColorConfig, ecs::system::EntityCommands, prelude::*,
     render::view::RenderLayers,
 };
 use bevy_persistent::Persistent;
 
-use crate::{
-    CoreAssets,
-    GameOptions,
-    GameState,
-};
+use crate::{CoreAssets, GameOptions, GameState};
 
 const MENU_WIDTH: Val = Val::Px(300.);
 const MENU_ITEM_HEIGHT: Val = Val::Px(40.);
@@ -37,27 +31,21 @@ impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(UiStyle::default())
             .add_systems(OnEnter(GameState::Loading), init_ui)
-            .add_systems(
-                PreUpdate,
-                clean_ui.run_if(state_changed::<GameState>()),
-            )
+            .add_systems(PreUpdate, clean_ui.run_if(state_changed::<GameState>()))
             .add_systems(
                 Update,
                 change_background.run_if(
-                    state_changed::<GameState>().or_else(resource_changed::<
-                        Persistent<GameOptions>,
-                    >()),
+                    state_changed::<GameState>()
+                        .or_else(resource_changed::<Persistent<GameOptions>>()),
                 ),
             )
             .add_systems(
                 PostUpdate,
-                (change_style.run_if(resource_changed::<
-                    Persistent<GameOptions>,
-                >()),),
+                (change_style.run_if(resource_changed::<Persistent<GameOptions>>()),),
             )
             .add_plugins(loading::LoadingUiPlugin);
 
-        #[cfg(debug_assertions)]
+        #[cfg(all(debug_assertions, feature = "inspector"))]
         app.add_plugins(debug::DebugUiPlugin);
 
         #[cfg(feature = "menu")]
@@ -178,7 +166,9 @@ fn change_background(
 
 fn clean_ui(mut cmd: Commands, node: Query<Entity, With<UiNode>>) {
     let Ok(node) = node.get_single() else { return };
-    let Some(mut node) = cmd.get_entity(node) else { return };
+    let Some(mut node) = cmd.get_entity(node) else {
+        return;
+    };
     node.despawn_descendants();
 }
 

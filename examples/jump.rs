@@ -1,23 +1,14 @@
 #![allow(clippy::too_many_arguments)]
+#![allow(clippy::type_complexity)]
 
 use bevy::{
     prelude::*,
-    sprite::collide_aabb::{
-        collide,
-        Collision,
-    },
+    sprite::collide_aabb::{collide, Collision},
 };
 use bevy_persistent::Persistent;
 use hello_bevy::{
-    CoreAssets,
-    GameAppConfig,
-    GameCamera,
-    GameOptions,
-    GamePlugin,
-    GameState,
-    InputMovement,
-    KeyBind,
-    Keybinds,
+    CoreAssets, GameAppConfig, GameCamera, GameOptions, GamePlugin, GameState, InputMovement,
+    KeyBind, Keybinds,
 };
 use rand::Rng;
 
@@ -174,11 +165,14 @@ fn init_sample(
     // Counter
     cmd.spawn((
         Text2dBundle {
-            text: Text::from_section("0", TextStyle {
-                font: assets.font.clone(),
-                font_size: 150.,
-                color: opts.color.mid,
-            }),
+            text: Text::from_section(
+                "0",
+                TextStyle {
+                    font: assets.font.clone(),
+                    font_size: 150.,
+                    color: opts.color.mid,
+                },
+            ),
             transform: Transform::from_xyz(5.3, 0.3, -1.),
             ..default()
         },
@@ -198,7 +192,9 @@ fn update_player(
     mut player: Query<(&mut Player, &mut Transform)>,
     platforms: Query<(&Sprite, &Transform), (With<Platform>, Without<Player>)>,
 ) {
-    let Ok((mut player, mut trans)) = player.get_single_mut() else { return };
+    let Ok((mut player, mut trans)) = player.get_single_mut() else {
+        return;
+    };
 
     let mut pos = trans.translation.xy();
     pos += player.remainder;
@@ -212,10 +208,7 @@ fn update_player(
             player.velocity.y = JUMP_VEL;
             player.jumps_left -= 1;
         } else {
-            player.jump_buffer = Some(Timer::from_seconds(
-                JUMP_BUFFER,
-                TimerMode::Once,
-            ));
+            player.jump_buffer = Some(Timer::from_seconds(JUMP_BUFFER, TimerMode::Once));
         }
     }
 
@@ -246,12 +239,9 @@ fn update_player(
         for (sprite, platform) in platforms.iter() {
             let size = sprite.custom_size.unwrap_or(PLATFORM_SIZE);
 
-            if let Some(collision) = collide(
-                pos.extend(0.),
-                PLAYER_SIZE,
-                platform.translation,
-                size,
-            ) {
+            if let Some(collision) =
+                collide(pos.extend(0.), PLAYER_SIZE, platform.translation, size)
+            {
                 match collision {
                     Collision::Top | Collision::Inside => {
                         pos.y = platform.translation.y + size.y * 0.5 + PLAYER_SIZE.y * 0.5;
@@ -262,8 +252,8 @@ fn update_player(
                         } else {
                             player.velocity.y = 0.;
                         }
-                    },
-                    _ => {},
+                    }
+                    _ => {}
                 }
             }
         }
@@ -284,7 +274,9 @@ fn update_camera(
     mut cam: Query<(&mut Transform, &mut CameraFollow)>,
     player: Query<&Player>,
 ) {
-    let Ok(player) = player.get_single() else { return };
+    let Ok(player) = player.get_single() else {
+        return;
+    };
 
     for (mut trans, mut follow) in cam.iter_mut() {
         let vel = (CAMERA_VEL * follow.target_pos / LEVEL_SIZE.y).powf(0.8);
@@ -292,17 +284,17 @@ fn update_camera(
         follow.target_pos = (follow.target_pos + vel * time.delta_seconds())
             .max(player.max_height - LEVEL_SIZE.y * 0.5);
 
-        trans.translation.y = lerp(
-            trans.translation.y,
-            follow.target_pos,
-            0.5,
-        );
+        trans.translation.y = lerp(trans.translation.y, follow.target_pos, 0.5);
     }
 }
 
 fn update_counter(mut counter: Query<(&mut Counter, &mut Text)>, player: Query<&Player>) {
-    let Ok((mut counter, mut text)) = counter.get_single_mut() else { return };
-    let Ok(player) = player.get_single() else { return };
+    let Ok((mut counter, mut text)) = counter.get_single_mut() else {
+        return;
+    };
+    let Ok(player) = player.get_single() else {
+        return;
+    };
 
     counter.0 = (player.max_height as u32 / SPACE_BETWEEN_PLATFORMS).saturating_sub(1);
     text.sections[0].value = counter.0.to_string();
@@ -314,7 +306,9 @@ fn spawn_platforms(
     opts: Res<Persistent<GameOptions>>,
     player: Query<&Player>,
 ) {
-    let Ok(player) = player.get_single() else { return };
+    let Ok(player) = player.get_single() else {
+        return;
+    };
 
     while info.last_platform * SPACE_BETWEEN_PLATFORMS
         < (player.max_height + LEVEL_SIZE.y * 0.5) as u32
@@ -346,7 +340,9 @@ fn check_game_over(
     player: Query<&Transform, With<Player>>,
     cam: Query<&CameraFollow, With<GameCamera>>,
 ) {
-    let Ok(player) = player.get_single() else { return };
+    let Ok(player) = player.get_single() else {
+        return;
+    };
     let Ok(cam) = cam.get_single() else { return };
 
     if player.translation.y < cam.target_pos - LEVEL_SIZE.y * 0.5 {
@@ -385,4 +381,6 @@ fn restart_game(
 // Extra
 // ·····
 
-fn lerp(a: f32, b: f32, t: f32) -> f32 { a + (b - a) * t }
+fn lerp(a: f32, b: f32, t: f32) -> f32 {
+    a + (b - a) * t
+}

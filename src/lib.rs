@@ -7,31 +7,16 @@ mod data;
 mod input;
 mod ui;
 
-use bevy::{
-    asset::AssetMetaCheck,
-    prelude::*,
-};
+use bevy::{asset::AssetMetaCheck, log::LogPlugin, prelude::*};
 
 // TODO: Add a lot of comments
 
 // Exports for examples
 pub use crate::{
-    assets::{
-        CoreAssets,
-        ExampleAssets,
-    },
-    camera::{
-        FinalCamera,
-        GameCamera,
-    },
-    data::{
-        GameOptions,
-        Keybinds,
-    },
-    input::{
-        InputMovement,
-        KeyBind,
-    },
+    assets::{CoreAssets, ExampleAssets},
+    camera::{FinalCamera, GameCamera},
+    data::{GameOptions, Keybinds},
+    input::{InputMovement, KeyBind},
 };
 
 // Game state
@@ -78,10 +63,7 @@ impl Plugin for GamePlugin {
         // Release only plugins (embedded assets)
         #[cfg(not(debug_assertions))]
         {
-            use bevy_embedded_assets::{
-                EmbeddedAssetPlugin,
-                PluginMode,
-            };
+            use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
             app.add_plugins(EmbeddedAssetPlugin {
                 mode: PluginMode::ReplaceDefault,
             });
@@ -113,7 +95,24 @@ impl Plugin for GamePlugin {
         #[cfg(feature = "pixel_perfect")]
         let image_plugin = ImagePlugin::default_nearest();
 
-        app.add_plugins(DefaultPlugins.set(window_plugin).set(image_plugin));
+        #[cfg(debug_assertions)]
+        let log_plugin = LogPlugin {
+            level: bevy::log::Level::DEBUG,
+            filter: "info,wgpu_core=warn,wgpu_hal=warn,calloop=error,hello-bevy=debug".into(),
+        };
+
+        #[cfg(not(debug_assertions))]
+        let log_plugin = LogPlugin {
+            level: bevy::log::Level::INFO,
+            filter: "info,wgpu_core=warn,wgpu_hal=warn".into(),
+        };
+
+        app.add_plugins(
+            DefaultPlugins
+                .set(window_plugin)
+                .set(image_plugin)
+                .set(log_plugin),
+        );
 
         // Game
         app.init_state::<GameState>().add_plugins((

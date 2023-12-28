@@ -1,14 +1,8 @@
 #[cfg(feature = "pixel_perfect")]
 use bevy::window::WindowResized;
-use bevy::{
-    prelude::*,
-    render::view::RenderLayers,
-};
+use bevy::{prelude::*, render::view::RenderLayers};
 
-use crate::{
-    GameAppConfig,
-    GameState,
-};
+use crate::{GameAppConfig, GameState};
 
 // ······
 // Plugin
@@ -22,10 +16,7 @@ impl Plugin for CameraPlugin {
             .add_systems(OnExit(GameState::Play), pause_camera);
 
         #[cfg(feature = "pixel_perfect")]
-        app.add_systems(
-            Update,
-            on_resize.run_if(in_state(GameState::Play)),
-        );
+        app.add_systems(Update, on_resize.run_if(in_state(GameState::Play)));
     }
 }
 
@@ -69,11 +60,7 @@ fn init_camera(
         use bevy::render::{
             camera::RenderTarget,
             render_resource::{
-                Extent3d,
-                TextureDescriptor,
-                TextureDimension,
-                TextureFormat,
-                TextureUsages,
+                Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
             },
         };
 
@@ -170,10 +157,7 @@ fn on_resize(
     mut event_resize: EventReader<WindowResized>,
 ) {
     for e in event_resize.read() {
-        let scale = scale_factor(
-            &app_config.initial_game_res,
-            &Vec2::new(e.width, e.height),
-        );
+        let scale = scale_factor(&app_config.initial_game_res, &Vec2::new(e.width, e.height));
 
         for mut sprite in plane.iter_mut() {
             sprite.custom_size = Some(app_config.initial_game_res * scale as f32);
