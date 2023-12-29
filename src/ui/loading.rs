@@ -17,17 +17,24 @@ pub struct LoadingUiPlugin;
 
 impl Plugin for LoadingUiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, init_splash.run_if(in_state(GameState::Loading)))
-            .add_systems(OnExit(GameState::Loading), clean_ui)
-            .add_systems(
-                Update,
-                (check_progress, check_splash_finished.track_progress())
-                    .run_if(
-                        in_state(GameState::Loading)
-                            .and_then(resource_exists_and_changed::<ProgressCounter>()),
-                    )
-                    .after(LoadingStateSet(GameState::Loading)),
-            );
+        app.add_systems(
+            Update,
+            init_splash.run_if(in_state(GameState::Loading)),
+        )
+        .add_systems(OnExit(GameState::Loading), clean_ui)
+        .add_systems(
+            Update,
+            (
+                check_progress,
+                check_splash_finished.track_progress(),
+            )
+                .run_if(
+                    in_state(GameState::Loading).and_then(resource_exists_and_changed::<
+                        ProgressCounter,
+                    >()),
+                )
+                .after(LoadingStateSet(GameState::Loading)),
+        );
     }
 }
 
@@ -43,7 +50,10 @@ struct SplashTimer(Timer);
 
 impl Default for SplashTimer {
     fn default() -> Self {
-        Self(Timer::from_seconds(SPLASH_TIME, TimerMode::Once))
+        Self(Timer::from_seconds(
+            SPLASH_TIME,
+            TimerMode::Once,
+        ))
     }
 }
 
@@ -95,7 +105,10 @@ fn check_progress(
     }
 
     if progress.done > *last_progress {
-        info!("Loading progress: {}/{}", progress.done, progress.total);
+        info!(
+            "Loading progress: {}/{}",
+            progress.done, progress.total
+        );
         *last_progress = progress.done;
 
         let Ok(mut progress_bar) = progress_bar.get_single_mut() else {

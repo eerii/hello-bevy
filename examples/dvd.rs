@@ -24,7 +24,10 @@ pub struct SampleGamePlugin;
 impl Plugin for SampleGamePlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<CollisionEvent>()
-            .add_systems(OnEnter(GameState::Play), init_sample.run_if(run_once()))
+            .add_systems(
+                OnEnter(GameState::Play),
+                init_sample.run_if(run_once()),
+            )
             .add_systems(
                 Update,
                 (update_sample, on_collision, on_resize).run_if(in_state(GameState::Play)),
@@ -111,14 +114,11 @@ fn init_sample(
     // Counter text
     cmd.spawn((
         Text2dBundle {
-            text: Text::from_section(
-                "0",
-                TextStyle {
-                    font: assets.font.clone(),
-                    font_size: 192.,
-                    color: opts.color.mid,
-                },
-            ),
+            text: Text::from_section("0", TextStyle {
+                font: assets.font.clone(),
+                font_size: 192.,
+                color: opts.color.mid,
+            }),
             ..default()
         },
         Counter(0),
@@ -128,7 +128,12 @@ fn init_sample(
 fn update_sample(
     time: Res<Time>,
     bounds: Res<Bounds>,
-    mut objects: Query<(Entity, &mut Transform, &mut Velocity, &Sprite)>,
+    mut objects: Query<(
+        Entity,
+        &mut Transform,
+        &mut Velocity,
+        &Sprite,
+    )>,
     mut event_collision: EventWriter<CollisionEvent>,
 ) {
     let win_bound = Rect::from_center_size(Vec2::ZERO, bounds.0);
@@ -174,7 +179,8 @@ fn on_collision(
 ) {
     let (mut text, mut counter) = counter.single_mut();
 
-    // On each collision, increase the counter, change the spirte color and play audio
+    // On each collision, increase the counter, change the spirte color and play
+    // audio
     for CollisionEvent(e) in event_collision.read() {
         counter.0 += 1;
         text.sections[0].value = counter.0.to_string();

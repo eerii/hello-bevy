@@ -165,14 +165,11 @@ fn init_sample(
     // Counter
     cmd.spawn((
         Text2dBundle {
-            text: Text::from_section(
-                "0",
-                TextStyle {
-                    font: assets.font.clone(),
-                    font_size: 150.,
-                    color: opts.color.mid,
-                },
-            ),
+            text: Text::from_section("0", TextStyle {
+                font: assets.font.clone(),
+                font_size: 150.,
+                color: opts.color.mid,
+            }),
             transform: Transform::from_xyz(5.3, 0.3, -1.),
             ..default()
         },
@@ -208,7 +205,10 @@ fn update_player(
             player.velocity.y = JUMP_VEL;
             player.jumps_left -= 1;
         } else {
-            player.jump_buffer = Some(Timer::from_seconds(JUMP_BUFFER, TimerMode::Once));
+            player.jump_buffer = Some(Timer::from_seconds(
+                JUMP_BUFFER,
+                TimerMode::Once,
+            ));
         }
     }
 
@@ -239,9 +239,12 @@ fn update_player(
         for (sprite, platform) in platforms.iter() {
             let size = sprite.custom_size.unwrap_or(PLATFORM_SIZE);
 
-            if let Some(Collision::Top) =
-                collide(pos.extend(0.), PLAYER_SIZE, platform.translation, size)
-            {
+            if let Some(Collision::Top) = collide(
+                pos.extend(0.),
+                PLAYER_SIZE,
+                platform.translation,
+                size,
+            ) {
                 pos.y = platform.translation.y + size.y * 0.5 + PLAYER_SIZE.y * 0.5;
                 player.jumps_left = MAX_JUMPS;
 
@@ -279,7 +282,11 @@ fn update_camera(
         follow.target_pos = (follow.target_pos + vel * time.delta_seconds())
             .max(player.max_height - LEVEL_SIZE.y * 0.5);
 
-        trans.translation.y = lerp(trans.translation.y, follow.target_pos, 0.5);
+        trans.translation.y = lerp(
+            trans.translation.y,
+            follow.target_pos,
+            0.5,
+        );
     }
 }
 

@@ -24,7 +24,9 @@ mod _menu {
                         clean_menu.run_if(state_changed::<GameState>()),
                         clean_menu.run_if(state_changed::<MenuState>()),
                         clean_menu.run_if(resource_changed::<Persistent<Keybinds>>()),
-                        clean_menu.run_if(resource_changed::<Persistent<GameOptions>>()),
+                        clean_menu.run_if(resource_changed::<
+                            Persistent<GameOptions>,
+                        >()),
                         // Non short circuiting or else
                     )
                         .after(clean_ui),
@@ -87,7 +89,12 @@ mod _menu {
         mut menu_state: ResMut<NextState<MenuState>>,
         mut text: Query<&mut Text>,
         mut buttons: Query<
-            (&Interaction, &MenuButton, &Children, &mut BackgroundColor),
+            (
+                &Interaction,
+                &MenuButton,
+                &Children,
+                &mut BackgroundColor,
+            ),
             Changed<Interaction>,
         >,
         mut opts: ResMut<Persistent<GameOptions>>,
@@ -107,31 +114,34 @@ mod _menu {
                     match button {
                         MenuButton::Play => {
                             game_state.set(GameState::Play);
-                        }
+                        },
                         MenuButton::GoMain => {
                             menu_state.set(MenuState::Main);
-                        }
+                        },
                         MenuButton::GoSettings => {
                             menu_state.set(MenuState::Settings);
-                        }
+                        },
                         MenuButton::GoKeybinds => {
                             menu_state.set(MenuState::Keybinds);
-                        }
+                        },
                         MenuButton::GoVisual => {
                             menu_state.set(MenuState::Visual);
-                        }
+                        },
                         MenuButton::RemapKeybind(key) => {
                             menu_state.set(MenuState::Rebinding);
                             cmd.insert_resource(KeyBeingRebound(key.clone()));
-                        }
+                        },
                         MenuButton::ResetKeybinds => {
                             keybinds
                                 .revert_to_default()
                                 .unwrap_or_else(|e| error!("Failed to reset keybinds: {}", e));
-                        }
+                        },
                         MenuButton::ChangeFont(name) => {
                             opts.update(|opts| {
-                                assert_eq!(FONT_MULTIPLIERS.len(), opts.font_size.field_len());
+                                assert_eq!(
+                                    FONT_MULTIPLIERS.len(),
+                                    opts.font_size.field_len()
+                                );
                                 for (i, mult) in FONT_MULTIPLIERS
                                     .iter()
                                     .enumerate()
@@ -155,20 +165,21 @@ mod _menu {
                                 }
                             })
                             .unwrap_or_else(|e| error!("Failed to change font size: {}", e));
-                        }
+                        },
                         MenuButton::ChangeColor(..) => {
-                            // TODO: Change color (Needs either a color picker or an input field)
-                        }
+                            // TODO: Change color (Needs either a color picker
+                            // or an input field)
+                        },
                     }
-                }
+                },
                 Interaction::Hovered => {
                     bg.0 = opts.color.mid;
                     text.sections[0].style.color = opts.color.dark;
-                }
+                },
                 Interaction::None => {
                     bg.0 = opts.color.light;
                     text.sections[0].style.color = opts.color.dark;
-                }
+                },
             }
         }
     }
@@ -202,7 +213,7 @@ mod _menu {
                     None => "none".to_string(),
                 };
                 layout_rebinding(cmd, node, &style, &rebind_key)
-            }
+            },
             MenuState::Visual => layout_visual(cmd, node, &style, &opts),
         }
     }
@@ -246,7 +257,10 @@ mod _menu {
         }
 
         let Some(bind) = bind else { return };
-        info!("Remapping {} to {:?}", rebind_key.0, bind);
+        info!(
+            "Remapping {} to {:?}",
+            rebind_key.0, bind
+        );
         keybinds
             .update(|keybinds| {
                 let len = keybinds.field_len();
@@ -338,7 +352,10 @@ mod _menu {
                                 width: Val::Px(128.),
                                 ..default()
                             })
-                            .add_with(row, MenuButton::RemapKeybind(field_name.to_string()));
+                            .add_with(
+                                row,
+                                MenuButton::RemapKeybind(field_name.to_string()),
+                            );
                     });
             }
             UiButton::new(style, "Reset").add_with(parent, MenuButton::ResetKeybinds);
@@ -354,7 +371,10 @@ mod _menu {
         node.with_children(|parent| {
             UiText::new(
                 style,
-                &format!("Press a key or button for {}", snake_to_upper(key)),
+                &format!(
+                    "Press a key or button for {}",
+                    snake_to_upper(key)
+                ),
             )
             .add(parent);
 

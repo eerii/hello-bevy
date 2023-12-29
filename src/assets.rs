@@ -38,7 +38,8 @@ impl Plugin for AssetLoaderPlugin {
 // ·········
 
 // Assets for the splash screen and menus
-// They are loaded inmediately after the app is fired, no effect on loading state
+// They are loaded inmediately after the app is fired, no effect on loading
+// state
 #[derive(AssetCollection, Resource)]
 pub struct CoreAssets {
     #[cfg(not(feature = "pixel_perfect"))]

@@ -16,7 +16,10 @@ impl Plugin for CameraPlugin {
             .add_systems(OnExit(GameState::Play), pause_camera);
 
         #[cfg(feature = "pixel_perfect")]
-        app.add_systems(Update, on_resize.run_if(in_state(GameState::Play)));
+        app.add_systems(
+            Update,
+            on_resize.run_if(in_state(GameState::Play)),
+        );
     }
 }
 
@@ -157,7 +160,10 @@ fn on_resize(
     mut event_resize: EventReader<WindowResized>,
 ) {
     for e in event_resize.read() {
-        let scale = scale_factor(&app_config.initial_game_res, &Vec2::new(e.width, e.height));
+        let scale = scale_factor(
+            &app_config.initial_game_res,
+            &Vec2::new(e.width, e.height),
+        );
 
         for mut sprite in plane.iter_mut() {
             sprite.custom_size = Some(app_config.initial_game_res * scale as f32);

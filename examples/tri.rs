@@ -27,7 +27,10 @@ impl Plugin for SampleGamePlugin {
             PreUpdate,
             init_sample.run_if(in_state(GameState::Play).and_then(run_once())),
         )
-        .add_systems(Update, update_sample.run_if(in_state(GameState::Play)));
+        .add_systems(
+            Update,
+            update_sample.run_if(in_state(GameState::Play)),
+        );
     }
 }
 
