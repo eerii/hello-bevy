@@ -1,5 +1,5 @@
 # Based on https://github.com/bevyengine/bevy_github_ci_template/blob/main/.github/workflows/ci.yaml
-name: test
+name: ci
 
 on:
   push:
@@ -39,7 +39,14 @@ jobs:
         run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev protobuf-compiler libprotobuf-dev libwayland-dev
       
       - name: Cargo test
-        run: cargo test
+        run: cargo test --workspace
+
+      - name: Cargo check examples
+        run: cargo check --workspace --examples
+
+      - name: Cargo check main
+        run: cargo check --workspace
+
 
   test_release:
     name: Cargo test (release)
@@ -69,7 +76,13 @@ jobs:
         run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev protobuf-compiler libprotobuf-dev libwayland-dev
       
       - name: Cargo test
-        run: cargo test --no-default-features --features release
+        run: cargo test --workspace --release --no-default-features --features release
+
+      - name: Cargo check examples
+        run: cargo check --workspace --examples --release --no-default-features --features release
+
+      - name: Cargo check main
+        run: cargo check --workspace --release --no-default-features --features release
 
   clippy_check:
     name: Cargo clippy and fmt
@@ -100,8 +113,32 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev protobuf-compiler libprotobuf-dev libwayland-dev
 
-      - name: Run clippy
-        run: cargo clippy -- -D warnings
+      - name: Cargo clippy
+        run: cargo clippy --workspace --all-targets --all-features -- -Dwarnings
 
-      - name: Run fmt
+      - name: Cargo fmt
         run: cargo fmt --all -- --check
+
+  check_toml:
+    name: Toml check
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install taplo
+        run: | 
+          curl -fsSL https://github.com/tamasfe/taplo/releases/latest/download/taplo-full-linux-x86_64.gz \
+          | gzip -d - \
+          | install -m 755 /dev/stdin /usr/local/bin/taplo
+
+      - name: Run Taplo
+        id: taplo
+        run: taplo fmt --check --diff
+
+      - name: Taplo info
+        if: failure()
+        run: |
+          echo 'To fix toml fmt, please run `taplo fmt`'
+          echo 'Or if you use VSCode, use the Even Better Toml extension'

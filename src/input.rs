@@ -252,7 +252,7 @@ fn mock_touch(
             position: cursor_pos,
             force: None,
             id: 0,
-        })
+        });
     }
 }
 

@@ -1,0 +1,81 @@
+name: examples
+
+on:
+  workflow_dispatch:
+    inputs:
+      description:
+        description: "Description for this run"
+        required: false
+        type: string
+
+env:
+  binary: hello-bevy
+
+jobs:
+  build-wasm:
+    strategy:
+      matrix:
+        name: [dvd, jump, shader, tri]
+        include:
+          - name: dvd 
+            features: "release"
+          - name: jump
+            features: "release"
+          - name: shader
+            features: "release"
+          - name: tri
+            features: "release,3d_camera,pixel_perfect"
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Remove debug config
+        run: rm -f .cargo/config.toml
+
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libwayland-dev
+      
+      - name: Install wasm-bindgen-cli
+        run: |
+          cargo install wasm-bindgen-cli
+
+      - name: Install trunk
+        uses: jetli/trunk-action@v0.1.0
+        with:
+          version: latest
+
+      - name: Build
+        run: |
+          rm src/main.rs
+          cd src
+          ln -sf ../examples/jump.rs main.rs
+          cd ..
+          trunk build --release --no-default-features --features ${{ matrix.features }}
+
+      - name: Optimize Wasm
+        uses: NiklasEi/wasm-opt-action@v2
+        with:
+          file: wasm/dist/*.wasm
+
+      - name: Make paths relative
+        run: |
+          sed -i 's/\/${{ env.binary }}/.\/${{ env.binary }}/g' wasm/dist/index.html
+
+      - name: Package as a zip
+        working-directory: ./wasm/dist
+        run: |
+          zip --recurse-paths ../../${{ matrix.name }}.zip .
+
+      - name: Upload binaries to artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          path: ${{ matrix.name }}.zip
+          name: wasm

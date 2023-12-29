@@ -1,5 +1,6 @@
 [package]
-name = "hello-bevy" # [CHANGE]: Set your project name.
+# [CHANGE]: Set your project name
+name = "hello-bevy"
 version = "0.13.0"
 edition = "2021"
 description = "a bevy game template"
@@ -14,16 +15,20 @@ debug = false # Disabled debug symbols for dependencies
 
 [features]
 default = [ # Only in debug
-    "inspector",
-    "bevy/file_watcher", # Enables hot reloading of assets
-    "bevy/dynamic_linking", # Enables dynamic linking for faster compilation
+  "bevy-inspector-egui",
+  "egui-gizmo",
+  "egui_dock",
+  "inspector",
+  "bevy/file_watcher",    # Enables hot reloading of assets
+  "bevy/dynamic_linking", # Enables dynamic linking for faster compilation
 ]
-release = [ # Only in release
-    "menu"
+release = [ # Only in release (build with --release --no-default-features --features release)
+  "bevy_embedded_assets",
+  "menu",
 ]
 trace = [ # For tracing support
-    "release",
-    "bevy/trace_tracy"
+  "release",
+  "bevy/trace_tracy",
 ]
 pixel_perfect = []
 resizable = []
@@ -32,34 +37,61 @@ menu = []
 inspector = []
 mock_touch = []
 
+# The bevy engine <3
+# Default feautres are disabled because we are using audio from a different source (kira)
+# We also add trace_tracy for profiling
+[dependencies.bevy]
+git = "https://github.com/bevyengine/bevy"
+default-features = false
+features = [
+  "animation",
+  "bevy_asset",
+  "bevy_gilrs",
+  "bevy_scene",
+  "bevy_winit",
+  "bevy_core_pipeline",
+  "bevy_pbr",
+  "bevy_gltf",
+  "bevy_render",
+  "bevy_sprite",
+  "bevy_text",
+  "bevy_ui",
+  "multi-threaded",
+  "png",
+  "hdr",
+  "x11",
+  "wayland",
+  "bevy_gizmos",
+  "tonemapping_luts",
+  "default_font",
+  "webgl2",
+  "serialize",
+]
+
 [dependencies]
-bevy_asset_loader = { git = "https://github.com/eerii/bevy_asset_loader", features = [ "progress_tracking" ] } # Better asset loader
-bevy_embedded_assets = { git = "https://github.com/vleue/bevy_embedded_assets" } # Embed assets in binary
+# Bevy addons
+bevy_asset_loader = { git = "https://github.com/eerii/bevy_asset_loader", features = [
+  "progress_tracking",
+] } # Better asset loader
 bevy_kira_audio = { git = "https://github.com/NiklasEi/bevy_kira_audio" } # Improved audio library
-iyes_progress = { git = "https://github.com/IyesGames/iyes_progress", features = [ "assets" ] } # Track loading and game state
-bevy-persistent = { git = "https://github.com/umut-sahin/bevy-persistent", features = ["toml"] } # Persistent values (for saving)
+iyes_progress = { git = "https://github.com/IyesGames/iyes_progress", features = [
+  "assets",
+] } # Track loading and game state
+bevy-persistent = { git = "https://github.com/umut-sahin/bevy-persistent", features = [
+  "toml",
+] } # Persistent values (for saving)
 
 # Core
 rand = { version = "0.8" }
 serde = { version = "1.0", features = ["derive"] }
 
-# Debug
-bevy-inspector-egui = { git = "https://github.com/eerii/bevy-inspector-egui" } # Inspector
-egui-gizmo = { git = "https://github.com/urholaukkarinen/egui-gizmo" }
-egui_dock = { version = "0.9" }
+# Debug only dependencies
+bevy-inspector-egui = { git = "https://github.com/eerii/bevy-inspector-egui", optional = true } # Inspector
+egui-gizmo = { git = "https://github.com/urholaukkarinen/egui-gizmo", optional = true }
+egui_dock = { version = "0.9", optional = true }
 
-[dependencies.bevy]
-# The bevy engine <3
-# Default feautres are disabled because we are using audio from a different source (kira)
-# We also add trace_tracy for profiling
-git = "https://github.com/bevyengine/bevy"
-default-features = false
-features = [
-    "animation", "bevy_asset", "bevy_gilrs", "bevy_scene", "bevy_winit",
-    "bevy_core_pipeline", "bevy_pbr", "bevy_gltf", "bevy_render", "bevy_sprite",
-    "bevy_text", "bevy_ui", "multi-threaded", "png", "hdr", "x11", "wayland",
-    "bevy_gizmos", "tonemapping_luts", "default_font", "webgl2", "serialize", 
-]
+# Release only dependencies
+bevy_embedded_assets = { git = "https://github.com/vleue/bevy_embedded_assets", optional = true } # Embed assets in binary
 
 [patch.crates-io]
 bevy = { git = "https://github.com/bevyengine/bevy" }
@@ -90,9 +122,9 @@ name = "jump"
 required-features = []
 
 [[example]]
-name = "tri"
-required-features = ["3d_camera", "pixel_perfect"]
-
-[[example]]
 name = "shader"
 required-features = []
+
+[[example]]
+name = "tri"
+required-features = ["3d_camera", "pixel_perfect"]

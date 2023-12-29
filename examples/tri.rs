@@ -66,7 +66,7 @@ fn init_sample(
                     .expect("icosphere should exist"),
             ),
             material: materials.add(StandardMaterial {
-                emissive: opts.color.mid.into(),
+                emissive: opts.color.mid,
                 ..default()
             }),
             ..default()

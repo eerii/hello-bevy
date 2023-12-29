@@ -239,21 +239,16 @@ fn update_player(
         for (sprite, platform) in platforms.iter() {
             let size = sprite.custom_size.unwrap_or(PLATFORM_SIZE);
 
-            if let Some(collision) =
+            if let Some(Collision::Top) =
                 collide(pos.extend(0.), PLAYER_SIZE, platform.translation, size)
             {
-                match collision {
-                    Collision::Top | Collision::Inside => {
-                        pos.y = platform.translation.y + size.y * 0.5 + PLAYER_SIZE.y * 0.5;
-                        player.jumps_left = MAX_JUMPS;
+                pos.y = platform.translation.y + size.y * 0.5 + PLAYER_SIZE.y * 0.5;
+                player.jumps_left = MAX_JUMPS;
 
-                        if player.velocity.y.abs() > BOUNCE_CUTOFF {
-                            player.velocity.y = player.velocity.y.abs() * BOUNCE_FACTOR;
-                        } else {
-                            player.velocity.y = 0.;
-                        }
-                    }
-                    _ => {}
+                if player.velocity.y.abs() > BOUNCE_CUTOFF {
+                    player.velocity.y = player.velocity.y.abs() * BOUNCE_FACTOR;
+                } else {
+                    player.velocity.y = 0.;
                 }
             }
         }
