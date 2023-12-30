@@ -114,7 +114,10 @@ fn init_camera(
         // Plane
         let scale = scale_factor(
             &_app_config.initial_game_res,
-            &_app_config.initial_window_res,
+            &Vec2::new(
+                _app_config.initial_window_res.width(),
+                _app_config.initial_window_res.height(),
+            ),
         );
         cmd.spawn((
             SpriteBundle {

@@ -23,6 +23,8 @@ jobs:
             features: "release"
           - name: shader
             features: "release"
+          - name: ducks
+            features: "release,3d_camera"
           - name: tri
             features: "release,3d_camera,pixel_perfect"
 

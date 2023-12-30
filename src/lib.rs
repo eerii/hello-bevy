@@ -7,7 +7,7 @@ mod data;
 mod input;
 mod ui;
 
-use bevy::{asset::AssetMetaCheck, log::LogPlugin, prelude::*};
+use bevy::{asset::AssetMetaCheck, log::LogPlugin, prelude::*, window::WindowResolution};
 
 // TODO: Add a lot of comments
 
@@ -35,7 +35,7 @@ pub struct GamePlugin;
 #[derive(Resource, Clone)]
 pub struct GameAppConfig {
     pub game_title: &'static str,
-    pub initial_window_res: Vec2,
+    pub initial_window_res: WindowResolution,
     #[cfg(feature = "pixel_perfect")]
     pub initial_game_res: Vec2,
 }
@@ -44,7 +44,7 @@ impl Default for GameAppConfig {
     fn default() -> Self {
         Self {
             game_title: "Hello bevy!",
-            initial_window_res: Vec2::new(600., 600.),
+            initial_window_res: Vec2::new(600., 600.).into(),
             #[cfg(feature = "pixel_perfect")]
             initial_game_res: Vec2::new(600., 600.),
         }
@@ -74,7 +74,7 @@ impl Plugin for GamePlugin {
         let mut window_plugin = WindowPlugin {
             primary_window: Some(Window {
                 title: config.game_title.into(),
-                resolution: config.initial_window_res.into(),
+                resolution: config.initial_window_res,
                 resizable: false,
                 canvas: Some("#bevy".to_string()),
                 prevent_default_event_handling: false,

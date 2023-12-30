@@ -9,10 +9,7 @@ use hello_bevy::{GameAppConfig, GamePlugin, GameState};
 
 fn main() {
     App::new()
-        .insert_resource(GameAppConfig {
-            initial_window_res: Vec2::new(600., 600.),
-            ..default()
-        })
+        .insert_resource(GameAppConfig::default())
         .add_plugins((GamePlugin, SampleGamePlugin))
         .run();
 }

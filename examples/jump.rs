@@ -32,11 +32,7 @@ const JUMP_BUFFER: f32 = 0.1;
 
 fn main() {
     App::new()
-        .insert_resource(GameAppConfig {
-            initial_window_res: Vec2::new(600., 600.),
-            // initial_game_res: LEVEL_SIZE,
-            ..default()
-        })
+        .insert_resource(GameAppConfig::default())
         .add_plugins((GamePlugin, SampleGamePlugin))
         .run();
 }

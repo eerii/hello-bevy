@@ -126,5 +126,9 @@ name = "shader"
 required-features = []
 
 [[example]]
+name = "ducks"
+required-features = ["3d_camera"]
+
+[[example]]
 name = "tri"
 required-features = ["3d_camera", "pixel_perfect"]
