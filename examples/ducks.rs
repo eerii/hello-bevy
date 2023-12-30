@@ -1,6 +1,10 @@
 #![allow(clippy::too_many_arguments)]
 
-use bevy::prelude::*;
+use bevy::{
+    core_pipeline::prepass::DepthPrepass,
+    prelude::*,
+    render::render_resource::{AsBindGroup, ShaderRef},
+};
 use bevy_persistent::Persistent;
 use hello_bevy::{
     GameAppConfig, GameCamera, GameOptions, GamePlugin, GameState, InputMovement, Keybinds,
@@ -12,10 +16,7 @@ const PLAYER_VELOCITY: f32 = 10.;
 fn main() {
     App::new()
         .insert_resource(GameAppConfig {
-            initial_window_res: Vec2::new(256. * 4., 192. * 4.).into(),
-            // Quick hack to make the game run in my potato
-            #[cfg(feature = "pixel_perfect")]
-            initial_game_res: Vec2::new(256. * 2., 192. * 2.),
+            initial_window_res: Vec2::new(800., 600.).into(),
             ..default()
         })
         .add_plugins((GamePlugin, SampleGamePlugin))
@@ -30,14 +31,16 @@ pub struct SampleGamePlugin;
 
 impl Plugin for SampleGamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            PreUpdate,
-            init_sample.run_if(in_state(GameState::Play).and_then(run_once())),
-        )
-        .add_systems(
-            Update,
-            (update_player, camera_follow).run_if(in_state(GameState::Play)),
-        );
+        app.add_plugins(MaterialPlugin::<CustomMaterial>::default())
+            .add_systems(
+                PreUpdate,
+                init_sample.run_if(in_state(GameState::Play).and_then(run_once())),
+            )
+            .add_systems(
+                Update,
+                (update_player, camera_follow).run_if(in_state(GameState::Play)),
+            )
+            .insert_resource(Msaa::Off);
     }
 }
 
@@ -48,6 +51,26 @@ impl Plugin for SampleGamePlugin {
 #[derive(Component)]
 struct Player;
 
+// ·········
+// Materials
+// ·········
+
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct CustomMaterial {
+    #[uniform(0)]
+    color: Color,
+}
+
+impl Material for CustomMaterial {
+    fn vertex_shader() -> ShaderRef {
+        "shaders/simple.wgsl".into()
+    }
+
+    fn fragment_shader() -> ShaderRef {
+        "shaders/simple.wgsl".into()
+    }
+}
+
 // ·······
 // Systems
 // ·······
@@ -56,55 +79,36 @@ fn init_sample(
     mut cmd: Commands,
     opts: Res<Persistent<GameOptions>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut cam: Query<(&mut Camera, &mut Transform), With<GameCamera>>,
+    mut materials: ResMut<Assets<CustomMaterial>>,
+    mut cam: Query<(Entity, &mut Camera, &mut Transform), With<GameCamera>>,
 ) {
     // Floor
-    cmd.spawn(PbrBundle {
+    cmd.spawn(MaterialMeshBundle {
         mesh: meshes.add(shape::Cube::default().into()),
-        material: materials.add(StandardMaterial {
-            base_color: Color::hex("#207345").unwrap(),
-            ..default()
+        material: materials.add(CustomMaterial {
+            color: Color::hex("#207345").unwrap(),
         }),
-        transform: Transform::from_xyz(0., -1.5, 0.).with_scale(Vec3::new(30., 1., 30.)),
+        transform: Transform::from_xyz(0., -2.0, 0.).with_scale(Vec3::new(30., 1., 30.)),
         ..default()
     });
 
     // Player
     cmd.spawn((
-        PbrBundle {
+        MaterialMeshBundle {
             mesh: meshes.add(shape::Capsule::default().into()),
-            material: materials.add(StandardMaterial {
-                base_color: opts.color.light,
-                perceptual_roughness: 0.9,
-                metallic: 0.2,
-                ..default()
+            material: materials.add(CustomMaterial {
+                color: opts.color.light,
             }),
             ..default()
         },
         Player,
     ));
 
-    // Directional light
-    cmd.spawn(DirectionalLightBundle {
-        directional_light: DirectionalLight {
-            shadows_enabled: false,
-            illuminance: 20000.,
-            ..default()
-        },
-        transform: Transform::from_rotation(Quat::from_euler(
-            EulerRot::XYZ,
-            1.0,
-            3.4,
-            0.,
-        )),
-        ..default()
-    });
-
-    if let Ok((mut cam, mut trans)) = cam.get_single_mut() {
+    if let Ok((entity, mut cam, mut trans)) = cam.get_single_mut() {
         trans.translation = CAMERA_OFFSET;
         trans.look_at(Vec3::ZERO, Vec3::Y);
         cam.msaa_writeback = false;
+        cmd.entity(entity).insert(DepthPrepass);
     }
 }
 
