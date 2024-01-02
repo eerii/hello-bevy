@@ -2,7 +2,6 @@ use bevy::{
     prelude::*,
     window::{PrimaryWindow, WindowResized},
 };
-use bevy_kira_audio::prelude::*;
 use bevy_persistent::Persistent;
 use hello_bevy::{
     CoreAssets, ExampleAssets, FinalCamera, GameAppConfig, GameOptions, GamePlugin, GameState,
@@ -171,10 +170,10 @@ fn update_sample(
 }
 
 fn on_collision(
+    mut cmd: Commands,
     mut objects: Query<&mut Sprite>,
     mut counter: Query<(&mut Text, &mut Counter)>,
     mut event_collision: EventReader<CollisionEvent>,
-    audio: Res<Audio>,
     assets: Res<ExampleAssets>,
 ) {
     let (mut text, mut counter) = counter.single_mut();
@@ -187,9 +186,12 @@ fn on_collision(
 
         if let Ok(mut sprite) = objects.get_mut(*e) {
             sprite.color = random_color();
-        }
 
-        audio.play(assets.boing.clone()).with_volume(0.3);
+            cmd.spawn(AudioBundle {
+                source: assets.boing.clone(),
+                settings: PlaybackSettings::DESPAWN,
+            });
+        }
     }
 }
 

@@ -1,5 +1,7 @@
-use bevy::prelude::*;
-use bevy_kira_audio::prelude::{AudioPlugin as KiraAudioPlugin, *};
+use bevy::{
+    audio::{PlaybackMode, Volume},
+    prelude::*,
+};
 
 use crate::{ExampleAssets, GameState};
 
@@ -11,57 +13,49 @@ pub struct AudioPlugin;
 
 impl Plugin for AudioPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(KiraAudioPlugin)
-            .add_systems(OnEnter(GameState::Play), init_music)
-            .add_systems(OnExit(GameState::Play), pause_music)
-            .init_resource::<MusicHandles>();
+        app.add_systems(OnEnter(GameState::Play), init_music)
+            .add_systems(OnExit(GameState::Play), pause_music);
     }
 }
 
-// ·········
-// Resources
-// ·········
+// ··········
+// Components
+// ··········
 
-#[derive(Resource, Default)]
-struct MusicHandles {
-    ambient_music: Option<Handle<AudioInstance>>,
-}
+#[derive(Component)]
+struct AmbientMusic;
 
 // ·······
 // Systems
 // ·······
 
 fn init_music(
+    mut cmd: Commands,
     assets: Res<ExampleAssets>,
-    audio: Res<Audio>,
-    mut handles: ResMut<MusicHandles>,
-    mut instances: ResMut<Assets<AudioInstance>>,
+    ambient: Query<&AudioSink, With<AmbientMusic>>,
 ) {
-    match handles.ambient_music.clone() {
-        Some(h) => {
-            if let Some(inst) = instances.get_mut(h) {
-                inst.resume(default());
-            }
+    match ambient.get_single() {
+        Ok(a) => {
+            a.play();
         },
-        None => {
-            handles.ambient_music = Some(
-                audio
-                    .play(assets.ambient_music.clone())
-                    .looped()
-                    .with_volume(0.05)
-                    .handle(),
-            );
-            audio.stop(); // [CHANGE]: Ambient music is disabled by default
+        Err(_) => {
+            cmd.spawn((
+                AudioBundle {
+                    source: assets.ambient_music.clone(),
+                    settings: PlaybackSettings {
+                        mode: PlaybackMode::Loop,
+                        volume: Volume::new_relative(0.1),
+                        ..default()
+                    },
+                },
+                AmbientMusic,
+            ));
         },
     }
 }
 
-fn pause_music(handles: Res<MusicHandles>, mut instances: ResMut<Assets<AudioInstance>>) {
-    let Some(ref handle) = handles.ambient_music else {
-        return;
-    };
-    let Some(inst) = instances.get_mut(handle) else {
-        return;
-    };
-    inst.pause(default());
+fn pause_music(music: Query<&AudioSink>) {
+    for music in music.iter() {
+        music.pause();
+    }
 }

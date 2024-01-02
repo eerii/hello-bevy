@@ -15,9 +15,6 @@ debug = false # Disabled debug symbols for dependencies
 
 [features]
 default = [ # Only in debug
-  "bevy-inspector-egui",
-  "egui-gizmo",
-  "egui_dock",
   "inspector",
   "bevy/file_watcher",    # Enables hot reloading of assets
   "bevy/dynamic_linking", # Enables dynamic linking for faster compilation
@@ -26,54 +23,29 @@ release = [ # Only in release (build with --release --no-default-features --feat
   "bevy_embedded_assets",
   "menu",
 ]
-trace = [ # For tracing support
-  "release",
-  "bevy/trace_tracy",
-]
-pixel_perfect = []
+trace = ["release", "bevy/trace_tracy"] # For tracing support
+inspector = [
+  "bevy-inspector-egui",
+  "egui-gizmo",
+  "egui_dock",
+] # Runtime editor ui
 resizable = []
 3d_camera = []
+pixel_perfect = []
 menu = []
-inspector = []
 mock_touch = []
 
-# The bevy engine <3
-# Default feautres are disabled because we are using audio from a different source (kira)
-# We also add trace_tracy for profiling
-[dependencies.bevy]
-git = "https://github.com/bevyengine/bevy"
-default-features = false
-features = [
-  "animation",
-  "bevy_asset",
-  "bevy_gilrs",
-  "bevy_scene",
-  "bevy_winit",
-  "bevy_core_pipeline",
-  "bevy_pbr",
-  "bevy_gltf",
-  "bevy_render",
-  "bevy_sprite",
-  "bevy_text",
-  "bevy_ui",
-  "multi-threaded",
-  "png",
-  "hdr",
-  "x11",
-  "wayland",
-  "bevy_gizmos",
-  "tonemapping_luts",
-  "default_font",
-  "webgl2",
-  "serialize",
-]
-
 [dependencies]
+# The bevy engine <3
+bevy = { git = "https://github.com/bevyengine/bevy", features = [
+  "wayland",
+  "serialize",
+] }
+
 # Bevy addons
 bevy_asset_loader = { git = "https://github.com/eerii/bevy_asset_loader", features = [
   "progress_tracking",
 ] } # Better asset loader
-bevy_kira_audio = { git = "https://github.com/NiklasEi/bevy_kira_audio" } # Improved audio library
 iyes_progress = { git = "https://github.com/IyesGames/iyes_progress", features = [
   "assets",
 ] } # Track loading and game state
