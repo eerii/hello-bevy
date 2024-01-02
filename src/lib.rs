@@ -20,6 +20,8 @@ pub use crate::{
 };
 
 // Game state
+// Indicates at which point the game is. Very useful for controlling which
+// systems run when (in_state) and to create transitions (OnEnter/OnExit)
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
     #[default]
@@ -29,9 +31,9 @@ pub enum GameState {
     End,
 }
 
-// Main game plugin
-pub struct GamePlugin;
-
+// Static configuration
+// Allows to pass options to the game plugin such as the title and resolution.
+// Must be added before the plugin
 #[derive(Resource, Clone)]
 pub struct GameAppConfig {
     pub game_title: &'static str,
@@ -50,6 +52,12 @@ impl Default for GameAppConfig {
         }
     }
 }
+
+// Main game plugin
+// This template is structured using plugins. A plugin makes changes to the app,
+// usually adding systems and resources. This is the main plugin that
+// initializes all subsistems. Each plugin is defined in a submodule (mod ***)
+pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
@@ -70,12 +78,14 @@ impl Plugin for GamePlugin {
         }
 
         // Default plugins
-        #[allow(unused_mut)]
-        let mut window_plugin = WindowPlugin {
+
+        // Window
+        // Controls initial resolution, resizing
+        let window_plugin = WindowPlugin {
             primary_window: Some(Window {
                 title: config.game_title.into(),
                 resolution: config.initial_window_res,
-                resizable: false,
+                resizable: cfg!(feature = "resizable"),
                 canvas: Some("#bevy".to_string()),
                 prevent_default_event_handling: false,
                 ..default()
@@ -83,35 +93,38 @@ impl Plugin for GamePlugin {
             ..default()
         };
 
-        #[cfg(feature = "resizable")]
-        {
-            let win = window_plugin.primary_window.as_mut().unwrap();
-            win.resizable = true;
-        }
+        // Image
+        // Sets the interpolation (nearest for pixel art, default otherwise)
+        let image_plugin = if cfg!(feature = "pixel_perfect") {
+            ImagePlugin::default_nearest()
+        } else {
+            ImagePlugin::default()
+        };
 
-        #[cfg(not(feature = "pixel_perfect"))]
-        let image_plugin = ImagePlugin::default();
-
-        #[cfg(feature = "pixel_perfect")]
-        let image_plugin = ImagePlugin::default_nearest();
-
+        // Log
+        // Modifies the logging to the console. More verbose when running debug builds
         #[cfg(debug_assertions)]
-        let log_plugin = LogPlugin {
-            level: bevy::log::Level::DEBUG,
-            filter: "info,wgpu_core=warn,wgpu_hal=warn,calloop=error,hello-bevy=debug".into(),
+        let log_plugin = if cfg!(debug_assertions) {
+            LogPlugin {
+                level: bevy::log::Level::DEBUG,
+                filter: "info,wgpu_core=warn,wgpu_hal=warn,calloop=error,hello-bevy=debug".into(),
+            }
+        } else {
+            LogPlugin {
+                level: bevy::log::Level::INFO,
+                filter: "info,wgpu_core=warn,wgpu_hal=warn".into(),
+            }
         };
 
-        #[cfg(not(debug_assertions))]
-        let log_plugin = LogPlugin {
-            level: bevy::log::Level::INFO,
-            filter: "info,wgpu_core=warn,wgpu_hal=warn".into(),
-        };
-
+        // Asset
+        // In the future, it will use processed assets with Bevy Asset v2.
+        // For now this is disabled since it is very early in development
         let asset_plugin = AssetPlugin {
-            // mode: AssetMode::Processed, // Enable Asset v2 in the future
+            // mode: AssetMode::Processed,
             ..default()
         };
 
+        // Add default bevy plugins with our overrides
         app.add_plugins(
             DefaultPlugins
                 .set(window_plugin)
@@ -120,7 +133,7 @@ impl Plugin for GamePlugin {
                 .set(asset_plugin),
         );
 
-        // Game
+        // Add the rest of the plugins
         app.init_state::<GameState>().add_plugins((
             data::DataPlugin,
             assets::AssetLoaderPlugin,

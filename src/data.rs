@@ -13,6 +13,10 @@ use crate::{
 // Plugin
 // ······
 
+// Game data
+// Uses bevy_persistent to create serializable game data, including options and
+// keybinds. These are accesible using resources by any system, using
+// Res<Persistent<...>>.
 pub struct DataPlugin;
 
 impl Plugin for DataPlugin {
@@ -24,6 +28,14 @@ impl Plugin for DataPlugin {
 // ·········
 // Resources
 // ·········
+
+// Game options
+// Useful for accesibility and the settings menu
+#[derive(Resource, Serialize, Deserialize, Reflect, Default)]
+pub struct GameOptions {
+    pub font_size: FontSize,
+    pub color: ColorPalette,
+}
 
 #[derive(Serialize, Deserialize, Reflect)]
 pub struct FontSize {
@@ -59,12 +71,9 @@ impl Default for ColorPalette {
     }
 }
 
-#[derive(Resource, Serialize, Deserialize, Reflect, Default)]
-pub struct GameOptions {
-    pub font_size: FontSize,
-    pub color: ColorPalette,
-}
-
+// Keybinds
+// Offers remappable keymaps, both for keys and for axis. Has controller, mouse
+// and touch support. See src/input.rs
 #[derive(Resource, Serialize, Deserialize, Reflect)]
 pub struct Keybinds {
     pub x_axis: BindSet<AxisBind>,
@@ -115,14 +124,13 @@ impl Default for Keybinds {
 // ·······
 
 fn init_persistence(mut cmd: Commands) {
-    #[cfg(not(target_arch = "wasm32"))]
-    let config_dir = Path::new(".data");
-    #[cfg(target_arch = "wasm32")]
-    let config_dir = Path::new("local");
-
+    // Select the config directory
     // Append the package name to have unique configs (especially on web)
-    let config_dir = config_dir.join(env!("CARGO_PKG_NAME"));
+    let config_dir = Path::new(if cfg!(target_arch = "wasm32") { "local" } else { ".data" })
+        .join(env!("CARGO_PKG_NAME"));
 
+    // Insert the persistent resources with custom options
+    // Check bevy_persistent for all the configuration
     cmd.insert_resource(
         Persistent::<GameOptions>::builder()
             .name("options")
@@ -134,7 +142,6 @@ fn init_persistence(mut cmd: Commands) {
             .build()
             .expect("Failed to initialize game options"),
     );
-
     cmd.insert_resource(
         Persistent::<Keybinds>::builder()
             .name("keybinds")

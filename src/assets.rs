@@ -7,15 +7,19 @@ use iyes_progress::prelude::*;
 
 use crate::GameState;
 
-#[cfg(feature = "menu")]
-const NEXT_STATE: GameState = GameState::Menu;
-#[cfg(not(feature = "menu"))]
-const NEXT_STATE: GameState = GameState::Play;
+// When not using the menu, skip to Play once Loading is done
+const NEXT_STATE: GameState =
+    if cfg!(feature = "menu") { GameState::Menu } else { GameState::Play };
 
 // ······
 // Plugin
 // ······
 
+// Asset loader
+// Configures bevy_asset_loader to create collections that make it easy to
+// specify which assets to load. These are then accesible through resources by
+// any system. Also tracks asset loading progress through iyes_progress, making
+// it easy to add a progress bar (see src/ui/loading.rs)
 pub struct AssetLoaderPlugin;
 
 impl Plugin for AssetLoaderPlugin {
@@ -37,8 +41,8 @@ impl Plugin for AssetLoaderPlugin {
 // ·········
 
 // Assets for the splash screen and menus
-// They are loaded inmediately after the app is fired, no effect on loading
-// state
+// They are loaded inmediately after the app is fired, so they have no effect on
+// loading state
 #[derive(AssetCollection, Resource)]
 pub struct CoreAssets {
     #[cfg(not(feature = "pixel_perfect"))]
@@ -59,6 +63,9 @@ pub struct CoreAssets {
 }
 
 // Example assets
+// This is how an asset collection would look, defining assets with the #[asset]
+// directive. See bevy_asset_loader for all options. You can create multiple
+// collections.
 #[derive(AssetCollection, Resource)]
 pub struct ExampleAssets {
     #[asset(path = "sounds/boing.ogg")]

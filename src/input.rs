@@ -19,6 +19,11 @@ use crate::Keybinds;
 // Plugin
 // ······
 
+// Input
+// Adds keybinds to bevy's input system. These allow to specify multiple keys
+// that perform the same action, can be rebinded and support keyboard, mouse,
+// gamepads and touch. There are two types, buttons (can be pressed, just
+// pressed or released) and axis (a floating value that indicates movemnt)
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
@@ -45,6 +50,8 @@ impl Plugin for InputPlugin {
 // Resources
 // ·········
 
+// This resource contains the values for each movement axis. It can be queried
+// by any system
 #[derive(Resource, Default)]
 pub struct InputMovement {
     map: HashMap<AxisBind, f32>,
@@ -74,6 +81,7 @@ impl InputMovement {
 // Systems
 // ·······
 
+// Input from the keyboard
 fn handle_keyboard_input(
     mut input: ResMut<ButtonInput<KeyBind>>,
     mut movement: ResMut<InputMovement>,
@@ -81,6 +89,7 @@ fn handle_keyboard_input(
     mut keyboard: EventReader<KeyboardInput>,
 ) {
     for event in keyboard.read() {
+        // Convert from keyboard events to keybinds
         for bind in keybinds.keys() {
             if let KeyBind::Key(key) = bind {
                 if key != &event.key_code {
@@ -93,6 +102,8 @@ fn handle_keyboard_input(
             }
         }
 
+        // Also add events for keys when using two keyboard keys for an axis
+        // (such as W-S or A-D) This is a bit of a workaround for the next section
         for bind in keybinds.moves() {
             if let AxisBind::Key(a, b) = bind {
                 if a == &event.key_code {
@@ -110,6 +121,7 @@ fn handle_keyboard_input(
         }
     }
 
+    // Read the keyboard events and convert them to an axis movement
     for bind in keybinds.moves() {
         if let AxisBind::Key(a, b) = bind {
             let mut value = 0.;
@@ -130,6 +142,7 @@ fn handle_mouse_input(
     mut mouse: EventReader<MouseButtonInput>,
     mut mouse_motion: EventReader<MouseMotion>,
 ) {
+    // Convert from mouse events to keybinds
     for event in mouse.read() {
         for bind in keybinds.keys() {
             if let KeyBind::Mouse(button) = bind {
@@ -144,6 +157,7 @@ fn handle_mouse_input(
         }
     }
 
+    // Convert mouse motion to the two mouse movement axis
     for event in mouse_motion.read() {
         for bind in keybinds.moves() {
             if let AxisBind::Mouse(axis) = bind {
@@ -164,6 +178,7 @@ fn handle_gamepad_input(
     mut gamepad_buttons: EventReader<GamepadButtonInput>,
     mut gamepad_axis: EventReader<GamepadAxisChangedEvent>,
 ) {
+    // Convert from gamepad button events to keybinds
     for event in gamepad_buttons.read() {
         for bind in keybinds.keys() {
             if let KeyBind::Gamepad(button) = bind {
@@ -178,6 +193,7 @@ fn handle_gamepad_input(
         }
     }
 
+    // Convert joystick motions to the appropiate movement axis binding
     for event in gamepad_axis.read() {
         for bind in keybinds.moves() {
             if let AxisBind::Gamepad(axis) = bind {
@@ -199,6 +215,8 @@ fn handle_touch_input(
 ) {
     let mut moved = Vec::new();
 
+    // Read touch as both a keybind and a movement axis. This is being worked on and
+    // is not very tested
     for event in touch.read() {
         match event.phase {
             TouchPhase::Started => input.press(KeyBind::TouchPress),
@@ -208,6 +226,7 @@ fn handle_touch_input(
         }
     }
 
+    // Convert the events to our input system
     for event in moved {
         for bind in keybinds.moves() {
             if let AxisBind::Touch(axis) = bind {
@@ -229,6 +248,7 @@ fn handle_touch_input(
     }
 }
 
+// Using this feature, the mouse can be used to mock touch events for testing
 #[cfg(feature = "mock_touch")]
 fn mock_touch(
     mouse: Res<ButtonInput<MouseButton>>,
@@ -257,6 +277,7 @@ fn mock_touch(
     }
 }
 
+// Each frame clear the input on PostUpdate
 fn clear_input(mut input: ResMut<ButtonInput<KeyBind>>, mut movement: ResMut<InputMovement>) {
     input.clear();
     movement.clear();
@@ -266,6 +287,7 @@ fn clear_input(mut input: ResMut<ButtonInput<KeyBind>>, mut movement: ResMut<Inp
 // Extra
 // ·····
 
+// Defines a button keybind
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Reflect)]
 pub enum KeyBind {
     Key(KeyCode),
@@ -285,12 +307,7 @@ impl ToString for KeyBind {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Reflect)]
-pub enum InputAxis {
-    X,
-    Y,
-}
-
+// Defines a movement axis binding
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Reflect)]
 pub enum AxisBind {
     Key(KeyCode, KeyCode),
@@ -299,6 +316,27 @@ pub enum AxisBind {
     Touch(InputAxis),
 }
 
+impl ToString for AxisBind {
+    fn to_string(&self) -> String {
+        match self {
+            AxisBind::Key(a, b) => format!("a{:?}-{:?}", a, b),
+            AxisBind::Mouse(axis) => format!("am{:?}", axis),
+            AxisBind::Gamepad(axis) => format!("ag{:?}", axis).replace("DPad", ""),
+            AxisBind::Touch(axis) => format!("at{:?}", axis),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Reflect)]
+pub enum InputAxis {
+    X,
+    Y,
+}
+
+// A list of bindings for one specific action. Implements pressed, just_pressed
+// and just_released for buttons that activate if any of them are in that state.
+// Also adds get for movement axis, that returns the sum of input on the axis
+// clamped to -1..1
 #[derive(Debug, Serialize, Deserialize, Reflect)]
 pub struct BindSet<T>(pub Vec<T>);
 

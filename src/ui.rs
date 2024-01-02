@@ -26,6 +26,10 @@ pub const FONT_SIZES: [f32; 5] = [16.0, 20.0, 24.0, 28.0, 32.0];
 // Plugin
 // ······
 
+// Ui
+// Wrapper around bevy's ui that makes it more concise to add ui elements in the
+// same style. It is by no means perfect and doesn't support all usecases, but
+// can be helpful while the new ui system is being worked on
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
@@ -66,6 +70,8 @@ impl Plugin for UiPlugin {
 // Resources
 // ·········
 
+// Defines the default style of various components
+// Can be changed using runtime configuration, see src/data.rs
 #[derive(Resource, Default)]
 struct UiStyle {
     title: TextStyle,
@@ -80,9 +86,14 @@ struct UiStyle {
 // Components
 // ··········
 
+// The camera responsible for rendering Ui. It uses a custom render layer,
+// UI_LAYER, that should be added to all ui components, that way only this
+// camera renders it and it can be easily toggled.
 #[derive(Component)]
 struct UiCamera;
 
+// The main Ui node, every element should be a child of this so it can be
+// cleaned appropiately
 #[derive(Component)]
 struct UiNode;
 
@@ -126,6 +137,7 @@ fn init_ui(mut cmd: Commands) {
     ));
 }
 
+// Update style whenever game options change
 fn change_style(
     mut style: ResMut<UiStyle>,
     opts: Res<Persistent<GameOptions>>,
@@ -232,7 +244,6 @@ impl UiText {
 
 // Button
 // TODO: Rounded button corners (Requires #8973 to be merged in 0.13)
-
 struct UiButton {
     bundle: ButtonBundle,
     text: UiText,

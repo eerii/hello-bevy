@@ -8,6 +8,10 @@ use crate::{GameAppConfig, GameState};
 // Plugin
 // ······
 
+// TODO: Move the pixel perfect camera to a different crate
+
+// Camera
+// WIP, add comments after deciding on a final design
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
