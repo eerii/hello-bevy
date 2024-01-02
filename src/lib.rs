@@ -14,7 +14,7 @@ use bevy::{asset::AssetMetaCheck, log::LogPlugin, prelude::*, window::WindowReso
 // Exports for examples
 pub use crate::{
     assets::{CoreAssets, ExampleAssets},
-    camera::{FinalCamera, GameCamera},
+    camera::{init_camera, FinalCamera, GameCamera},
     data::{GameOptions, Keybinds},
     input::{InputMovement, KeyBind},
 };
@@ -107,11 +107,17 @@ impl Plugin for GamePlugin {
             filter: "info,wgpu_core=warn,wgpu_hal=warn".into(),
         };
 
+        let asset_plugin = AssetPlugin {
+            // mode: AssetMode::Processed, // Enable Asset v2 in the future
+            ..default()
+        };
+
         app.add_plugins(
             DefaultPlugins
                 .set(window_plugin)
                 .set(image_plugin)
-                .set(log_plugin),
+                .set(log_plugin)
+                .set(asset_plugin),
         );
 
         // Game

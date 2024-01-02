@@ -24,8 +24,8 @@ impl Plugin for SampleGamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(Material2dPlugin::<CustomMaterial>::default())
             .add_systems(
-                PreUpdate,
-                init_sample.run_if(in_state(GameState::Play).and_then(run_once())),
+                OnEnter(GameState::Play),
+                init_sample.run_if(run_once()),
             );
     }
 }

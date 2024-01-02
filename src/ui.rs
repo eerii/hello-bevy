@@ -34,7 +34,9 @@ impl Plugin for UiPlugin {
             .add_systems(OnEnter(GameState::Loading), init_ui)
             .add_systems(
                 PreUpdate,
-                clean_ui.run_if(state_changed::<GameState>()),
+                clean_ui.run_if(
+                    state_changed::<GameState>().and_then(not(in_state(GameState::Loading))),
+                ),
             )
             .add_systems(
                 Update,
@@ -46,9 +48,9 @@ impl Plugin for UiPlugin {
             )
             .add_systems(
                 PostUpdate,
-                (change_style.run_if(resource_changed::<
+                change_style.run_if(resource_changed::<
                     Persistent<GameOptions>,
-                >()),),
+                >()),
             )
             .add_plugins(loading::LoadingUiPlugin);
 

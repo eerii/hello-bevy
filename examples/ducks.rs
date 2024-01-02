@@ -7,7 +7,8 @@ use bevy::{
 };
 use bevy_persistent::Persistent;
 use hello_bevy::{
-    GameAppConfig, GameCamera, GameOptions, GamePlugin, GameState, InputMovement, Keybinds,
+    init_camera, GameAppConfig, GameCamera, GameOptions, GamePlugin, GameState, InputMovement,
+    Keybinds,
 };
 
 const CAMERA_OFFSET: Vec3 = Vec3::new(0., 5., -8.);
@@ -33,8 +34,8 @@ impl Plugin for SampleGamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(MaterialPlugin::<CustomMaterial>::default())
             .add_systems(
-                PreUpdate,
-                init_sample.run_if(in_state(GameState::Play).and_then(run_once())),
+                OnEnter(GameState::Play),
+                init_sample.after(init_camera).run_if(run_once()),
             )
             .add_systems(
                 Update,

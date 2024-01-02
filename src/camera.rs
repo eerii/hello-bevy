@@ -45,7 +45,7 @@ struct PixelRenderPlane;
 // Systems
 // ·······
 
-fn init_camera(
+pub fn init_camera(
     mut cmd: Commands,
     _app_config: Res<GameAppConfig>,
     mut _images: ResMut<Assets<Image>>,

@@ -48,6 +48,7 @@ fn fragment(
     let shaded_color = material.color * light_value;
 
     // Outline
+    #ifdef DEPTH_PREPASS
     let depth = prepass_depth(in.position, sample_index);
     let offset = 3.0;
     let delta = 0.0001;
@@ -58,6 +59,9 @@ fn fragment(
     let depth_bottom = prepass_depth(in.position + vec4f(0.0, -offset, 0.0, 0.0), sample_index);
 
     let is_outline = abs(depth_right - depth) > delta || abs(depth_left - depth) > delta || abs(depth_top - depth) > delta || abs(depth_bottom - depth) > delta;
+    #else
+    let is_outline = false;
+    #endif
 
     if is_outline {
         return vec4(0.0, 0.0, 0.0, 1.0);

@@ -7,8 +7,8 @@ use bevy::{
 };
 use bevy_persistent::Persistent;
 use hello_bevy::{
-    CoreAssets, GameAppConfig, GameCamera, GameOptions, GamePlugin, GameState, InputMovement,
-    KeyBind, Keybinds,
+    init_camera, CoreAssets, GameAppConfig, GameCamera, GameOptions, GamePlugin, GameState,
+    InputMovement, KeyBind, Keybinds,
 };
 use rand::Rng;
 
@@ -47,8 +47,8 @@ impl Plugin for SampleGamePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(PlatformInfo::default())
             .add_systems(
-                PreUpdate,
-                init_sample.run_if(in_state(GameState::Play).and_then(run_once())),
+                OnEnter(GameState::Play),
+                init_sample.after(init_camera).run_if(run_once()),
             )
             .add_systems(
                 Update,

@@ -2,12 +2,13 @@
 
 use bevy::{core_pipeline::bloom::BloomSettings, prelude::*};
 use bevy_persistent::Persistent;
-use hello_bevy::{GameAppConfig, GameCamera, GameOptions, GamePlugin, GameState};
+use hello_bevy::{init_camera, GameAppConfig, GameCamera, GameOptions, GamePlugin, GameState};
 
 fn main() {
     App::new()
         .insert_resource(GameAppConfig {
             initial_window_res: Vec2::new(600., 600.).into(),
+            #[cfg(feature = "pixel_perfect")]
             initial_game_res: Vec2::new(64., 64.),
             ..default()
         })
@@ -24,8 +25,8 @@ pub struct SampleGamePlugin;
 impl Plugin for SampleGamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            PreUpdate,
-            init_sample.run_if(in_state(GameState::Play).and_then(run_once())),
+            OnEnter(GameState::Play),
+            init_sample.after(init_camera).run_if(run_once()),
         )
         .add_systems(
             Update,

@@ -35,8 +35,8 @@ fn init_music(
     ambient: Query<&AudioSink, With<AmbientMusic>>,
 ) {
     match ambient.get_single() {
-        Ok(a) => {
-            a.play();
+        Ok(_) => {
+            // a.play();
         },
         Err(_) => {
             cmd.spawn((
@@ -45,6 +45,7 @@ fn init_music(
                     settings: PlaybackSettings {
                         mode: PlaybackMode::Loop,
                         volume: Volume::new_relative(0.1),
+                        paused: true, // [CHANGE]: Ambient music starts paused
                         ..default()
                     },
                 },

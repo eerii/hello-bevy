@@ -16,7 +16,7 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 - creates binaries for web, linux, mac and windows when releasing a tag
 - deploy to itch automatically
 - remapable input manager with gamepad support
-- easy debuggins features (inspector, fps counter, tracy script, hot reloading)
+- easy debuggins features (inspector, fps counter, hot reloading enabled)
 - asset loading with progress, audio, saving, menu...
 
 ### how to use it ✨
@@ -43,14 +43,14 @@ and to start a local web build, use trunk:
 trunk serve
 ```
 
-you can also play around with some of the included examples with `cargo run --example <name>`.
+you can also play around with some of the included examples with `cargo run --example <name>`. and if you want to get started quickly, copy any example to `src/main.rs`!
 
 ### release 🌻
 
 in order to create a release build with binaries for all platforms you have two options: either you trigger it manually on the actions page or you add a tag like '[anything]0.1' with the version you want.
 
 ```sh
-git tag -a "hello-bevy-0.1" -m "test release"
+git tag -a "0.1" -m "test release"
 git push --tags
 ```
 
@@ -66,7 +66,7 @@ to run a release build locally:
 cargo run --release --no-default-features --features release
 ```
 
-### tracing 📈
+### profiling 📈
 
 bevy has built in support for the [tracy](https://github.com/wolfpld/tracy) profiler. you can profile your game easily:
 
@@ -92,7 +92,6 @@ i tried to be very intentional with all the plugins in this template. there is a
 - [bevy_asset_loader](https://github.com/NiklasEi/bevy_asset_loader): easier asset handling with collections
 - [bevy_embedded_assets](https://github.com/vleue/bevy_embedded_assets): puts assets inside the binary (only on release)
 - [iyes_progress](https://github.com/IyesGames/iyes_progress): tracks progress (used for an accurate loading screen)
-- [bevy_kira_audio](https://github.com/NiklasEi/bevy_kira_audio): improved audio library with more features
 - [bevy-persistent](https://github.com/umut-sahin/bevy-persistent): save and load any resource on disk
 
 there are also nice tools for debugging:

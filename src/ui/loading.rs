@@ -5,7 +5,7 @@ use iyes_progress::prelude::*;
 use crate::{ui::*, CoreAssets, GameState};
 
 #[cfg(debug_assertions)]
-const SPLASH_TIME: f32 = 0.1;
+const SPLASH_TIME: f32 = 0.01;
 #[cfg(not(debug_assertions))]
 const SPLASH_TIME: f32 = 2.;
 
@@ -18,21 +18,16 @@ pub struct LoadingUiPlugin;
 impl Plugin for LoadingUiPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
-            Update,
-            init_splash.run_if(in_state(GameState::Loading)),
+            OnEnter(GameState::Loading),
+            init_splash.after(init_ui),
         )
-        .add_systems(OnExit(GameState::Loading), clean_ui)
         .add_systems(
             Update,
             (
                 check_progress,
                 check_splash_finished.track_progress(),
             )
-                .run_if(
-                    in_state(GameState::Loading).and_then(resource_exists_and_changed::<
-                        ProgressCounter,
-                    >()),
-                )
+                .run_if(in_state(GameState::Loading))
                 .after(LoadingStateSet(GameState::Loading)),
         );
     }
@@ -61,36 +56,29 @@ impl Default for SplashTimer {
 // Systems
 // ·······
 
-fn init_splash(
-    mut cmd: Commands,
-    assets: Res<CoreAssets>,
-    node: Query<Entity, With<UiNode>>,
-    mut has_init: Local<bool>,
-) {
-    if *has_init {
-        return;
-    }
-
+fn init_splash(mut cmd: Commands, assets: Res<CoreAssets>, node: Query<Entity, With<UiNode>>) {
     let Ok(node) = node.get_single() else { return };
     let Some(mut node) = cmd.get_entity(node) else {
         return;
     };
 
     node.with_children(|parent| {
-        parent.spawn(ImageBundle {
-            image: UiImage {
-                texture: assets.bevy_icon.clone(),
+        parent.spawn((
+            ImageBundle {
+                image: UiImage {
+                    texture: assets.bevy_icon.clone(),
+                    ..default()
+                },
+                style: Style {
+                    width: Val::Px(128.),
+                    ..default()
+                },
                 ..default()
             },
-            style: Style {
-                width: Val::Px(128.),
-                ..default()
-            },
-            ..default()
-        });
+            UI_LAYER,
+        ));
     });
 
-    *has_init = true;
     cmd.spawn(SplashTimer::default());
 }
 
@@ -157,15 +145,18 @@ fn check_splash_finished(
 
 fn progress_bar(parent: &mut ChildBuilder, opts: &GameOptions, progress: f32) {
     parent
-        .spawn(NodeBundle {
-            style: Style {
-                width: Val::Percent(70.),
-                height: Val::Px(32.),
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(70.),
+                    height: Val::Px(32.),
+                    ..default()
+                },
+                background_color: opts.color.dark.into(),
                 ..default()
             },
-            background_color: opts.color.dark.into(),
-            ..default()
-        })
+            UI_LAYER,
+        ))
         .with_children(|parent| {
             parent.spawn((
                 NodeBundle {
@@ -178,6 +169,7 @@ fn progress_bar(parent: &mut ChildBuilder, opts: &GameOptions, progress: f32) {
                     ..default()
                 },
                 ProgressBar,
+                UI_LAYER,
             ));
         });
 }
