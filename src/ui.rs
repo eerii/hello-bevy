@@ -5,8 +5,9 @@ mod loading;
 mod menu;
 
 use bevy::{
-    core_pipeline::clear_color::ClearColorConfig, ecs::system::EntityCommands, prelude::*,
-    render::view::RenderLayers,
+    ecs::system::EntityCommands,
+    prelude::*,
+    render::{camera::ClearColorConfig, view::RenderLayers},
 };
 use bevy_persistent::Persistent;
 
@@ -160,7 +161,7 @@ fn change_style(
 fn change_background(
     opts: Res<Persistent<GameOptions>>,
     state: Res<State<GameState>>,
-    mut cam: Query<&mut Camera2d, With<UiCamera>>,
+    mut cam: Query<&mut Camera, With<UiCamera>>,
 ) {
     if let Ok(mut cam) = cam.get_single_mut() {
         cam.clear_color = match state.get() {

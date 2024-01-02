@@ -233,9 +233,9 @@ fn handle_touch_input(
 fn mock_touch(
     mouse: Res<ButtonInput<MouseButton>>,
     mut touch_events: EventWriter<TouchInput>,
-    win: Query<&Window>,
+    win: Query<(Entity, &Window)>,
 ) {
-    let Ok(win) = win.get_single() else { return };
+    let Ok((win_entity, win)) = win.get_single() else { return };
 
     let touch_phase = if mouse.just_pressed(MouseButton::Left) {
         Some(TouchPhase::Started)
@@ -252,6 +252,7 @@ fn mock_touch(
             position: cursor_pos,
             force: None,
             id: 0,
+            window: win_entity,
         });
     }
 }
