@@ -15,7 +15,7 @@ mod _debug {
         input::common_conditions::{input_just_pressed, input_pressed},
         prelude::*,
         reflect::TypeRegistry,
-        render::camera::{CameraProjection, Viewport},
+        render::camera::Viewport,
         time::common_conditions::on_real_timer,
         transform::TransformSystem,
         window::{PrimaryWindow, WindowResized},
@@ -31,12 +31,8 @@ mod _debug {
         DefaultInspectorConfigPlugin,
     };
     use egui_dock::{DockArea, DockState, NodeIndex, Style as EStyle, TabViewer};
-    use egui_gizmo::{Gizmo, GizmoMode, GizmoOrientation};
 
-    use crate::{
-        camera::{FinalCamera, GameCamera},
-        ui::*,
-    };
+    use crate::{camera::FinalCamera, ui::*};
 
     const INSPECTOR_OFFSET: f32 = 400.;
 
@@ -64,7 +60,6 @@ mod _debug {
                         update_ui_node,
                         change_time_speed::<1>.run_if(input_pressed(KeyCode::BracketRight)),
                         change_time_speed::<-1>.run_if(input_pressed(KeyCode::BracketLeft)),
-                        change_gizmo_mode,
                     )
                         .run_if(on_real_timer(Duration::from_millis(
                             100,
@@ -76,12 +71,12 @@ mod _debug {
                 (
                     update_inspector
                         .run_if(
-                            resource_exists::<DebugState>()
+                            resource_exists::<DebugState>
                                 .and_then(|state: Res<DebugState>| state.inspector),
                         )
                         .before(EguiSet::ProcessOutput)
                         .before(TransformSystem::TransformPropagate),
-                    update_camera_viewport.run_if(resource_changed::<DebugState>()),
+                    update_camera_viewport.run_if(resource_changed::<DebugState>),
                 ),
             );
         }
@@ -98,7 +93,6 @@ mod _debug {
         viewport_rect: ERect,
         selected_entities: SelectedEntities,
         selection: InspectorSelection,
-        gizmo_mode: GizmoMode,
     }
 
     impl Default for DebugState {
@@ -122,7 +116,6 @@ mod _debug {
                 selected_entities: SelectedEntities::default(),
                 selection: InspectorSelection::Entities,
                 viewport_rect: ERect::NOTHING,
-                gizmo_mode: GizmoMode::Translate,
             }
         }
     }
@@ -134,7 +127,6 @@ mod _debug {
                 viewport_rect: &mut self.viewport_rect,
                 selected_entities: &mut self.selected_entities,
                 selection: &mut self.selection,
-                gizmo_mode: self.gizmo_mode,
             };
 
             DockArea::new(&mut self.state)
@@ -214,18 +206,6 @@ mod _debug {
         let time_speed = (time.relative_speed() + DELTA as f32 * 0.1).clamp(0.2, 5.);
 
         time.set_relative_speed(time_speed);
-    }
-
-    fn change_gizmo_mode(input: Res<ButtonInput<KeyCode>>, mut state: ResMut<DebugState>) {
-        for (key, mode) in [
-            (KeyCode::KeyR, GizmoMode::Rotate),
-            (KeyCode::KeyT, GizmoMode::Translate),
-            (KeyCode::KeyS, GizmoMode::Scale),
-        ] {
-            if input.just_pressed(key) {
-                state.gizmo_mode = mode;
-            }
-        }
     }
 
     fn update_fps_text(
@@ -360,7 +340,7 @@ mod _debug {
             return;
         };
 
-        let scale_factor = win.scale_factor() * egui_settings.scale_factor as f32;
+        let scale_factor = win.scale_factor() * egui_settings.scale_factor;
 
         let viewport_size = state.viewport_rect.size() * scale_factor;
         if !state.inspector || !viewport_size.x.is_normal() || !viewport_size.y.is_normal() {
@@ -407,7 +387,6 @@ mod _debug {
         selected_entities: &'a mut SelectedEntities,
         selection: &'a mut InspectorSelection,
         viewport_rect: &'a mut ERect,
-        gizmo_mode: GizmoMode,
     }
 
     impl TabViewer for Inspector<'_> {
@@ -428,12 +407,6 @@ mod _debug {
             match tab {
                 InspectorTab::Game => {
                     *self.viewport_rect = ui.clip_rect();
-                    draw_gizmo(
-                        ui,
-                        self.world,
-                        self.selected_entities,
-                        self.gizmo_mode,
-                    );
                 },
                 InspectorTab::Nodes => {
                     if hierarchy_ui(self.world, ui, self.selected_entities) {
@@ -550,55 +523,6 @@ mod _debug {
                     }
                 },
             );
-        }
-    }
-
-    fn draw_gizmo(
-        ui: &mut Ui,
-        world: &mut World,
-        selected_entities: &SelectedEntities,
-        gizmo_mode: GizmoMode,
-    ) {
-        let Ok((cam_transform, projection)) = world
-            .query_filtered::<(&GlobalTransform, &Projection), With<GameCamera>>()
-            .get_single(world)
-        else {
-            return;
-        };
-
-        let view_matrix = Mat4::from(cam_transform.affine().inverse());
-        let projection_matrix = projection.get_projection_matrix();
-
-        if selected_entities.len() != 1 {
-            return;
-        }
-
-        for selected in selected_entities.iter() {
-            let Some(transform) = world.get::<Transform>(selected) else {
-                continue;
-            };
-            let model_matrix = transform.compute_matrix();
-
-            // TODO: Beautify gizmos
-            // TODO: Gizmos in 2d
-            // TODO: Raycast selection
-            let Some(result) = Gizmo::new(selected)
-                .model_matrix(model_matrix.to_cols_array_2d().into())
-                .view_matrix(view_matrix.to_cols_array_2d().into())
-                .projection_matrix(projection_matrix.to_cols_array_2d().into())
-                .orientation(GizmoOrientation::Local)
-                .mode(gizmo_mode)
-                .interact(ui)
-            else {
-                continue;
-            };
-
-            let mut transform = world.get_mut::<Transform>(selected).unwrap();
-            *transform = Transform {
-                translation: Vec3::from(<[f32; 3]>::from(result.translation)),
-                rotation: Quat::from_array(<[f32; 4]>::from(result.rotation)),
-                scale: Vec3::from(<[f32; 3]>::from(result.scale)),
-            };
         }
     }
 }

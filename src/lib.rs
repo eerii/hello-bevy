@@ -103,16 +103,17 @@ impl Plugin for GamePlugin {
 
         // Log
         // Modifies the logging to the console. More verbose when running debug builds
-        #[cfg(debug_assertions)]
         let log_plugin = if cfg!(debug_assertions) {
             LogPlugin {
                 level: bevy::log::Level::DEBUG,
                 filter: "info,wgpu_core=warn,wgpu_hal=warn,calloop=error,hello-bevy=debug".into(),
+                ..default()
             }
         } else {
             LogPlugin {
                 level: bevy::log::Level::INFO,
                 filter: "info,wgpu_core=warn,wgpu_hal=warn".into(),
+                ..default()
             }
         };
 

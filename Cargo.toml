@@ -24,11 +24,7 @@ release = [ # Only in release (build with --release --no-default-features --feat
   "menu",
 ]
 trace = ["release", "bevy/trace_tracy"] # For tracing support
-inspector = [
-  "bevy-inspector-egui",
-  "egui-gizmo",
-  "egui_dock",
-] # Runtime editor ui
+inspector = ["bevy-inspector-egui", "egui_dock"] # Runtime editor ui
 resizable = []
 3d_camera = []
 pixel_perfect = []
@@ -41,6 +37,9 @@ bevy = { git = "https://github.com/bevyengine/bevy", features = [
   "wayland",
   "serialize",
 ] }
+
+# Pixel camera (WIP)
+# bevy_pixels = { path = "../bevy_pixels" }
 
 # Bevy addons
 bevy_asset_loader = { git = "https://github.com/eerii/bevy_asset_loader", features = [
@@ -59,7 +58,6 @@ serde = { version = "1.0", features = ["derive"] }
 
 # Debug only dependencies
 bevy-inspector-egui = { git = "https://github.com/eerii/bevy-inspector-egui", optional = true } # Inspector
-egui-gizmo = { git = "https://github.com/urholaukkarinen/egui-gizmo", optional = true }
 egui_dock = { version = "0.9", optional = true }
 
 # Release only dependencies

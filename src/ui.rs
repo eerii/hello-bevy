@@ -38,23 +38,18 @@ impl Plugin for UiPlugin {
             .add_systems(OnEnter(GameState::Loading), init_ui)
             .add_systems(
                 PreUpdate,
-                clean_ui.run_if(
-                    state_changed::<GameState>().and_then(not(in_state(GameState::Loading))),
-                ),
+                clean_ui
+                    .run_if(state_changed::<GameState>.and_then(not(in_state(GameState::Loading)))),
             )
             .add_systems(
                 Update,
                 change_background.run_if(
-                    state_changed::<GameState>().or_else(resource_changed::<
-                        Persistent<GameOptions>,
-                    >()),
+                    state_changed::<GameState>.or_else(resource_changed::<Persistent<GameOptions>>),
                 ),
             )
             .add_systems(
                 PostUpdate,
-                change_style.run_if(resource_changed::<
-                    Persistent<GameOptions>,
-                >()),
+                change_style.run_if(resource_changed::<Persistent<GameOptions>>),
             )
             .add_plugins(loading::LoadingUiPlugin);
 
@@ -103,18 +98,19 @@ struct UiNode;
 
 fn init_ui(mut cmd: Commands) {
     // Ui camera
-    cmd.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                order: 10,
+    let ui_cam = cmd
+        .spawn((
+            Camera2dBundle {
+                camera: Camera {
+                    order: 10,
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        },
-        UI_LAYER,
-        UiCameraConfig { show_ui: true },
-        UiCamera,
-    ));
+            UI_LAYER,
+            UiCamera,
+        ))
+        .id();
 
     // Main node
     cmd.spawn((
@@ -133,6 +129,7 @@ fn init_ui(mut cmd: Commands) {
             ..default()
         },
         UI_LAYER,
+        TargetCamera(ui_cam),
         UiNode,
     ));
 }
