@@ -15,18 +15,10 @@ jobs:
   build-wasm:
     strategy:
       matrix:
-        name: [dvd, jump, shader, tri]
+        name: [dvd]
         include:
           - name: dvd 
             features: "release"
-          - name: jump
-            features: "release"
-          - name: shader
-            features: "release"
-          - name: ducks
-            features: "release,3d_camera"
-          - name: tri
-            features: "release,3d_camera,pixel_perfect"
 
     runs-on: ubuntu-latest
 

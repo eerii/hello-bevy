@@ -7,3 +7,4 @@ graphs
 .envrc
 capture*
 *.tracy
+.direnv

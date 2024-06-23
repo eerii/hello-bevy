@@ -26,8 +26,8 @@ impl Plugin for AudioPlugin {
 // Components
 // ··········
 
-#[derive(Component)]
-struct AmbientMusic;
+// #[derive(Component)]
+// struct AmbientMusic;
 
 // ·······
 // Systems

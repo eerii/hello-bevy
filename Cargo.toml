@@ -1,7 +1,7 @@
 [package]
 # [CHANGE]: Set your project name
 name = "hello-bevy"
-version = "0.13.0"
+version = "0.14.0"
 edition = "2021"
 description = "a bevy game template"
 exclude = ["assets", "wasm", ".data"]
@@ -15,90 +15,24 @@ debug = false # Disabled debug symbols for dependencies
 
 [features]
 default = [ # Only in debug
-  "inspector",
-  "bevy/file_watcher",    # Enables hot reloading of assets
-  "bevy/dynamic_linking", # Enables dynamic linking for faster compilation
+  "bevy/bevy_dev_tools",   # Some helpful developer utils
+  "bevy/dynamic_linking",  # Enables dynamic linking for faster compilation
+  "bevy/embedded_watcher", # Enables hot reloading of assets
+  "bevy/file_watcher",     # Enables hot reloading of assets
 ]
-release = [ # Only in release (build with --release --no-default-features --features release)
-  "bevy_embedded_assets",
-  "menu",
-]
+release = [
+] # Only in release (build with --release --no-default-features --features release)
 trace = ["release", "bevy/trace_tracy"] # For tracing support
-inspector = ["bevy-inspector-egui", "egui_dock"] # Runtime editor ui
 resizable = []
-3d_camera = []
 pixel_perfect = []
-menu = []
-mock_touch = []
 
 [dependencies]
 # The bevy engine <3
 bevy = { git = "https://github.com/bevyengine/bevy", features = [
-  "wayland",
   "serialize",
+  "wayland",
 ] }
 
-# Pixel camera (WIP)
-# bevy_pixels = { path = "../bevy_pixels" }
-
-# Bevy addons
-bevy_asset_loader = { git = "https://github.com/eerii/bevy_asset_loader", features = [
-  "progress_tracking",
-] } # Better asset loader
-iyes_progress = { git = "https://github.com/IyesGames/iyes_progress", features = [
-  "assets",
-] } # Track loading and game state
-bevy-persistent = { git = "https://github.com/umut-sahin/bevy-persistent", features = [
-  "toml",
-] } # Persistent values (for saving)
-
-# Core
+# Addons
 rand = { version = "0.8" }
 serde = { version = "1.0", features = ["derive"] }
-
-# Debug only dependencies
-bevy-inspector-egui = { git = "https://github.com/eerii/bevy-inspector-egui", optional = true } # Inspector
-egui_dock = { version = "0.9", optional = true }
-
-# Release only dependencies
-bevy_embedded_assets = { git = "https://github.com/vleue/bevy_embedded_assets", optional = true } # Embed assets in binary
-
-[patch.crates-io]
-bevy = { git = "https://github.com/bevyengine/bevy" }
-bevy_app = { git = "https://github.com/bevyengine/bevy" }
-bevy_asset = { git = "https://github.com/bevyengine/bevy" }
-bevy_core = { git = "https://github.com/bevyengine/bevy" }
-bevy_core_pipeline = { git = "https://github.com/bevyengine/bevy" }
-bevy_ecs = { git = "https://github.com/bevyengine/bevy" }
-bevy_hierarchy = { git = "https://github.com/bevyengine/bevy" }
-bevy_log = { git = "https://github.com/bevyengine/bevy" }
-bevy_math = { git = "https://github.com/bevyengine/bevy" }
-bevy_pbr = { git = "https://github.com/bevyengine/bevy" }
-bevy_reflect = { git = "https://github.com/bevyengine/bevy" }
-bevy_render = { git = "https://github.com/bevyengine/bevy" }
-bevy_time = { git = "https://github.com/bevyengine/bevy" }
-bevy_utils = { git = "https://github.com/bevyengine/bevy" }
-bevy_window = { git = "https://github.com/bevyengine/bevy" }
-
-bevy_egui = { git = "https://github.com/eerii/bevy_egui.git" }
-iyes_progress = { git = "https://github.com/IyesGames/iyes_progress" }
-
-[[example]]
-name = "dvd"
-required-features = []
-
-[[example]]
-name = "jump"
-required-features = []
-
-[[example]]
-name = "shader"
-required-features = []
-
-[[example]]
-name = "ducks"
-required-features = ["3d_camera"]
-
-[[example]]
-name = "tri"
-required-features = ["3d_camera", "pixel_perfect"]

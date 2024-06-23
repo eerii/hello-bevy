@@ -11,13 +11,11 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 
 ### features 🌿
 
-- uses bevy main (0.13) and has curated plugin support
+- uses bevy main (0.14)
 - ci that checks errors and lint
 - creates binaries for web, linux, mac and windows when releasing a tag
 - deploy to itch automatically
-- remapable input manager with gamepad support
-- easy debuggins features (inspector, fps counter, hot reloading enabled)
-- asset loading with progress, audio, saving, menu...
+- has a nix flake development shell for easy building
 
 ### how to use it ✨
 
@@ -87,16 +85,7 @@ this is heavily based on [NiklasEi/bevy_game_template](https://github.com/Niklas
 
 ### plugins 🪴
 
-i tried to be very intentional with all the plugins in this template. there is an amazing community that creates tons of useful tools, and some of them have become essential when making games with bevy:
-
-- [bevy_asset_loader](https://github.com/NiklasEi/bevy_asset_loader): easier asset handling with collections
-- [bevy_embedded_assets](https://github.com/vleue/bevy_embedded_assets): puts assets inside the binary (only on release)
-- [iyes_progress](https://github.com/IyesGames/iyes_progress): tracks progress (used for an accurate loading screen)
-- [bevy-persistent](https://github.com/umut-sahin/bevy-persistent): save and load any resource on disk
-
-there are also nice tools for debugging:
-
-- [bevy-inspector-egui](https://github.com/jakobhellermann/bevy-inspector-egui): imgui-like interface where you can see entities and components in real time (press I)
+this is a work in progress. for now i have removed all of the plugins.
 
 ### license 📝
 
