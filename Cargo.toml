@@ -20,11 +20,13 @@ default = [ # Only in debug
   "bevy/embedded_watcher", # Enables hot reloading of assets
   "bevy/file_watcher",     # Enables hot reloading of assets
 ]
-release = [
-] # Only in release (build with --release --no-default-features --features release)
+release = [ # Only in release (build with --release --no-default-features --features release)
+  "menu",
+]
 trace = ["release", "bevy/trace_tracy"] # For tracing support
 resizable = []
 pixel_perfect = []
+menu = []
 
 [dependencies]
 # The bevy engine <3

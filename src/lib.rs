@@ -1,18 +1,12 @@
 #![feature(type_changing_struct_update)]
 
-mod assets;
-mod audio;
-mod data;
+pub mod assets;
+pub mod audio;
+pub mod data;
 
 use bevy::{log::LogPlugin, prelude::*, window::WindowResolution};
 
 // TODO: Add a lot of comments
-
-// Exports for examples
-pub use crate::{
-    assets::{CoreAssets, ExampleAssets},
-    data::GameOptions,
-};
 
 // Game state
 // Indicates at which point the game is. Very useful for controlling which
@@ -56,6 +50,7 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
+        // Get previous app configuration or create a new one
         let config: &AppConfig;
         if let Some(res) = app.world().get_resource::<AppConfig>() {
             config = res;
@@ -63,17 +58,6 @@ impl Plugin for GamePlugin {
             app.insert_resource(AppConfig::default());
             config = app.world().resource::<AppConfig>();
         }
-
-        // Release only plugins (embedded assets)
-        #[cfg(not(debug_assertions))]
-        {
-            use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
-            app.add_plugins(EmbeddedAssetPlugin {
-                mode: PluginMode::ReplaceDefault,
-            });
-        }
-
-        // Default plugins
 
         // Window
         // Controls initial resolution, resizing
@@ -99,16 +83,17 @@ impl Plugin for GamePlugin {
 
         // Log
         // Modifies the logging to the console. More verbose when running debug builds
+        let default_log = "info,wgpu_core=error,wgpu_hal=error";
         let log_plugin = if cfg!(debug_assertions) {
             LogPlugin {
                 level: bevy::log::Level::DEBUG,
-                filter: "info,wgpu_core=error,wgpu_hal=error,hello-bevy=debug".into(),
+                filter: format!("{},hello_bevy=debug", default_log).into(),
                 ..default()
             }
         } else {
             LogPlugin {
                 level: bevy::log::Level::INFO,
-                filter: "info,wgpu_core=error,wgpu_hal=error".into(),
+                filter: default_log.into(),
                 ..default()
             }
         };
@@ -130,8 +115,11 @@ impl Plugin for GamePlugin {
                 .set(asset_plugin),
         );
 
+        // Insert the game state
+        app.insert_state(GameState::default());
+
         // Add the rest of the plugins
-        app.init_state::<GameState>().add_plugins((
+        app.add_plugins((
             data::DataPlugin,
             assets::AssetLoaderPlugin,
             audio::AudioPlugin,
