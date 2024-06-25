@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::{assets::ExampleAssets, GameState};
+use crate::assets::ExampleAssets;
 
 // ······
 // Plugin
@@ -16,9 +16,9 @@ use crate::{assets::ExampleAssets, GameState};
 pub struct AudioPlugin;
 
 impl Plugin for AudioPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Play), init_music)
-            .add_systems(OnExit(GameState::Play), pause_music);
+    fn build(&self, _app: &mut App) {
+        // app.add_systems(OnEnter(GameState::Play), init)
+        //     .add_systems(OnExit(GameState::Play), pause);
     }
 }
 
@@ -33,7 +33,8 @@ struct AmbientMusic;
 // Systems
 // ·······
 
-fn init_music(
+#[allow(dead_code)]
+fn init(
     mut cmd: Commands,
     assets: Res<ExampleAssets>,
     ambient: Query<&AudioSink, With<AmbientMusic>>,
@@ -62,7 +63,8 @@ fn init_music(
     }
 }
 
-fn pause_music(music: Query<&AudioSink>) {
+#[allow(dead_code)]
+fn pause(music: Query<&AudioSink>) {
     for music in music.iter() {
         music.pause();
     }

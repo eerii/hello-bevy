@@ -39,11 +39,10 @@ struct LoadingData {
 }
 
 impl LoadingData {
-    // Loads an asset into the server and adds it to the list to keep track of its
-    // state
+    // Loads an asset into the server and adds it to the list to keep track of its state
     fn load<T: Asset>(&mut self, asset_server: &AssetServer, path: &'static str) -> Handle<T> {
         let handle = asset_server.load(path);
-        debug!("Loading \"{:?}\"", handle.path());
+        debug!("loading \"{:?}\"", handle.path());
 
         self.assets.push(handle.clone().into());
         self.total += 1;
@@ -78,8 +77,7 @@ impl LoadingData {
 }
 
 // Assets for the splash screen and menus
-// They are loaded inmediately after the app is fired, so they have no effect on
-// loading state
+// They are loaded inmediately after the app is fired, so they have no effect on loading state
 #[derive(Resource)]
 pub struct CoreAssets {
     pub bevy_icon: Handle<Image>,

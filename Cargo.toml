@@ -19,22 +19,23 @@ default = [ # Only in debug
   "bevy/dynamic_linking",  # Enables dynamic linking for faster compilation
   "bevy/embedded_watcher", # Enables hot reloading of assets
   "bevy/file_watcher",     # Enables hot reloading of assets
+  "persist",
 ]
 release = [ # Only in release (build with --release --no-default-features --features release)
   "menu",
+  "persist",
 ]
 trace = ["release", "bevy/trace_tracy"] # For tracing support
+persist = ["toml"]
 resizable = []
 pixel_perfect = []
 menu = []
 
 [dependencies]
 # The bevy engine <3
-bevy = { git = "https://github.com/bevyengine/bevy", features = [
-  "serialize",
-  "wayland",
-] }
+bevy = { version = "0.14.0-rc.3", features = ["serialize", "wayland"] }
 
 # Addons
 rand = { version = "0.8" }
 serde = { version = "1.0", features = ["derive"] }
+toml = { version = "0.8", optional = true }
