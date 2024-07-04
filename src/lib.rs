@@ -6,8 +6,6 @@ pub mod data;
 
 use bevy::{log::LogPlugin, prelude::*, window::WindowResolution};
 
-// TODO: Add a lot of comments
-
 // Game state
 // Indicates at which point the game is. Very useful for controlling which
 // systems run when (in_state) and to create transitions (OnEnter/OnExit)
@@ -87,7 +85,7 @@ impl Plugin for GamePlugin {
         let log_plugin = if cfg!(debug_assertions) {
             LogPlugin {
                 level: bevy::log::Level::DEBUG,
-                filter: format!("{},hello_bevy=debug", default_log).into(),
+                filter: format!("{},hello_bevy=debug", default_log),
                 ..default()
             }
         } else {

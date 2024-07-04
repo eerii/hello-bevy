@@ -9,7 +9,9 @@ use crate::GameState;
 // Plugin
 // ······
 
-// Game data
+// Data persistence
+// Used to create persistent serialized files with options or save data
+// It saves and loads from toml any resource that needs to survive app reloads
 pub struct DataPlugin;
 
 impl Plugin for DataPlugin {
@@ -24,9 +26,16 @@ impl Plugin for DataPlugin {
 
 // Game options
 // Useful for accesibility and the settings menu
-#[derive(Debug, Default, Resource, Reflect, Serialize, Deserialize)]
+#[derive(Debug, Default, Resource, Serialize, Deserialize)]
 pub struct GameOptions {
     test: bool,
+}
+
+// Save data
+// A place to save the player's progress
+#[derive(Debug, Default, Resource, Serialize, Deserialize)]
+pub struct SaveData {
+    name: String,
 }
 
 // ·······
@@ -38,12 +47,21 @@ fn init(mut cmd: Commands) {
     {
         // Initialize a data storage and load game options from disk if they exist
         let path = if cfg!(target_arch = "wasm32") { "local" } else { ".data" };
-        let data = DataStorage::new(path.into()).expect("couldn't initialize data storage");
+        let Some(data) = DataStorage::new(path.into()) else {
+            warn!("couldn't initialize data storage");
+            return;
+        };
+
+        // Read the data if it exists
         let options: GameOptions = data.read("options.toml").unwrap_or_default();
+        let save_data: GameOptions = data.read("save.toml").unwrap_or_default();
+
+        // Write the new options
         // data.write("options.toml", &options);
 
         cmd.insert_resource(data);
         cmd.insert_resource(options);
+        cmd.insert_resource(save_data);
     }
 }
 
@@ -52,7 +70,6 @@ fn init(mut cmd: Commands) {
 // ·······
 
 // Saves and loads persistent data under a directory
-// TODO: Propper error handling
 #[cfg(feature = "persist")]
 #[derive(Debug, Default, Resource, Reflect, Clone)]
 struct DataStorage {

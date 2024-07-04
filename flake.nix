@@ -24,6 +24,13 @@
       let
         overlays = [ (import rust-overlay) ];
         pkgs = import nixpkgs { inherit system overlays; };
+        toolchain = pkgs.rust-bin.nightly.latest.default.override {
+          extensions = [
+            "clippy"
+            "rustfmt"
+            "rust-src"
+          ];
+        };
       in
       {
         devShells.default =
@@ -53,10 +60,13 @@
               clang
               # Rust
               cargo-watch
-              rust-analyzer
-              rust-bin.nightly.latest.default
+              rust-analyzer-unwrapped
+              toolchain
+              # Toml
+              taplo
             ];
 
+            RUST_SRC_PATH = "${toolchain}/lib/rustlib/src/rust/library";
             LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
           };
       }
