@@ -136,8 +136,12 @@ impl Plugin for GamePlugin {
             data::DataPlugin,
             assets::AssetLoaderPlugin,
             audio::AudioPlugin,
-            input::InputPlugin,
-            ui::UiPlugin,
         ));
+
+        #[cfg(feature = "input")]
+        app.add_plugins(input::InputPlugin);
+
+        #[cfg(feature = "ui")]
+        app.add_plugins(ui::UiPlugin);
     }
 }
