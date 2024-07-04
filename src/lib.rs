@@ -3,6 +3,7 @@
 pub mod assets;
 pub mod audio;
 pub mod data;
+pub mod input;
 
 use bevy::{log::LogPlugin, prelude::*, window::WindowResolution};
 
@@ -104,6 +105,15 @@ impl Plugin for GamePlugin {
             ..default()
         };
 
+        // Use asset embedder if enabled
+        #[cfg(feature = "bevy_embedded_assets")]
+        {
+            use bevy_embedded_assets::{EmbeddedAssetPlugin, PluginMode};
+            app.add_plugins(EmbeddedAssetPlugin {
+                mode: PluginMode::ReplaceDefault,
+            });
+        }
+
         // Add default bevy plugins with our overrides
         app.add_plugins(
             DefaultPlugins
@@ -121,6 +131,7 @@ impl Plugin for GamePlugin {
             data::DataPlugin,
             assets::AssetLoaderPlugin,
             audio::AudioPlugin,
+            input::InputPlugin,
         ));
     }
 }

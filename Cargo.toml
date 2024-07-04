@@ -22,18 +22,26 @@ default = [ # Only in debug
   "persist",
 ]
 release = [ # Only in release (build with --release --no-default-features --features release)
+  "bevy_embedded_assets",
   "menu",
   "persist",
 ]
-trace = ["release", "bevy/trace_tracy"] # For tracing support
-persist = ["toml"]
-resizable = []
-pixel_perfect = []
+
 menu = []
+persist = ["toml"]
+pixel_perfect = []
+resizable = []
+trace = ["release", "bevy/trace_tracy"] # For tracing support
 
 [dependencies]
 # The bevy engine <3
 bevy = { version = "0.14.0-rc.4", features = ["serialize", "wayland"] }
+
+# Input manager
+leafwing-input-manager = { git = "https://github.com/Leafwing-Studios/leafwing-input-manager" }
+
+# Release only dependencies
+bevy_embedded_assets = { version = "0.11.0-rc.4", optional = true }
 
 # Addons
 rand = { version = "0.8" }
