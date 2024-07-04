@@ -17,7 +17,7 @@ impl Plugin for InputPlugin {
             .add_systems(OnEnter(GameState::Play), init)
             .add_systems(
                 Update,
-                update.run_if(in_state(GameState::Play)),
+                handle_input.run_if(in_state(GameState::Play)),
             )
             .add_systems(OnExit(GameState::Play), stop);
     }
@@ -56,7 +56,7 @@ fn init(mut cmd: Commands, input: Query<(), With<GameInput>>) {
 }
 
 // Read the input and perform actions
-fn update(input: Query<&ActionState<Action>>) {
+fn handle_input(input: Query<&ActionState<Action>>) {
     let Ok(input) = input.get_single() else {
         return;
     };

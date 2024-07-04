@@ -4,6 +4,7 @@ use bevy::{
 };
 use hello_bevy::{
     assets::{CoreAssets, ExampleAssets},
+    camera::GameCamera,
     AppConfig, GamePlugin, GameState,
 };
 
@@ -54,9 +55,6 @@ struct Counter(u32);
 #[derive(Component)]
 struct Background;
 
-#[derive(Component)]
-struct GameCamera;
-
 // ······
 // Events
 // ······
@@ -77,9 +75,6 @@ fn init_sample(
 
     let size = Vec2::new(win.width(), win.height());
     cmd.insert_resource(Bounds(size));
-
-    // Camera
-    cmd.spawn((Camera2dBundle::default(), GameCamera));
 
     // Background
     cmd.spawn((

@@ -12,6 +12,7 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 ### features 🌿
 
 - uses bevy main (0.14)
+- curated plugins that are all optional and configurable by feature flags
 - ci that checks errors and lint
 - creates binaries for web, linux, mac and windows when releasing a tag
 - deploy to itch automatically

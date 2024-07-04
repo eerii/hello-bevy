@@ -2,8 +2,12 @@
 
 pub mod assets;
 pub mod audio;
+pub mod camera;
 pub mod data;
+#[cfg(feature = "input")]
 pub mod input;
+#[cfg(feature = "ui")]
+pub mod ui;
 
 use bevy::{log::LogPlugin, prelude::*, window::WindowResolution};
 
@@ -128,10 +132,12 @@ impl Plugin for GamePlugin {
 
         // Add the rest of the plugins
         app.add_plugins((
+            camera::CameraPlugin,
             data::DataPlugin,
             assets::AssetLoaderPlugin,
             audio::AudioPlugin,
             input::InputPlugin,
+            ui::UiPlugin,
         ));
     }
 }
