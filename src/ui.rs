@@ -24,8 +24,6 @@ impl Plugin for UiPlugin {
     }
 }
 
-const UI_GAP: Val = Val::Px(16.);
-
 // ··········
 // Components
 // ··········
@@ -53,10 +51,6 @@ fn init(mut cmd: Commands, camera: Query<Entity, With<FinalCamera>>) {
                 style: Style {
                     width: Val::Percent(100.0),
                     height: Val::Percent(100.0),
-                    flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    row_gap: UI_GAP,
                     ..default()
                 },
                 ..default()

@@ -218,9 +218,9 @@ fn on_resize(
     }
 }
 
-// ·····
-// Extra
-// ·····
+// ·······
+// Helpers
+// ·······
 
 fn random_color() -> Color {
     Color::hsl(rand::random::<f32>() * 360., 0.8, 0.8)

@@ -10,6 +10,8 @@ use crate::{
     GameState,
 };
 
+const UI_GAP: Val = Val::Px(16.);
+
 // ······
 // Plugin
 // ······
@@ -20,13 +22,23 @@ pub struct MenuPlugin;
 
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Menu), open_menu)
+        app.add_sub_state::<MenuState>()
+            .add_systems(OnEnter(GameState::Menu), open_menu)
             .add_systems(
                 Update,
                 handle_buttons.run_if(in_state(GameState::Menu)),
-            )
-            .add_systems(OnExit(GameState::Menu), close_menu);
+            );
     }
+}
+
+// Menu state
+// Useful for navigating submenus
+#[derive(SubStates, Debug, Default, Clone, Eq, PartialEq, Hash)]
+#[source(GameState = GameState::Menu)]
+pub enum MenuState {
+    #[default]
+    Main,
+    Options,
 }
 
 // ··········
@@ -52,17 +64,26 @@ fn open_menu(
         return;
     };
 
-    let mut builder = cmd.ui_builder(root);
+    cmd.ui_builder(root)
+        .column(|column| {
+            column
+                .style()
+                .width(Val::Percent(100.))
+                .align_items(AlignItems::Center)
+                .justify_content(JustifyContent::Center)
+                .row_gap(UI_GAP);
 
-    builder.title("Title".into(), assets.font.clone());
+            column.title("Title".into(), assets.font.clone());
 
-    builder.button(ButtonPlay, |button| {
-        button.text("Play".into(), assets.font.clone());
-    });
+            column.button(ButtonPlay, |button| {
+                button.text("Play".into(), assets.font.clone());
+            });
 
-    builder.button(ButtonOptions, |button| {
-        button.text("Options".into(), assets.font.clone());
-    });
+            column.button(ButtonOptions, |button| {
+                button.text("Options".into(), assets.font.clone());
+            });
+        })
+        .insert(StateScoped(GameState::Menu));
 }
 
 fn handle_buttons(
@@ -91,16 +112,4 @@ fn handle_buttons(
             },
         }
     }
-}
-
-fn close_menu(mut cmd: Commands, root: Query<Entity, With<UiRootContainer>>) {
-    let Ok(root) = root.get_single() else {
-        return;
-    };
-
-    let Some(mut root) = cmd.get_entity(root) else {
-        return;
-    };
-
-    root.despawn_descendants();
 }

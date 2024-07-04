@@ -14,6 +14,8 @@ use bevy::{log::LogPlugin, prelude::*, window::WindowResolution};
 // Game state
 // Indicates at which point the game is. Very useful for controlling which
 // systems run when (in_state) and to create transitions (OnEnter/OnExit)
+// You can also scope entities to a state with StateScoped, and they will
+// be deleted automatically when the state ends
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
     #[default]
@@ -128,7 +130,8 @@ impl Plugin for GamePlugin {
         );
 
         // Insert the game state
-        app.insert_state(GameState::default());
+        app.insert_state(GameState::default())
+            .enable_state_scoped_entities::<GameState>();
 
         // Add the rest of the plugins
         app.add_plugins((

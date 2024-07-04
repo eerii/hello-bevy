@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::assets::ExampleAssets;
+use crate::{assets::ExampleAssets, GameState};
 
 // ······
 // Plugin
@@ -16,9 +16,8 @@ use crate::assets::ExampleAssets;
 pub struct AudioPlugin;
 
 impl Plugin for AudioPlugin {
-    fn build(&self, _app: &mut App) {
-        // app.add_systems(OnEnter(GameState::Play), init)
-        //     .add_systems(OnExit(GameState::Play), pause);
+    fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(GameState::Play), init);
     }
 }
 
@@ -34,38 +33,21 @@ struct AmbientMusic;
 // ·······
 
 #[allow(dead_code)]
-fn init(
-    mut cmd: Commands,
-    assets: Res<ExampleAssets>,
-    ambient: Query<&AudioSink, With<AmbientMusic>>,
-) {
-    match ambient.get_single() {
-        Ok(a) => {
-            a.play();
+fn init(mut cmd: Commands, assets: Res<ExampleAssets>) {
+    // Audio is added using component bundles
+    // Using PlaybackSettings you can specify if it only plays once,
+    // if it loops or even more complex behaviour, for example, to
+    // despawn the entity when the audio is finished
+    cmd.spawn((
+        AudioBundle {
+            source: assets.ambient_music.clone(),
+            settings: PlaybackSettings {
+                mode: PlaybackMode::Loop,
+                volume: Volume::new(0.1),
+                ..default()
+            },
         },
-        Err(_) => {
-            // Audio is added using component bundles
-            // Using PlaybackSettings you can specify if it only plays once,
-            // if it loops or even more complex behaviour, for example, to
-            // despawn the entity when the audio is finished
-            cmd.spawn((
-                AudioBundle {
-                    source: assets.ambient_music.clone(),
-                    settings: PlaybackSettings {
-                        mode: PlaybackMode::Loop,
-                        volume: Volume::new(0.1),
-                        ..default()
-                    },
-                },
-                AmbientMusic,
-            ));
-        },
-    }
-}
-
-#[allow(dead_code)]
-fn pause(music: Query<&AudioSink>) {
-    for music in music.iter() {
-        music.pause();
-    }
+        AmbientMusic,
+        StateScoped(GameState::Play),
+    ));
 }

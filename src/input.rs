@@ -18,8 +18,7 @@ impl Plugin for InputPlugin {
             .add_systems(
                 Update,
                 handle_input.run_if(in_state(GameState::Play)),
-            )
-            .add_systems(OnExit(GameState::Play), stop);
+            );
     }
 }
 
@@ -52,7 +51,7 @@ fn init(mut cmd: Commands, input: Query<(), With<GameInput>>) {
     ]);
 
     cmd.spawn(InputManagerBundle::with_map(input_map))
-        .insert(GameInput);
+        .insert((GameInput, StateScoped(GameState::Play)));
 }
 
 // Read the input and perform actions
@@ -64,13 +63,4 @@ fn handle_input(input: Query<&ActionState<Action>>) {
     if input.just_pressed(&Action::Jump) {
         info!("Jump!");
     }
-}
-
-// Delete the input manager when exiting it's designed state
-fn stop(mut cmd: Commands, input: Query<Entity, With<GameInput>>) {
-    let Ok(input) = input.get_single() else {
-        return;
-    };
-
-    cmd.entity(input).despawn();
 }
