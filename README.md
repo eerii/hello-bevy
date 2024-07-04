@@ -11,12 +11,14 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 
 ### features 🌿
 
-- uses bevy main (0.14)
+- uses bevy 0.14
 - curated plugins that are all optional and configurable by feature flags
 - ci that checks errors and lint
 - creates binaries for web, linux, mac and windows when releasing a tag
 - deploy to itch automatically
 - has a nix flake development shell for easy building
+
+note: for 0.14 i completely rewrote the template, so some features are still not ported over from the previous version, such as the options menu and most examples. you can find them in the branch 0.13 for inspiration.
 
 ### how to use it ✨
 
@@ -86,7 +88,11 @@ this is heavily based on [NiklasEi/bevy_game_template](https://github.com/Niklas
 
 ### plugins 🪴
 
-this is a work in progress. for now i have removed all of the plugins.
+this template intends to use as little external dependencies as possible to facilitate version updates and avoid bloat. that said, there are a few awesome community plugins that make everything as easy as possible. all of these are optional and the template will work without them, you can disable them using feature flags.
+
+- [leafwing-input-manager](https://github.com/Leafwing-Studios/leafwing-input-manager): an awesome way of handling input from multiple sources and create simple bindings
+- [sickle_ui](https://github.com/UmbraLuminosa/sickle_ui): helpers on top of bevy's native ui that makes it much easier to work with
+- [bevy_embedded_assets](https://github.com/vleue/bevy_embedded_assets): only on release by default, allows placing assets inside of the binary for ease of distribution
 
 ### license 📝
 

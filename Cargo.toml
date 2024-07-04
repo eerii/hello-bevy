@@ -42,7 +42,7 @@ ui = ["sickle_ui"]
 
 [dependencies]
 # The bevy engine <3
-bevy = { version = "0.14.0-rc.4", features = ["serialize", "wayland"] }
+bevy = { version = "0.14", features = ["serialize", "wayland"] }
 
 # Input manager
 leafwing-input-manager = { git = "https://github.com/Leafwing-Studios/leafwing-input-manager", optional = true }
