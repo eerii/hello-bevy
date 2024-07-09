@@ -1,7 +1,6 @@
 use bevy::prelude::*;
+pub use leafwing_input_manager::prelude::ActionState;
 use leafwing_input_manager::prelude::*;
-
-use crate::GameState;
 
 // ······
 // Plugin
@@ -14,11 +13,13 @@ pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(InputManagerPlugin::<Action>::default())
-            .add_systems(OnEnter(GameState::Play), init)
-            .add_systems(
-                Update,
-                handle_input.run_if(in_state(GameState::Play)),
-            );
+            .add_systems(Startup, init);
+
+        #[cfg(feature = "menu")]
+        app.add_systems(
+            Update,
+            handle_input.run_if(in_state(crate::GameState::Play)),
+        );
     }
 }
 
@@ -26,41 +27,43 @@ impl Plugin for InputPlugin {
 // Components
 // ··········
 
-#[derive(Component)]
-struct GameInput;
-
 // These are all the possible actions that have an input mapping
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
-enum Action {
+pub enum Action {
     Jump,
+    Move,
+    Pause,
 }
 
 // ·······
 // Systems
 // ·······
 
-// Create a new input manager if there are no others
-fn init(mut cmd: Commands, input: Query<(), With<GameInput>>) {
-    if input.iter().len() > 0 {
-        return;
-    }
+// Create a new input manager for the general game
+fn init(mut cmd: Commands) {
+    let mut input_map = InputMap::default();
+    input_map
+        .insert(Action::Jump, KeyCode::Space)
+        .insert(Action::Jump, GamepadButtonType::South)
+        .insert(Action::Move, KeyboardVirtualDPad::WASD)
+        .insert(Action::Move, GamepadStick::LEFT)
+        .insert(Action::Pause, KeyCode::Escape)
+        .insert(Action::Pause, GamepadButtonType::Start);
 
-    let input_map = InputMap::new([
-        (Action::Jump, KeyCode::Space),
-        (Action::Jump, KeyCode::KeyW),
-    ]);
-
-    cmd.spawn(InputManagerBundle::with_map(input_map))
-        .insert((GameInput, StateScoped(GameState::Play)));
+    cmd.spawn(InputManagerBundle::with_map(input_map));
 }
 
 // Read the input and perform actions
-fn handle_input(input: Query<&ActionState<Action>>) {
+#[cfg(feature = "menu")]
+fn handle_input(
+    input: Query<&ActionState<Action>>,
+    mut next_state: ResMut<NextState<crate::GameState>>,
+) {
     let Ok(input) = input.get_single() else {
         return;
     };
 
-    if input.just_pressed(&Action::Jump) {
-        info!("Jump!");
+    if input.just_pressed(&Action::Pause) {
+        next_state.set(crate::GameState::Menu)
     }
 }

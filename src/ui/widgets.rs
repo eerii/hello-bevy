@@ -1,9 +1,11 @@
 use bevy::prelude::*;
+use bevy_alt_ui_navigation_lite::prelude::*;
 use sickle_ui::prelude::*;
+
+use crate::ui::navigation::BUTTON_COLOR;
 
 const BUTTON_WIDTH: Val = Val::Px(256.);
 const BUTTON_HEIGHT: Val = Val::Px(64.);
-pub const BUTTON_COLOR: Color = Color::srgb(0.9, 0.5, 0.3);
 
 const FONT_SIZE_TEXT: f32 = 32.;
 const FONT_SIZE_TITLE: f32 = 48.;
@@ -57,7 +59,7 @@ impl UiButtonWidget for UiBuilder<'_, Entity> {
     ) -> UiBuilder<Entity> {
         self.container(
             (
-                ButtonBundle {
+                NodeBundle {
                     style: Style {
                         width: BUTTON_WIDTH,
                         height: BUTTON_HEIGHT,
@@ -68,6 +70,7 @@ impl UiButtonWidget for UiBuilder<'_, Entity> {
                     background_color: BUTTON_COLOR.into(),
                     ..default()
                 },
+                Focusable::default(),
                 component,
             ),
             spawn_children,

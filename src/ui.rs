@@ -5,6 +5,8 @@ use crate::camera::FinalCamera;
 
 #[cfg(feature = "menu")]
 pub mod menu;
+#[cfg(feature = "menu")]
+pub mod navigation;
 pub mod widgets;
 
 // ······
@@ -17,7 +19,11 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(SickleUiPlugin).add_systems(Startup, init);
+        app.add_plugins((
+            SickleUiPlugin,
+            navigation::NavigationPlugin,
+        ))
+        .add_systems(Startup, init);
 
         #[cfg(feature = "menu")]
         app.add_plugins(menu::MenuPlugin);

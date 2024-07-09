@@ -91,6 +91,7 @@ this is heavily based on [NiklasEi/bevy_game_template](https://github.com/Niklas
 this template intends to use as little external dependencies as possible to facilitate version updates and avoid bloat. that said, there are a few awesome community plugins that make everything as easy as possible. all of these are optional and the template will work without them, you can disable them using feature flags.
 
 - [leafwing-input-manager](https://github.com/Leafwing-Studios/leafwing-input-manager): an awesome way of handling input from multiple sources and create simple bindings
+- [bevy-alt-ui-navigation-lite](https://github.com/bevy-alt-ui-navigation-lite): allows to easily make uis that can be navigable by mouse, keyboard or gamepad
 - [sickle_ui](https://github.com/UmbraLuminosa/sickle_ui): helpers on top of bevy's native ui that makes it much easier to work with
 - [bevy_embedded_assets](https://github.com/vleue/bevy_embedded_assets): only on release by default, allows placing assets inside of the binary for ease of distribution
 

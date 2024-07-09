@@ -21,26 +21,25 @@ default = [ # Only in debug
   "bevy/file_watcher",     # Enables hot reloading of assets
   "input",
   "persist",
-  # "ui",
+  "ui",
+  "menu",
 ]
 release = [ # Only in release (build with --release --no-default-features --features release)
   "bevy_embedded_assets",
   "input",
   "menu",
   "persist",
-  # "ui",
+  "ui",
 ]
 
 3d_camera = []
 input = ["leafwing-input-manager"]
-menu = []
+menu = ["bevy-alt-ui-navigation-lite", "input"]
 persist = ["toml"]
 pixel_perfect = []
 resizable = []
 trace = ["release", "bevy/trace_tracy"]
-ui = [
-  # "sickle_ui"
-]
+ui = ["sickle_ui"]
 
 [dependencies]
 # The bevy engine <3
@@ -50,11 +49,11 @@ bevy = { version = "0.14", features = ["serialize", "wayland"] }
 leafwing-input-manager = { git = "https://github.com/Leafwing-Studios/leafwing-input-manager", optional = true }
 
 # UI (on top of bevy's)
-# TODO: Reenable once the 0.14 update lands
-# sickle_ui = { git = "https://github.com/UmbraLuminosa/sickle_ui", optional = true }
+sickle_ui = { git = "https://github.com/UmbraLuminosa/sickle_ui", optional = true }
+bevy-alt-ui-navigation-lite = { version = "0.2", optional = true }
 
 # Release only dependencies
-bevy_embedded_assets = { version = "0.11.0-rc.4", optional = true }
+bevy_embedded_assets = { version = "0.11", optional = true }
 
 # Addons
 rand = { version = "0.8" }

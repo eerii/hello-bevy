@@ -88,7 +88,7 @@ impl Plugin for GamePlugin {
 
         // Log
         // Modifies the logging to the console. More verbose when running debug builds
-        let default_log = "info,wgpu_core=error,wgpu_hal=error";
+        let default_log = "info,wgpu_core=error,wgpu_hal=error,bevy_alt_ui_navigation_lite=error";
         let log_plugin = if cfg!(debug_assertions) {
             LogPlugin {
                 level: bevy::log::Level::DEBUG,
