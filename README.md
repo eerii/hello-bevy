@@ -13,12 +13,11 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 
 - uses bevy 0.14
 - curated plugins that are all optional and configurable by feature flags
+- fully featured menu with keyboard, mouse and gamepad navigation
 - ci that checks errors and lint
 - creates binaries for web, linux, mac and windows when releasing a tag
 - deploy to itch automatically
 - has a nix flake development shell for easy building
-
-**note:** for 0.14 i completely rewrote the template, so some features are still not ported over from the previous version, such as the options menu and most examples. you can find them in the branch 0.13 for inspiration.
 
 ### how to use it ✨
 

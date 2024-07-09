@@ -4,9 +4,7 @@ use bevy_alt_ui_navigation_lite::{
 };
 use leafwing_input_manager::prelude::*;
 
-use crate::{ui::menu::MenuState, GameState};
-
-pub const BUTTON_COLOR: Color = Color::srgb(0.3, 0.5, 0.9);
+use crate::{ui::widgets::BUTTON_COLOR, GameState};
 
 // ······
 // Plugin
@@ -14,22 +12,26 @@ pub const BUTTON_COLOR: Color = Color::srgb(0.3, 0.5, 0.9);
 
 // Navigation
 // Uses bevy-alt-ui-navigation-lite to enable keyboard/gamepad navigation of ui elements
+// We don't use the full implementation there, the input part is rewritten to match
+// with our input system using leafwing-input-manager
 pub struct NavigationPlugin;
 
 impl Plugin for NavigationPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             AltNavigationPlugin::new(),
-            InputManagerPlugin::<MenuAction>::default(),
+            InputManagerPlugin::<UiAction>::default(),
         ))
         .add_systems(Startup, init)
         .add_systems(
-            PreUpdate,
-            on_mouse_move.run_if(state_changed::<MenuState>),
-        )
-        .add_systems(
             Update,
             ((handle_input, update_focus).run_if(in_state(GameState::Menu)),),
+        );
+
+        #[cfg(feature = "menu")]
+        app.add_systems(
+            PreUpdate,
+            on_mouse_move.run_if(state_changed::<super::menu::MenuState>),
         );
     }
 }
@@ -40,11 +42,11 @@ impl Plugin for NavigationPlugin {
 
 // These are all the possible actions that have an input mapping
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
-pub enum MenuAction {
+pub enum UiAction {
     Continue,
     Back,
     Move,
-    Mouse,
+    Mouse, // This just detects when the mouse moves
 }
 
 // ·······
@@ -52,32 +54,31 @@ pub enum MenuAction {
 // ·······
 
 // Create a new input manager for the UI
+// Here we assign each action to multiple input devices
+// This defaults should be enough to navigate the menu with keyboard, mouse or gamepad
 fn init(mut cmd: Commands) {
     let mut input_map = InputMap::default();
     input_map
-        .insert(MenuAction::Continue, KeyCode::Space)
-        .insert(MenuAction::Continue, KeyCode::Enter)
-        .insert(MenuAction::Continue, MouseButton::Left)
+        .insert(UiAction::Continue, KeyCode::Space)
+        .insert(UiAction::Continue, KeyCode::Enter)
+        .insert(UiAction::Continue, MouseButton::Left)
         .insert(
-            MenuAction::Continue,
+            UiAction::Continue,
             GamepadButtonType::South,
         )
-        .insert(MenuAction::Back, KeyCode::Escape)
-        .insert(MenuAction::Back, MouseButton::Right)
+        .insert(UiAction::Back, KeyCode::Escape)
+        .insert(UiAction::Back, MouseButton::Right)
+        .insert(UiAction::Back, GamepadButtonType::East)
         .insert(
-            MenuAction::Back,
-            GamepadButtonType::East,
-        )
-        .insert(
-            MenuAction::Move,
+            UiAction::Move,
             KeyboardVirtualDPad::WASD,
         )
         .insert(
-            MenuAction::Move,
+            UiAction::Move,
             KeyboardVirtualDPad::ARROW_KEYS,
         )
-        .insert(MenuAction::Move, GamepadStick::LEFT)
-        .insert(MenuAction::Mouse, MouseMove::default());
+        .insert(UiAction::Move, GamepadStick::LEFT)
+        .insert(UiAction::Mouse, MouseMove::default());
 
     cmd.spawn(InputManagerBundle::with_map(input_map));
 }
@@ -94,8 +95,11 @@ fn update_focus(mut focusables: Query<(&Focusable, &mut BackgroundColor), Change
     }
 }
 
+// This is our custom input handler
+// It uses leafwing to aggregate all the input sources into actions
+// Then it sends the propper NavRequest events
 fn handle_input(
-    input: Query<&ActionState<MenuAction>>,
+    input: Query<&ActionState<UiAction>>,
     window: Query<&Window, With<PrimaryWindow>>,
     focused: Query<Entity, With<Focused>>,
     focusables: Query<(Entity, &Node, &GlobalTransform), With<Focusable>>,
@@ -106,7 +110,7 @@ fn handle_input(
     };
 
     // Either go back a level or go back to the game
-    if input.just_pressed(&MenuAction::Back) {
+    if input.just_pressed(&UiAction::Back) {
         nav_request_writer.send(NavRequest::Cancel);
     }
 
@@ -116,26 +120,25 @@ fn handle_input(
     }
 
     // Accept action
-    if input.just_pressed(&MenuAction::Continue) {
+    if input.just_pressed(&UiAction::Continue) {
         nav_request_writer.send(NavRequest::Action);
     }
 
     // Move up and down in the menu
-    if input.just_pressed(&MenuAction::Move) {
-        let axis = input.axis_pair(&MenuAction::Move);
-        let dir = axis.unwrap_or_default().y();
+    if input.just_pressed(&UiAction::Move) {
+        let axis = input.clamped_axis_pair(&UiAction::Move).unwrap_or_default();
+        let dir = axis.y();
 
-        if dir.abs() > 0.5 {
-            nav_request_writer.send(NavRequest::Move(if dir > 0. {
-                NavDirection::North
-            } else {
-                NavDirection::South
-            }));
-        }
+        nav_request_writer.send(NavRequest::Move(if dir > 0. {
+            NavDirection::North
+        } else {
+            NavDirection::South
+        }));
     };
 
-    // If using mouse
-    if input.just_pressed(&MenuAction::Mouse) {
+    // If using mouse, also call the mouse system
+    // This only runs when the mouse has just moved
+    if input.just_pressed(&UiAction::Mouse) {
         on_mouse_move(
             window,
             focused,
@@ -145,6 +148,11 @@ fn handle_input(
     }
 }
 
+// The mouse movement is a bit more tricky
+// Leafwing handles mouse deltas, but we want the mouse screen position (not the world pos in this case)
+// We handle it separately here, using the primary window
+// This is a system that runs when the state is change (to avoid clicking on the unupdated menu)
+// but can also be called as a function when the mouse moves
 fn on_mouse_move(
     window: Query<&Window, With<PrimaryWindow>>,
     focused: Query<Entity, With<Focused>>,
@@ -164,6 +172,7 @@ fn on_mouse_move(
                 continue;
             }
 
+            // We use the same Aabb collision logic than with a regular game!
             let bounds = Aabb2d::new(
                 trans.translation().truncate(),
                 node.size() * 0.5,

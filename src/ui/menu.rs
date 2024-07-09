@@ -61,6 +61,7 @@ pub struct ButtonOptions;
 #[derive(Component)]
 pub struct ButtonExit;
 
+// Query to differentiate between button types
 type Buttons<'a> = (
     Option<&'a ButtonPlay>,
     Option<&'a ButtonOptions>,
@@ -71,6 +72,9 @@ type Buttons<'a> = (
 // Systems
 // ·······
 
+// Main menu screen
+// This builds the menu on top of the Ui root node using the widgets we defined
+// It is state scoped, so once the main menu state exits, it will be cleaned automatically
 fn open_menu(
     mut cmd: Commands,
     root: Query<Entity, With<UiRootContainer>>,
@@ -108,6 +112,7 @@ fn open_menu(
         .background_color(BACKGROUND_COLOR);
 }
 
+// Options menu screen
 fn open_options(
     mut cmd: Commands,
     root: Query<Entity, With<UiRootContainer>>,
@@ -145,7 +150,10 @@ fn open_options(
         .background_color(BACKGROUND_COLOR);
 }
 
-// Read all interactions and listen for requested actions
+// This checks NavEvents and reacts to them
+// They can happen when an action on a button is requested, or when the user wants to go back
+// We are not using the bevy Interaction system, we are using NavEvents instead for
+// accesibility and convenience
 fn handle_buttons(
     buttons: Query<Buttons>,
     mut next_state: ResMut<NextState<GameState>>,
@@ -170,11 +178,9 @@ fn handle_buttons(
                 // Do something based on the button type
                 if play.is_some() {
                     button_play(&mut next_state);
-                    continue;
                 }
                 if options.is_some() {
                     button_options(&curr_menu_state, &mut next_menu_state);
-                    continue;
                 }
                 if exit.is_some() {
                     button_exit(
