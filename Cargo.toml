@@ -1,5 +1,5 @@
 [package]
-# [CHANGE]: Set your project name
+# CHANGE: Set your project name
 name = "hello-bevy"
 version = "0.14.0"
 edition = "2021"
@@ -20,6 +20,7 @@ default = [ # Only in debug
   "bevy/embedded_watcher", # Enables hot reloading of assets
   "bevy/file_watcher",     # Enables hot reloading of assets
   "input",
+  "menu",
   "persist",
   "ui",
 ]

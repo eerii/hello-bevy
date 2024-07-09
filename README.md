@@ -3,10 +3,9 @@
 an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projects.
 
 <p float="left">
-  <img src="https://github.com/eerii/hello-bevy/assets/22449369/5f736632-75ac-40ef-bd8e-3a66dc57a68a" height="150px" />
-  <img src="https://github.com/eerii/hello-bevy/assets/22449369/f20dd7f6-3d91-4f22-8291-af287a12eaa3" height="150px" />
-  <img src="https://github.com/eerii/hello-bevy/assets/22449369/ed8f0c5c-1ca9-41ee-aa48-ab97c69b3887" height="150px" />
-  <img src="https://github.com/eerii/hello-bevy/assets/22449369/d4207538-73cb-4bb9-b463-9b345887a118" height="150px" />
+  <img src="https://github.com/eerii/hello-bevy/assets/22449369/c5b7cdcd-20d7-44e4-8a56-3a4122cdb5d7" height="250px" />
+  <img src="https://github.com/eerii/hello-bevy/assets/22449369/a3c6d2bb-7648-45da-9cb0-1257ee081a46" height="250px" />
+  <img src="https://github.com/eerii/hello-bevy/assets/22449369/7fa2176f-8dbe-4867-a6b2-33f366af122f" height="250px" />
 </p>
 
 ### features 🌿
@@ -22,7 +21,7 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 ### how to use it ✨
 
 - use this template in a new project (on github, a green button on the top right)
-- search for '[CHANGE]' and make the necessary adjustments
+- search for 'CHANGE' and make the necessary adjustments
 - done c:
 
 ### runing locally 🌺
@@ -109,3 +108,12 @@ this template intends to use as little external dependencies as possible to faci
 ### license 📝
 
 this project is dual licensed under MIT and Apache 2.0, do what you want with it!
+
+the files under assets may come from other sources and have different licenses:
+
+- `icons/bevy.png` and `icons/pixelbevy.png` from [cart](https://github.com/bevyengine/bevy_github_ci_template/issues/45#issue-2022210264), **not** open
+- `icons/input/*`, input prompts from [kenney](https://kenney.nl/assets/input-prompts), [CC0](https://creativecommons.org/publicdomain/zero/1.0/)
+- `sounds/boing.ogg`, sound effect from [bigsoundbank.com](https://bigsoundbank.com/high-pitched-tom-1-s2329.html), [CC0](https://creativecommons.org/publicdomain/zero/1.0/)
+- `music/rain.ogg`, sound effect from [bigsoundbank.com](https://bigsoundbank.com/summer-rain-on-terrace-s1019.html), [CC0](https://creativecommons.org/publicdomain/zero/1.0/)
+- `fonts/pixel.ttf`, public pixel font from [ggbot](https://ggbot.itch.io/public-pixel-font), [CC0](https://creativecommons.org/publicdomain/zero/1.0/)
+- `fonts/sans.tff`, outfit font from [google](https://fonts.google.com/specimen/Outfit), [OFL](https://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL)

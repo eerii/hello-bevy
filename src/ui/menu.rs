@@ -2,19 +2,15 @@
 
 use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::prelude::*;
-use sickle_ui::prelude::*;
 
-use crate::{
-    assets::CoreAssets,
-    ui::{
-        widgets::{UiButtonWidget, UiTextWidget},
-        UiRootContainer,
-    },
-    GameState,
-};
+use crate::GameState;
 
-const UI_GAP: Val = Val::Px(16.);
-const BACKGROUND_COLOR: Color = Color::srgba(0.0, 0.05, 0.1, 0.8);
+mod main;
+mod mappings;
+mod options;
+
+pub(self) const UI_GAP: Val = Val::Px(16.);
+pub(self) const BACKGROUND_COLOR: Color = Color::srgba(0.0, 0.05, 0.1, 0.8);
 
 // ······
 // Plugin
@@ -28,10 +24,14 @@ impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
         app.add_sub_state::<MenuState>()
             .enable_state_scoped_entities::<MenuState>()
-            .add_systems(OnEnter(MenuState::Main), open_menu)
+            .add_systems(OnEnter(MenuState::Main), main::open)
             .add_systems(
                 OnEnter(MenuState::Options),
-                open_options,
+                options::open,
+            )
+            .add_systems(
+                OnEnter(MenuState::Mappings),
+                mappings::open,
             )
             .add_systems(
                 Update,
@@ -44,7 +44,7 @@ impl Plugin for MenuPlugin {
 /// Useful for navigating submenus
 #[derive(SubStates, Debug, Default, Clone, Eq, PartialEq, Hash)]
 #[source(GameState = GameState::Menu)]
-pub enum MenuState {
+pub(super) enum MenuState {
     /// Main menu screen, allows to play or exit the game and access further
     /// options
     #[default]
@@ -52,6 +52,8 @@ pub enum MenuState {
     /// Menu screen to customize game options
     /// (There are no options at the moment)
     Options,
+    /// Menu screen to view keys assigned to actions
+    Mappings,
 }
 
 // ··········
@@ -60,99 +62,18 @@ pub enum MenuState {
 
 /// Marker for the menu buttons
 #[derive(Component)]
-pub enum MenuButton {
+pub(self) enum MenuButton {
     /// Start or resume the game, transitions to `GameState::Play`
     Play,
     /// See other options, transitions to `MenuState::Options`
     Options,
+    /// Remap keys, transitions to `MenuState::Mappings`
+    Mappings,
     /// Exit the game or go back a menu
     ExitOrBack,
     /// Placeholder button, does nothing
+    #[allow(dead_code)]
     None,
-}
-
-// ·······
-// Systems
-// ·······
-
-/// Main menu screen
-/// This builds the menu on top of the Ui root node using the widgets we defined
-/// It is state scoped, so once the main menu state exits, it will be cleaned
-/// automatically
-fn open_menu(
-    mut cmd: Commands,
-    root: Query<Entity, With<UiRootContainer>>,
-    assets: Res<CoreAssets>,
-) {
-    let Ok(root) = root.get_single() else {
-        return;
-    };
-
-    cmd.ui_builder(root)
-        .column(|column| {
-            column
-                .style()
-                .width(Val::Percent(100.))
-                .align_items(AlignItems::Center)
-                .justify_content(JustifyContent::Center)
-                .row_gap(UI_GAP);
-
-            column.title("Title".into(), assets.font.clone());
-
-            column.button(MenuButton::Play, |button| {
-                button.text("Play".into(), assets.font.clone());
-            });
-
-            column.button(MenuButton::Options, |button| {
-                button.text("Options".into(), assets.font.clone());
-            });
-
-            #[cfg(not(target_arch = "wasm32"))]
-            column.button(MenuButton::ExitOrBack, |button| {
-                button.text("Exit".into(), assets.font.clone());
-            });
-        })
-        .insert(StateScoped(MenuState::Main))
-        .style()
-        .background_color(BACKGROUND_COLOR);
-}
-
-/// Options menu screen
-fn open_options(
-    mut cmd: Commands,
-    root: Query<Entity, With<UiRootContainer>>,
-    assets: Res<CoreAssets>,
-) {
-    let Ok(root) = root.get_single() else {
-        return;
-    };
-
-    cmd.ui_builder(root)
-        .column(|column| {
-            column
-                .style()
-                .width(Val::Percent(100.))
-                .align_items(AlignItems::Center)
-                .justify_content(JustifyContent::Center)
-                .row_gap(UI_GAP);
-
-            column.title("Options".into(), assets.font.clone());
-
-            column.button(MenuButton::None, |button| {
-                button.text("Option 1".into(), assets.font.clone());
-            });
-
-            column.button(MenuButton::None, |button| {
-                button.text("Option 2".into(), assets.font.clone());
-            });
-
-            column.button(MenuButton::ExitOrBack, |button| {
-                button.text("Back".into(), assets.font.clone());
-            });
-        })
-        .insert(StateScoped(MenuState::Options))
-        .style()
-        .background_color(BACKGROUND_COLOR);
 }
 
 /// This checks NavEvents and reacts to them
@@ -186,9 +107,10 @@ fn handle_buttons(
                         next_state.set(GameState::Play);
                     },
                     MenuButton::Options => {
-                        if curr_menu_state.get() == &MenuState::Main {
-                            next_menu_state.set(MenuState::Options);
-                        }
+                        next_menu_state.set(MenuState::Options);
+                    },
+                    MenuButton::Mappings => {
+                        next_menu_state.set(MenuState::Mappings);
                     },
                     MenuButton::ExitOrBack => match curr_menu_state.get() {
                         MenuState::Main => {
@@ -208,6 +130,7 @@ fn handle_buttons(
             } => match curr_menu_state.get() {
                 MenuState::Main => next_state.set(GameState::Play),
                 MenuState::Options => next_menu_state.set(MenuState::Main),
+                MenuState::Mappings => next_menu_state.set(MenuState::Options),
             },
             _ => {},
         }

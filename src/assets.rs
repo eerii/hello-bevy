@@ -49,7 +49,7 @@ pub struct CoreAssets {
 
 /// Example assets
 /// They are loaded during the loading state, showing the progress
-/// [CHANGE]: You can create new asset collections or add assets here
+/// CHANGE: You can create new asset collections or add assets here
 #[derive(Resource)]
 pub struct ExampleAssets {
     /// Simple jumping sound
@@ -88,7 +88,7 @@ fn load_example(
     // They use the loading data manager, which tracks if they are loaded
     let assets = ExampleAssets {
         boing: loading_data.load(&asset_server, "sounds/boing.ogg"),
-        ambient_music: loading_data.load(&asset_server, "music/soundscape.ogg"),
+        ambient_music: loading_data.load(&asset_server, "music/rain.ogg"),
     };
 
     cmd.insert_resource(assets);

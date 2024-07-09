@@ -28,7 +28,7 @@ impl Plugin for DataPlugin {
 
 /// Game options
 /// Useful for accesibility and the settings menu
-/// [CHANGE]: Add any configurable game options here
+/// CHANGE: Add any configurable game options here
 #[derive(Debug, Default, Resource, Serialize, Deserialize)]
 pub struct GameOptions {
     test: bool,
@@ -36,7 +36,7 @@ pub struct GameOptions {
 
 /// Save data
 /// A place to save the player's progress
-/// [CHANGE]: Add relevant save data here
+/// CHANGE: Add relevant save data here
 #[derive(Debug, Default, Resource, Serialize, Deserialize)]
 pub struct SaveData {
     name: String,

@@ -39,7 +39,7 @@ impl Plugin for UiPlugin {
 /// Everything ui related should be a child of this
 /// Uses Sickle to provide greater flexibility and ease of use
 #[derive(Component)]
-pub struct UiRootContainer;
+pub(self) struct UiRootContainer;
 
 // ·······
 // Systems

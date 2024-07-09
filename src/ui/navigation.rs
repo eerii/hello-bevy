@@ -44,7 +44,7 @@ impl Plugin for NavigationPlugin {
 
 /// These are all the possible actions that have an input mapping
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
-pub enum UiAction {
+pub(super) enum UiAction {
     /// Press the selected interface element
     Continue,
     /// Go back to the previous menu
@@ -94,11 +94,11 @@ fn init(mut cmd: Commands) {
 }
 
 /// Update the color of buttons when their state changes
-fn update_focus(mut focusables: Query<(&Focusable, &mut BackgroundColor), Changed<Focusable>>) {
+fn update_focus(mut focusables: Query<(&Focusable, &mut BorderColor), Changed<Focusable>>) {
     for (focus, mut color) in focusables.iter_mut() {
         *color = match focus.state() {
-            FocusState::Focused => BUTTON_COLOR.lighter(0.1),
-            FocusState::Blocked => BUTTON_COLOR.darker(0.1),
+            FocusState::Focused => BUTTON_COLOR.lighter(0.3),
+            FocusState::Blocked => BUTTON_COLOR.darker(0.3),
             _ => BUTTON_COLOR,
         }
         .into();

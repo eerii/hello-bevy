@@ -31,7 +31,7 @@ impl Plugin for InputPlugin {
 // ··········
 
 /// These are all the possible actions that have an input mapping
-/// [CHANGE]: Add player actions here and configure the default mappings in `init`
+/// CHANGE: Add player actions here and configure the default mappings in `init`
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
 pub enum Action {
     /// Button press usually assigned to Space or the A button in the gamepad

@@ -38,7 +38,7 @@ struct AmbientMusic;
 /// Using PlaybackSettings you can specify if it only plays once, if it loops or
 /// even more complex behaviour, for example, to despawn the entity when the
 /// audio is finished
-/// [CHANGE]: Enable or disable background music and other sounds
+/// CHANGE: Enable or disable background music and other sounds
 fn init(mut cmd: Commands, assets: Res<ExampleAssets>) {
     cmd.spawn((
         AudioBundle {

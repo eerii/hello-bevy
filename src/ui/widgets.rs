@@ -10,11 +10,12 @@ use sickle_ui::prelude::*;
 const BUTTON_WIDTH: Val = Val::Px(256.);
 const BUTTON_HEIGHT: Val = Val::Px(64.);
 
-const FONT_SIZE_TEXT: f32 = 32.;
-const FONT_SIZE_TITLE: f32 = 48.;
+const FONT_SIZE_MULT: f32 = if cfg!(feature = "pixel_perfect") { 0.5 } else { 1.0 };
+const FONT_SIZE_TEXT: f32 = 36. * FONT_SIZE_MULT;
+const FONT_SIZE_TITLE: f32 = 64. * FONT_SIZE_MULT;
 
 /// Base color for UI buttons
-pub const BUTTON_COLOR: Color = Color::srgb(0.3, 0.5, 0.9);
+pub(crate) const BUTTON_COLOR: Color = Color::srgb(0.3, 0.5, 0.9);
 
 // ······
 // Traits
@@ -52,6 +53,21 @@ impl UiTextWidget for UiBuilder<'_, Entity> {
     }
 }
 
+/// Creates an image bundle
+pub trait UiImageWidget {
+    /// Append an image element
+    fn image(&mut self, image: Handle<Image>) -> UiBuilder<Entity>;
+}
+
+impl UiImageWidget for UiBuilder<'_, Entity> {
+    fn image(&mut self, image: Handle<Image>) -> UiBuilder<Entity> {
+        self.spawn(ImageBundle {
+            image: UiImage::new(image),
+            ..default()
+        })
+    }
+}
+
 /// Creates a "button"
 /// This is not a real bevy ui button if we are using custom navigation to avoid
 /// issues with interactible parts
@@ -84,9 +100,13 @@ impl UiButtonWidget for UiBuilder<'_, Entity> {
                         height: BUTTON_HEIGHT,
                         align_items: AlignItems::Center,
                         justify_content: JustifyContent::Center,
+                        border: UiRect::all(Val::Px(6.0)),
                         ..default()
                     },
                     background_color: BUTTON_COLOR.into(),
+                    border_color: BUTTON_COLOR.into(),
+                    #[cfg(not(feature = "pixel_perfect"))]
+                    border_radius: BorderRadius::MAX,
                     ..default()
                 },
                 #[cfg(feature = "navigation")]

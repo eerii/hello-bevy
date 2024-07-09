@@ -1,6 +1,6 @@
 //! An opinionated template for bevy games
 
-// [CHANGE]: Comment this if it's too anoying when making games
+// CHANGE: Comment this if it's too anoying when making games
 #![warn(missing_docs)]
 
 pub mod assets;
@@ -35,7 +35,7 @@ pub enum GameState {
 /// Static configuration
 /// Allows to pass options to the game plugin such as the title and resolution.
 /// Must be added before the plugin
-/// [CHANGE]: You can customize the default parameters of the game here
+/// CHANGE: You can customize the default parameters of the game here
 #[derive(Resource, Clone)]
 pub struct AppConfig {
     /// The title on the main window
