@@ -1,5 +1,4 @@
-#![allow(clippy::too_many_arguments)]
-#![allow(clippy::type_complexity)]
+//! Asset loading module
 
 use bevy::prelude::*;
 
@@ -9,9 +8,9 @@ use crate::GameState;
 // Plugin
 // ······
 
-// Asset loader
-// Creates asset collections and keeps track of their loading state
-// Once they are done, it exits GameState::Loading
+/// Asset loader
+/// Creates asset collections and keeps track of their loading state
+/// Once they are done, it exits GameState::Loading
 pub struct AssetLoaderPlugin;
 
 impl Plugin for AssetLoaderPlugin {
@@ -33,19 +32,29 @@ impl Plugin for AssetLoaderPlugin {
 // Resources
 // ·········
 
-// Assets for the splash screen and menus
-// They are loaded inmediately after the app is fired, so they have no effect on loading state
+/// Assets for the splash screen and menus
+/// They are loaded inmediately after the app is fired, so they have no effect
+/// on loading state
 #[derive(Resource)]
 pub struct CoreAssets {
+    /// Icon of the bevy engine, used in splash screens and examples
+    /// Depending on the pixel_perfect feature it will be the original or
+    /// pixelated version
     pub bevy_icon: Handle<Image>,
+    /// Default font for the text in the engine
+    /// Depending on the pixel_perfect feature it will be the original or
+    /// pixelated version
     pub font: Handle<Font>,
 }
 
-// Example assets
-// They are loaded during the loading state, showing the progress
+/// Example assets
+/// They are loaded during the loading state, showing the progress
+/// [CHANGE]: You can create new asset collections or add assets here
 #[derive(Resource)]
 pub struct ExampleAssets {
+    /// Simple jumping sound
     pub boing: Handle<AudioSource>,
+    /// Background music for example games
     pub ambient_music: Handle<AudioSource>,
 }
 
@@ -97,7 +106,8 @@ struct LoadingData {
 }
 
 impl LoadingData {
-    // Loads an asset into the server and adds it to the list to keep track of its state
+    /// Loads an asset into the server and adds it to the list to keep track of
+    /// its state
     fn load<T: Asset>(&mut self, asset_server: &AssetServer, path: &'static str) -> Handle<T> {
         let handle = asset_server.load(path);
 
@@ -107,7 +117,7 @@ impl LoadingData {
         handle
     }
 
-    // Returns the current loaded assets and the total assets registered
+    /// Returns the current loaded assets and the total assets registered
     fn current(&mut self, asset_server: &AssetServer) -> (usize, usize) {
         // Find assets that have already been loaded and remove them from the list
         self.assets.retain(|asset| {

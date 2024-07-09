@@ -1,4 +1,7 @@
-#![feature(type_changing_struct_update)]
+//! An opinionated template for bevy games
+
+// [CHANGE]: Comment this if it's too anoying when making games
+#![warn(missing_docs)]
 
 pub mod assets;
 pub mod audio;
@@ -11,27 +14,36 @@ pub mod ui;
 
 use bevy::{log::LogPlugin, prelude::*, window::WindowResolution};
 
-// Game state
-// Indicates at which point the game is. Very useful for controlling which
-// systems run when (in_state) and to create transitions (OnEnter/OnExit)
-// You can also scope entities to a state with StateScoped, and they will
-// be deleted automatically when the state ends
+/// Indicates at which point the game is. Very useful for controlling which
+/// systems run when (in_state) and to create transitions (OnEnter/OnExit)
+/// You can also scope entities to a state with StateScoped, and they will
+/// be deleted automatically when the state ends
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
+    /// The game starts on the loading state
+    /// It stays here until all the relevant assets are ready
     #[default]
     Loading,
+    /// The main menu of the game, everything is paused
     Menu,
+    /// Main state, this represents the actual game
     Play,
+    /// End of the `Play` state, useful to restart the game
     End,
 }
 
-// Static configuration
-// Allows to pass options to the game plugin such as the title and resolution.
-// Must be added before the plugin
+/// Static configuration
+/// Allows to pass options to the game plugin such as the title and resolution.
+/// Must be added before the plugin
+/// [CHANGE]: You can customize the default parameters of the game here
 #[derive(Resource, Clone)]
 pub struct AppConfig {
+    /// The title on the main window
     pub game_title: &'static str,
+    /// What size should the main window open in
     pub initial_window_res: WindowResolution,
+    /// The size of the canvas that renders a pixel perfect game
+    /// (Not functional at the moment)
     #[cfg(feature = "pixel_perfect")]
     pub initial_game_res: Vec2,
 }
@@ -47,10 +59,10 @@ impl Default for AppConfig {
     }
 }
 
-// Main game plugin
-// This template is structured using plugins. A plugin makes changes to the app,
-// usually adding systems and resources. This is the main plugin that
-// initializes all subsistems. Each plugin is defined in a submodule (mod ***)
+/// Main game plugin
+/// This template is structured using plugins. A plugin makes changes to the
+/// app, usually adding systems and resources. This is the main plugin that
+/// initializes all subsistems. Each plugin is defined in a submodule (mod ***)
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {

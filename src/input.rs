@@ -1,3 +1,5 @@
+//! Input module
+
 use bevy::prelude::*;
 pub use leafwing_input_manager::prelude::ActionState;
 use leafwing_input_manager::prelude::*;
@@ -6,8 +8,9 @@ use leafwing_input_manager::prelude::*;
 // Plugin
 // ······
 
-// Input
-// Uses the leafwing input manager for handling input
+/// Input
+/// Uses the leafwing input manager for handling input
+/// This allows mapping multiple sources to the same `Action`
 pub struct InputPlugin;
 
 impl Plugin for InputPlugin {
@@ -27,11 +30,15 @@ impl Plugin for InputPlugin {
 // Components
 // ··········
 
-// These are all the possible actions that have an input mapping
+/// These are all the possible actions that have an input mapping
+/// [CHANGE]: Add player actions here and configure the default mappings in `init`
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
 pub enum Action {
+    /// Button press usually assigned to Space or the A button in the gamepad
     Jump,
+    /// Two axis input usually assigned to WASD or the left gamepad stick
     Move,
+    /// Button press usually assigned to Escape or Start
     Pause,
 }
 
@@ -39,7 +46,7 @@ pub enum Action {
 // Systems
 // ·······
 
-// Create a new input manager for the general game
+/// Create a new input manager for the general game
 fn init(mut cmd: Commands) {
     let mut input_map = InputMap::default();
     input_map
@@ -53,7 +60,7 @@ fn init(mut cmd: Commands) {
     cmd.spawn(InputManagerBundle::with_map(input_map));
 }
 
-// Read the input and perform actions
+/// Read the input and perform actions
 #[cfg(feature = "menu")]
 fn handle_input(
     input: Query<&ActionState<Action>>,

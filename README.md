@@ -27,7 +27,7 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 
 ### runing locally 🌺
 
-this project is configured to use dynamic linking and fast recompiling by default.
+this project is configured to use dynamic linking for debug builds and fast recompiling by default.
 in order to have the fastest compile, you may install [mold](https://github.com/rui314/mold) and use rust nightly (`rustup default nightly`).
 if you don't want some of these features, go to [.cargo/config](.cargo/config) and follow the instructions, or remove it to disable optimizations all together.
 
@@ -44,6 +44,12 @@ trunk serve
 ```
 
 you can also play around with some of the included examples with `cargo run --example <name>`. and if you want to get started quickly, copy any example to `src/main.rs`!
+
+in order to have a development environment up and ready, run `nix develop` or use [`nix-direnv`](https://github.com/nix-community/nix-direnv) installed create a `.envrc` like this:
+
+```sh
+echo "use nix" > .envrc
+```
 
 ### release 🌻
 
@@ -64,6 +70,12 @@ to run a release build locally:
 
 ```sh
 cargo run --release --no-default-features --features release
+```
+
+on nixos, you might have trouble if you are downloading the linux precompiled binary from releases. this is because nixos does not follow fhs and it doesn't have a global library path. a workarround for running games there is to use this command:
+
+```sh
+NIXPKGS_ALLOW_UNFREE=1 nix-shell -p steam-run --run "steam-run GAME_PATH"
 ```
 
 ### profiling 📈

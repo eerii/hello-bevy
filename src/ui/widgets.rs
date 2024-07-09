@@ -1,3 +1,9 @@
+//! Widgets module
+//! This extends sickle ui with custom widgets
+//! It is very helpful to reduce verbosity and to group elements together easily
+//! Creating a widget is done by extending UiBuilder with new custom traits,
+//! providing the functions we define as chaining options for our components
+
 use bevy::prelude::*;
 use sickle_ui::prelude::*;
 
@@ -7,20 +13,18 @@ const BUTTON_HEIGHT: Val = Val::Px(64.);
 const FONT_SIZE_TEXT: f32 = 32.;
 const FONT_SIZE_TITLE: f32 = 48.;
 
+/// Base color for UI buttons
 pub const BUTTON_COLOR: Color = Color::srgb(0.3, 0.5, 0.9);
-
-// This extends sickle ui with custom widgets
-// It is very helpful to reduce verbosity and to group elements together easily
-// Creating a widget is done by extending UiBuilder with new custom traits, providing the functions
-// we define as chaining options for our components
 
 // ······
 // Traits
 // ······
 
-// Creates a text bundle with custom styling for titles and text
+/// Creates a text bundle with custom styling for titles and text
 pub trait UiTextWidget {
+    /// Append a text ui element
     fn text(&mut self, text: String, font: Handle<Font>) -> UiBuilder<Entity>;
+    /// Append a text ui element, formatted like a title
     fn title(&mut self, text: String, font: Handle<Font>) -> UiBuilder<Entity>;
 }
 
@@ -48,11 +52,12 @@ impl UiTextWidget for UiBuilder<'_, Entity> {
     }
 }
 
-// Creates a "button"
-// This is not a real bevy ui button if we are using custom navigation to avoid issues with
-// interactible parts
-// To add text, you can chain one of the text widgets we added before
+/// Creates a "button"
+/// This is not a real bevy ui button if we are using custom navigation to avoid
+/// issues with interactible parts
+/// To add text, you can chain one of the text widgets we added before
 pub trait UiButtonWidget {
+    /// Append a button ui element
     fn button<T: Component>(
         &mut self,
         component: T,

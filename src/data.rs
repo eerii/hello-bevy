@@ -1,3 +1,5 @@
+//! Data persistence module
+
 use std::path::PathBuf;
 
 use bevy::prelude::*;
@@ -9,9 +11,9 @@ use crate::GameState;
 // Plugin
 // ······
 
-// Data persistence
-// Used to create persistent serialized files with options or save data
-// It saves and loads from toml any resource that needs to survive app reloads
+/// Data persistence
+/// Used to create persistent serialized files with options or save data
+/// It saves and loads from toml any resource that needs to survive app reloads
 pub struct DataPlugin;
 
 impl Plugin for DataPlugin {
@@ -24,15 +26,17 @@ impl Plugin for DataPlugin {
 // Resources
 // ·········
 
-// Game options
-// Useful for accesibility and the settings menu
+/// Game options
+/// Useful for accesibility and the settings menu
+/// [CHANGE]: Add any configurable game options here
 #[derive(Debug, Default, Resource, Serialize, Deserialize)]
 pub struct GameOptions {
     test: bool,
 }
 
-// Save data
-// A place to save the player's progress
+/// Save data
+/// A place to save the player's progress
+/// [CHANGE]: Add relevant save data here
 #[derive(Debug, Default, Resource, Serialize, Deserialize)]
 pub struct SaveData {
     name: String,
@@ -66,7 +70,7 @@ fn init(mut cmd: Commands) {
 // Helpers
 // ·······
 
-// Saves and loads persistent data under a directory
+/// Saves and loads persistent data under a directory
 #[derive(Debug, Default, Resource, Reflect, Clone)]
 struct DataStorage {
     path: PathBuf,

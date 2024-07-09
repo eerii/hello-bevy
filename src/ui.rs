@@ -1,3 +1,5 @@
+//! Ui module
+
 use bevy::prelude::*;
 use sickle_ui::{prelude::*, SickleUiPlugin};
 
@@ -13,8 +15,8 @@ pub mod widgets;
 // Plugin
 // ······
 
-// Ui
-// Uses bevy's Ui and Sickle to create beautiful interfaces
+/// Ui
+/// Uses bevy's Ui and Sickle to create beautiful interfaces
 pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
@@ -33,7 +35,9 @@ impl Plugin for UiPlugin {
 // Components
 // ··········
 
-// Marker for the ui root container
+/// Marker for the ui root container
+/// Everything ui related should be a child of this
+/// Uses Sickle to provide greater flexibility and ease of use
 #[derive(Component)]
 pub struct UiRootContainer;
 
@@ -41,15 +45,13 @@ pub struct UiRootContainer;
 // Systems
 // ·······
 
-// Create a new input manager if there are no others
+/// Create a new input manager if there are no others
 fn init(mut cmd: Commands, camera: Query<Entity, With<FinalCamera>>) {
     let Ok(camera) = camera.get_single() else {
         return;
     };
 
     // Ui Root
-    // This is the main Ui root, everything should be a child of it
-    // Uses Sickle to provide greater flexibility and ease of use
     cmd.ui_builder(UiRoot).container(
         (
             NodeBundle {

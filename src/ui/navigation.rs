@@ -1,3 +1,5 @@
+//! Navigation module
+
 use bevy::{math::bounding::*, prelude::*, window::PrimaryWindow};
 use bevy_alt_ui_navigation_lite::{
     events::Direction as NavDirection, prelude::*, NavigationPlugin as AltNavigationPlugin,
@@ -10,10 +12,10 @@ use crate::{ui::widgets::BUTTON_COLOR, GameState};
 // Plugin
 // ······
 
-// Navigation
-// Uses bevy-alt-ui-navigation-lite to enable keyboard/gamepad navigation of ui elements
-// We don't use the full implementation there, the input part is rewritten to match
-// with our input system using leafwing-input-manager
+/// Navigation
+/// Uses bevy-alt-ui-navigation-lite to enable keyboard/gamepad navigation of ui
+/// elements We don't use the full implementation there, the input part is
+/// rewritten to match with our input system using leafwing-input-manager
 pub struct NavigationPlugin;
 
 impl Plugin for NavigationPlugin {
@@ -40,22 +42,30 @@ impl Plugin for NavigationPlugin {
 // Components
 // ··········
 
-// These are all the possible actions that have an input mapping
+/// These are all the possible actions that have an input mapping
 #[derive(Actionlike, PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
 pub enum UiAction {
+    /// Press the selected interface element
     Continue,
+    /// Go back to the previous menu
     Back,
+    /// Vertical axis movement to switch to the next or previous element
     Move,
-    Mouse, // This just detects when the mouse moves
+    /// This just detects when the mouse moves to avoid excesive queries
+    /// The actual mouse position is calculated on `on_mouse_move`
+    Mouse,
 }
+
+impl UiAction {}
 
 // ·······
 // Systems
 // ·······
 
-// Create a new input manager for the UI
-// Here we assign each action to multiple input devices
-// This defaults should be enough to navigate the menu with keyboard, mouse or gamepad
+/// Create a new input manager for the UI
+/// Here we assign each action to multiple input devices
+/// This defaults should be enough to navigate the menu with keyboard, mouse or
+/// gamepad
 fn init(mut cmd: Commands) {
     let mut input_map = InputMap::default();
     input_map
@@ -83,7 +93,7 @@ fn init(mut cmd: Commands) {
     cmd.spawn(InputManagerBundle::with_map(input_map));
 }
 
-// Update the color of buttons when their state changes
+/// Update the color of buttons when their state changes
 fn update_focus(mut focusables: Query<(&Focusable, &mut BackgroundColor), Changed<Focusable>>) {
     for (focus, mut color) in focusables.iter_mut() {
         *color = match focus.state() {
@@ -95,9 +105,9 @@ fn update_focus(mut focusables: Query<(&Focusable, &mut BackgroundColor), Change
     }
 }
 
-// This is our custom input handler
-// It uses leafwing to aggregate all the input sources into actions
-// Then it sends the propper NavRequest events
+/// This is our custom input handler
+/// It uses leafwing to aggregate all the input sources into actions
+/// Then it sends the propper NavRequest events
 fn handle_input(
     input: Query<&ActionState<UiAction>>,
     window: Query<&Window, With<PrimaryWindow>>,
@@ -148,11 +158,12 @@ fn handle_input(
     }
 }
 
-// The mouse movement is a bit more tricky
-// Leafwing handles mouse deltas, but we want the mouse screen position (not the world pos in this case)
-// We handle it separately here, using the primary window
-// This is a system that runs when the state is change (to avoid clicking on the unupdated menu)
-// but can also be called as a function when the mouse moves
+/// The mouse movement is a bit more tricky
+/// Leafwing handles mouse deltas, but we want the mouse screen position (not
+/// the world pos in this case) We handle it separately here, using the primary
+/// window This is a system that runs when the state is change (to avoid
+/// clicking on the unupdated menu) but can also be called as a function when
+/// the mouse moves
 fn on_mouse_move(
     window: Query<&Window, With<PrimaryWindow>>,
     focused: Query<Entity, With<Focused>>,
