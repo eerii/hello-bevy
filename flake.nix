@@ -42,6 +42,7 @@
               pkg-config
               alsa-lib
               udev
+              speechd
               # Wayland
               libxkbcommon
               wayland
@@ -65,6 +66,11 @@
               # Toml
               taplo
             ];
+
+            # For speechd
+            shellHook = ''
+              export LIBCLANG_PATH="${pkgs.libclang.lib}/lib"
+            '';
 
             RUST_SRC_PATH = "${toolchain}/lib/rustlib/src/rust/library";
             LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;

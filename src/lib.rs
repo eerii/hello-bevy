@@ -2,6 +2,8 @@
 
 // CHANGE: Comment this if it's too anoying when making games
 #![warn(missing_docs)]
+#![allow(clippy::too_many_arguments)]
+#![allow(clippy::type_complexity)]
 
 pub mod assets;
 pub mod audio;

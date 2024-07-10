@@ -49,14 +49,17 @@ pub(super) enum UiAction {
     Continue,
     /// Go back to the previous menu
     Back,
-    /// Vertical axis movement to switch to the next or previous element
+    /// Axis movement to switch to the next or previous element
     Move,
     /// This just detects when the mouse moves to avoid excesive queries
     /// The actual mouse position is calculated on `on_mouse_move`
     Mouse,
 }
 
-impl UiAction {}
+/// If this marker is in an interactable button, use fill instead of border to
+/// show that it is being hovered
+#[derive(Component)]
+pub(super) struct FocusableHoverFill;
 
 // ·······
 // Systems
@@ -94,14 +97,38 @@ fn init(mut cmd: Commands) {
 }
 
 /// Update the color of buttons when their state changes
-fn update_focus(mut focusables: Query<(&Focusable, &mut BorderColor), Changed<Focusable>>) {
-    for (focus, mut color) in focusables.iter_mut() {
-        *color = match focus.state() {
-            FocusState::Focused => BUTTON_COLOR.lighter(0.3),
-            FocusState::Blocked => BUTTON_COLOR.darker(0.3),
-            _ => BUTTON_COLOR,
+fn update_focus(
+    mut focusables: Query<
+        (
+            &Focusable,
+            Option<&mut BorderColor>,
+            Option<&mut BackgroundColor>,
+            Option<&FocusableHoverFill>,
+        ),
+        (Changed<Focusable>,),
+    >,
+) {
+    for (focus, border, background, fill) in focusables.iter_mut() {
+        if fill.is_some() {
+            let Some(mut color) = background else {
+                continue;
+            };
+            *color = match focus.state() {
+                FocusState::Focused => BUTTON_COLOR,
+                _ => Srgba::NONE.into(),
+            }
+            .into();
+        } else {
+            let Some(mut color) = border else {
+                continue;
+            };
+            *color = match focus.state() {
+                FocusState::Focused => BUTTON_COLOR.lighter(0.3),
+                FocusState::Blocked => BUTTON_COLOR.darker(0.3),
+                _ => BUTTON_COLOR,
+            }
+            .into();
         }
-        .into();
     }
 }
 
@@ -134,17 +161,23 @@ fn handle_input(
         nav_request_writer.send(NavRequest::Action);
     }
 
-    // Move up and down in the menu
+    // Move through in the menu
     if input.just_pressed(&UiAction::Move) {
         let axis = input.clamped_axis_pair(&UiAction::Move).unwrap_or_default();
-        let dir = axis.y();
-
-        nav_request_writer.send(NavRequest::Move(if dir > 0. {
-            NavDirection::North
+        if axis.y().abs() > axis.x().abs() {
+            nav_request_writer.send(NavRequest::Move(if axis.y() > 0. {
+                NavDirection::North
+            } else {
+                NavDirection::South
+            }));
         } else {
-            NavDirection::South
-        }));
-    };
+            nav_request_writer.send(NavRequest::Move(if axis.x() > 0. {
+                NavDirection::East
+            } else {
+                NavDirection::West
+            }));
+        };
+    }
 
     // If using mouse, also call the mouse system
     // This only runs when the mouse has just moved

@@ -1,11 +1,12 @@
 //! Data persistence module
 
-use std::path::PathBuf;
-
 use bevy::prelude::*;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+#[cfg(feature = "persist")]
+pub use bevy_persistent::prelude::Persistent;
+use serde::{Deserialize, Serialize};
 
-use crate::GameState;
+#[cfg(not(feature = "persist"))]
+pub use self::alt::Persistent;
 
 // ······
 // Plugin
@@ -18,7 +19,7 @@ pub struct DataPlugin;
 
 impl Plugin for DataPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Loading), init);
+        app.add_systems(Startup, init);
     }
 }
 
@@ -29,86 +30,93 @@ impl Plugin for DataPlugin {
 /// Game options
 /// Useful for accesibility and the settings menu
 /// CHANGE: Add any configurable game options here
-#[derive(Debug, Default, Resource, Serialize, Deserialize)]
+#[derive(Default, Resource, Serialize, Deserialize)]
 pub struct GameOptions {
-    test: bool,
+    /// Controlls if text to speech is enabled for menu navigation
+    #[cfg(feature = "tts")]
+    pub text_to_speech: bool,
 }
 
 /// Save data
 /// A place to save the player's progress
 /// CHANGE: Add relevant save data here
-#[derive(Debug, Default, Resource, Serialize, Deserialize)]
+#[derive(Default, Resource, Serialize, Deserialize)]
 pub struct SaveData {
     name: String,
+}
+
+/// When persist is not enabled, this wrapper just serves
+/// as a placeholder to allow to use the resouces regularlly
+#[cfg(not(feature = "persist"))]
+mod alt {
+    use std::ops::{Deref, DerefMut};
+
+    use super::*;
+
+    /// Placeholder persistent resource for when the persist feature is disabled
+    /// This does nothing, just derefs to the inner value
+    #[derive(Resource)]
+    pub struct Persistent<T>(pub T);
+
+    impl<T> Deref for Persistent<T> {
+        type Target = T;
+
+        fn deref(&self) -> &Self::Target {
+            &self.0
+        }
+    }
+
+    impl<T> DerefMut for Persistent<T> {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.0
+        }
+    }
+
+    impl<T> Persistent<T> {
+        /// Updates the inner resource with a closure
+        #[allow(clippy::result_unit_err)]
+        pub fn update(&mut self, updater: impl Fn(&mut T)) -> Result<(), ()> {
+            updater(&mut self.0);
+            Ok(())
+        }
+    }
 }
 
 // ·······
 // Systems
 // ·······
-
+#[cfg(feature = "persist")]
 fn init(mut cmd: Commands) {
-    // Initialize a data storage and load game options from disk if they exist
-    let path = if cfg!(target_arch = "wasm32") { "local" } else { ".data" };
-    let Some(data) = DataStorage::new(path.into()) else {
-        warn!("couldn't initialize data storage");
-        return;
-    };
+    let path = std::path::Path::new(if cfg!(target_arch = "wasm32") { "local" } else { ".data" });
+    info!("{:?}", path);
 
-    // Read the data if it exists
-    let options: GameOptions = data.read("options.toml").unwrap_or_default();
-    let save_data: GameOptions = data.read("save.toml").unwrap_or_default();
+    cmd.insert_resource(
+        Persistent::<GameOptions>::builder()
+            .name("game options")
+            .format(bevy_persistent::StorageFormat::Toml)
+            .path(path.join("options.toml"))
+            .default(GameOptions::default())
+            .revertible(true)
+            .revert_to_default_on_deserialization_errors(true)
+            .build()
+            .expect("failed to initialize game options"),
+    );
 
-    // Write the new options
-    // data.write("options.toml", &options);
-
-    cmd.insert_resource(data);
-    cmd.insert_resource(options);
-    cmd.insert_resource(save_data);
+    cmd.insert_resource(
+        Persistent::<SaveData>::builder()
+            .name("save data")
+            .format(bevy_persistent::StorageFormat::Toml)
+            .path(path.join("save.toml"))
+            .default(SaveData::default())
+            .revertible(true)
+            .revert_to_default_on_deserialization_errors(true)
+            .build()
+            .expect("failed to initialize save data"),
+    );
 }
 
-// ·······
-// Helpers
-// ·······
-
-/// Saves and loads persistent data under a directory
-#[derive(Debug, Default, Resource, Reflect, Clone)]
-struct DataStorage {
-    path: PathBuf,
-}
-
-#[allow(dead_code, unused_variables)]
-impl DataStorage {
-    fn new(path: PathBuf) -> Option<Self> {
-        #[cfg(feature = "persist")]
-        std::fs::create_dir_all(path.clone()).ok()?;
-
-        Some(Self { path })
-    }
-
-    fn read<R: DeserializeOwned>(&self, name: &str) -> Option<R> {
-        #[cfg(feature = "persist")]
-        {
-            let path = self.path.join(name);
-            let Ok(data) = std::fs::read_to_string(path) else {
-                return None;
-            };
-            toml::from_str::<R>(&data).ok()
-        }
-
-        #[cfg(not(feature = "persist"))]
-        None
-    }
-
-    fn write<R: Serialize>(&self, name: &str, value: &R) -> Option<()> {
-        #[cfg(feature = "persist")]
-        {
-            let path = self.path.join(name);
-            let data = toml::to_string(value).ok()?;
-            std::fs::write(path, data).ok()?;
-            Some(())
-        }
-
-        #[cfg(not(feature = "persist"))]
-        None
-    }
+#[cfg(not(feature = "persist"))]
+fn init(mut cmd: Commands) {
+    cmd.insert_resource(Persistent(GameOptions::default()));
+    cmd.insert_resource(Persistent(SaveData::default()));
 }

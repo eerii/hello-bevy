@@ -19,24 +19,20 @@ default = [ # Only in debug
   "bevy/dynamic_linking",  # Enables dynamic linking for faster compilation
   "bevy/embedded_watcher", # Enables hot reloading of assets
   "bevy/file_watcher",     # Enables hot reloading of assets
-  "input",
-  "menu",
-  "persist",
-  "ui",
+  "common",
 ]
 release = [ # Only in release (build with --release --no-default-features --features release)
   "bevy_embedded_assets",
-  "input",
-  "menu",
-  "persist",
-  "ui",
+  "common",
+  "tts",
 ]
+common = ["input", "menu", "ui", "persist"]
 
 3d_camera = []
 input = ["leafwing-input-manager"]
 menu = ["navigation", "input"]
 navigation = ["bevy-alt-ui-navigation-lite"]
-persist = ["toml"]
+persist = ["bevy-persistent"]
 pixel_perfect = []
 resizable = []
 trace = ["release", "bevy/trace_tracy"]
@@ -53,13 +49,17 @@ leafwing-input-manager = { git = "https://github.com/Leafwing-Studios/leafwing-i
 sickle_ui = { git = "https://github.com/UmbraLuminosa/sickle_ui", optional = true }
 bevy-alt-ui-navigation-lite = { version = "0.2", optional = true }
 
+# Persistent data
+bevy-persistent = { version = "0.6", features = ["toml"], optional = true }
+
 # Release only dependencies
 bevy_embedded_assets = { version = "0.11", optional = true }
 
 # Addons
 rand = { version = "0.8" }
+itertools = { version = "0.13" }
 serde = { version = "1.0", features = ["derive"] }
-toml = { version = "0.8", optional = true }
+tts = { version = "0.26.3", optional = true }
 
 [[example]]
 name = "dvd"

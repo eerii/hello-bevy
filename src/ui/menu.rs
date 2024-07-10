@@ -3,14 +3,16 @@
 use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::prelude::*;
 
+#[cfg(feature = "tts")]
+use crate::data::{GameOptions, Persistent};
 use crate::GameState;
 
 mod main;
 mod mappings;
 mod options;
 
-pub(self) const UI_GAP: Val = Val::Px(16.);
-pub(self) const BACKGROUND_COLOR: Color = Color::srgba(0.0, 0.05, 0.1, 0.8);
+const UI_GAP: Val = Val::Px(16.);
+const BACKGROUND_COLOR: Color = Color::srgba(0.0, 0.05, 0.1, 0.8);
 
 // ······
 // Plugin
@@ -34,6 +36,10 @@ impl Plugin for MenuPlugin {
                 mappings::open,
             )
             .add_systems(
+                OnEnter(MenuState::Refresh),
+                refresh_state,
+            )
+            .add_systems(
                 Update,
                 handle_buttons.run_if(in_state(GameState::Menu)),
             );
@@ -42,7 +48,7 @@ impl Plugin for MenuPlugin {
 
 /// Menu state
 /// Useful for navigating submenus
-#[derive(SubStates, Debug, Default, Clone, Eq, PartialEq, Hash)]
+#[derive(SubStates, Debug, Default, Clone, Eq, PartialEq, Hash, Reflect)]
 #[source(GameState = GameState::Menu)]
 pub(super) enum MenuState {
     /// Main menu screen, allows to play or exit the game and access further
@@ -54,6 +60,9 @@ pub(super) enum MenuState {
     Options,
     /// Menu screen to view keys assigned to actions
     Mappings,
+    /// Refresh the menu state by exiting and entering again
+    /// Uses `MenuRefreshState` to indicate the next state
+    Refresh,
 }
 
 // ··········
@@ -62,11 +71,14 @@ pub(super) enum MenuState {
 
 /// Marker for the menu buttons
 #[derive(Component)]
-pub(self) enum MenuButton {
+enum MenuButton {
     /// Start or resume the game, transitions to `GameState::Play`
     Play,
     /// See other options, transitions to `MenuState::Options`
     Options,
+    /// Toggle text to speech
+    #[cfg(feature = "tts")]
+    Speech,
     /// Remap keys, transitions to `MenuState::Mappings`
     Mappings,
     /// Exit the game or go back a menu
@@ -76,12 +88,21 @@ pub(self) enum MenuButton {
     None,
 }
 
+/// Indicates what is the state being refreshed
+#[derive(Component)]
+struct MenuRefreshState(MenuState);
+// ·······
+// Systems
+// ·······
+
 /// This checks NavEvents and reacts to them
 /// They can happen when an action on a button is requested, or when the user
 /// wants to go back We are not using the bevy Interaction system, we are using
 /// NavEvents instead for accesibility and convenience
 fn handle_buttons(
+    #[cfg(feature = "tts")] mut cmd: Commands,
     buttons: Query<&MenuButton>,
+    #[cfg(feature = "tts")] mut options: ResMut<Persistent<GameOptions>>,
     mut next_state: ResMut<NextState<GameState>>,
     curr_menu_state: Res<State<MenuState>>,
     mut next_menu_state: ResMut<NextState<MenuState>>,
@@ -109,6 +130,17 @@ fn handle_buttons(
                     MenuButton::Options => {
                         next_menu_state.set(MenuState::Options);
                     },
+                    #[cfg(feature = "tts")]
+                    MenuButton::Speech => {
+                        let _ = options.update(|options| {
+                            options.text_to_speech = !options.text_to_speech;
+                        });
+                        next_menu_state.set(MenuState::Refresh);
+                        cmd.spawn((
+                            MenuRefreshState(MenuState::Options),
+                            StateScoped(MenuState::Refresh),
+                        ));
+                    },
                     MenuButton::Mappings => {
                         next_menu_state.set(MenuState::Mappings);
                     },
@@ -131,8 +163,20 @@ fn handle_buttons(
                 MenuState::Main => next_state.set(GameState::Play),
                 MenuState::Options => next_menu_state.set(MenuState::Main),
                 MenuState::Mappings => next_menu_state.set(MenuState::Options),
+                MenuState::Refresh => {},
             },
             _ => {},
         }
     }
+}
+
+fn refresh_state(
+    refresh_state: Query<&MenuRefreshState>,
+    mut next_menu_state: ResMut<NextState<MenuState>>,
+) {
+    let Ok(next) = refresh_state.get_single() else {
+        next_menu_state.set(MenuState::default());
+        return;
+    };
+    next_menu_state.set(next.0.clone());
 }

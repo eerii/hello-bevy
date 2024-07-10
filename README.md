@@ -12,7 +12,7 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 
 - uses bevy 0.14
 - curated plugins that are all optional and configurable by feature flags
-- fully featured menu with keyboard, mouse and gamepad navigation
+- fully featured accesible menu with keyboard, mouse and gamepad navigation and text to speech
 - ci that checks errors and lint
 - creates binaries for web, linux, mac and windows when releasing a tag
 - deploy to itch automatically
@@ -103,6 +103,7 @@ this template intends to use as little external dependencies as possible to faci
 - [leafwing-input-manager](https://github.com/Leafwing-Studios/leafwing-input-manager): an awesome way of handling input from multiple sources and create simple bindings
 - [bevy-alt-ui-navigation-lite](https://github.com/bevy-alt-ui-navigation-lite): allows to easily make uis that can be navigable by mouse, keyboard or gamepad
 - [sickle_ui](https://github.com/UmbraLuminosa/sickle_ui): helpers on top of bevy's native ui that makes it much easier to work with
+- [bevy-persistent](https://github.com/umut-sahin/bevy-persistent): automatically read and write game data to disk
 - [bevy_embedded_assets](https://github.com/vleue/bevy_embedded_assets): only on release by default, allows placing assets inside of the binary for ease of distribution
 
 ### license 📝

@@ -31,24 +31,26 @@ pub trait UiTextWidget {
 
 impl UiTextWidget for UiBuilder<'_, Entity> {
     fn text(&mut self, text: String, font: Handle<Font>) -> UiBuilder<Entity> {
-        self.spawn(TextBundle::from_section(
-            text,
-            TextStyle {
+        self.spawn((
+            TextBundle::from_section(text.clone(), TextStyle {
                 font,
                 font_size: FONT_SIZE_TEXT,
                 color: Color::WHITE,
-            },
+            }),
+            #[cfg(feature = "tts")]
+            super::tts::SpeechTag(text),
         ))
     }
 
     fn title(&mut self, text: String, font: Handle<Font>) -> UiBuilder<Entity> {
-        self.spawn(TextBundle::from_section(
-            text,
-            TextStyle {
+        self.spawn((
+            TextBundle::from_section(text.clone(), TextStyle {
                 font,
                 font_size: FONT_SIZE_TITLE,
                 color: Color::WHITE,
-            },
+            }),
+            #[cfg(feature = "tts")]
+            super::tts::SpeechTag(text),
         ))
     }
 }
@@ -104,7 +106,6 @@ impl UiButtonWidget for UiBuilder<'_, Entity> {
                         ..default()
                     },
                     background_color: BUTTON_COLOR.into(),
-                    border_color: BUTTON_COLOR.into(),
                     #[cfg(not(feature = "pixel_perfect"))]
                     border_radius: BorderRadius::MAX,
                     ..default()

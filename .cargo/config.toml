@@ -5,7 +5,6 @@
 # You need to install mold for the fastest compile, else change /usr/bin/mold to lld
 
 [target.x86_64-unknown-linux-gnu]
-linker = "clang"
 rustflags = ["-Clink-arg=-fuse-ld=mold", "-Zshare-generics=y"]
 
 # [CHANGE]: You must install [Mach-O LLD Port](https://lld.llvm.org/MachO/index.html) on mac

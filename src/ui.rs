@@ -9,6 +9,8 @@ use crate::camera::FinalCamera;
 pub mod menu;
 #[cfg(feature = "navigation")]
 pub mod navigation;
+#[cfg(feature = "tts")]
+pub mod tts;
 pub mod widgets;
 
 // ······
@@ -28,6 +30,9 @@ impl Plugin for UiPlugin {
 
         #[cfg(feature = "navigation")]
         app.add_plugins(navigation::NavigationPlugin);
+
+        #[cfg(feature = "tts")]
+        app.add_plugins(tts::SpeechPlugin);
     }
 }
 
@@ -39,7 +44,7 @@ impl Plugin for UiPlugin {
 /// Everything ui related should be a child of this
 /// Uses Sickle to provide greater flexibility and ease of use
 #[derive(Component)]
-pub(self) struct UiRootContainer;
+struct UiRootContainer;
 
 // ·······
 // Systems

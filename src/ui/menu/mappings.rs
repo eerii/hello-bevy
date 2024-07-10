@@ -1,8 +1,11 @@
 //! Key mappings menu submodule
 
 // TODO: Allow remapping
+// TODO: Same order every time
+// TODO: Mouse and other icons
 
 use bevy::{prelude::*, reflect::Enum};
+use itertools::Itertools;
 use leafwing_input_manager::prelude::*;
 use sickle_ui::prelude::*;
 
@@ -11,6 +14,7 @@ use crate::{
     input::Action,
     ui::{
         menu::{MenuButton, MenuState, BACKGROUND_COLOR, UI_GAP},
+        navigation::FocusableHoverFill,
         widgets::{UiButtonWidget, UiImageWidget, UiTextWidget},
         UiRootContainer,
     },
@@ -20,7 +24,7 @@ use crate::{
 // Systems
 // ·······
 
-/// Remap menu screen
+/// Mappings menu screen
 pub(super) fn open(
     mut cmd: Commands,
     root: Query<Entity, With<UiRootContainer>>,
@@ -47,7 +51,10 @@ pub(super) fn open(
                 return;
             };
 
-            for (action, maps) in input_map.iter() {
+            for (action, maps) in input_map
+                .iter()
+                .sorted_by_key(|(&a, _)| a.variant_name().to_string())
+            {
                 column.row(|row| {
                     row.style()
                         .width(Val::Percent(80.))
@@ -82,22 +89,18 @@ pub(super) fn open(
 
 fn row_mapping(map: &dyn Reflect, row: &mut UiBuilder<Entity>, asset_server: &AssetServer) {
     let prompts = if let Some(key) = map.downcast_ref::<KeyCode>() {
-        vec![keycode_prompt(key)]
-            .iter()
-            .cloned()
-            .flatten()
-            .collect()
+        [keycode_prompt(key)].iter().flatten().cloned().collect()
     } else if let Some(button) = map.downcast_ref::<GamepadButtonType>() {
-        vec![gamepad_button_prompt(button)]
+        [gamepad_button_prompt(button)]
             .iter()
-            .cloned()
             .flatten()
+            .cloned()
             .collect()
     } else if let Some(dpad) = map.downcast_ref::<KeyboardVirtualDPad>() {
         dpad.raw_inputs()
             .keycodes
             .iter()
-            .filter_map(|k| keycode_prompt(k))
+            .filter_map(keycode_prompt)
             .collect()
     } else if let Some(stick) = map.downcast_ref::<GamepadStick>() {
         // Ugly workaround because the methods are private
@@ -113,7 +116,15 @@ fn row_mapping(map: &dyn Reflect, row: &mut UiBuilder<Entity>, asset_server: &As
 
     for prompt in prompts {
         // Dynamic loading to avoid having all icons in memory
-        row.image(asset_server.load(&prompt));
+        row.button(MenuButton::None, |button| {
+            button.image(asset_server.load(&prompt));
+        })
+        .insert(BorderRadius::all(Val::Px(16.)))
+        .insert(BorderColor::from(Srgba::NONE))
+        .insert(FocusableHoverFill)
+        .style()
+        .width(Val::Px(64.))
+        .height(Val::Px(64.));
     }
 }
 
