@@ -7,6 +7,8 @@
 use bevy::prelude::*;
 use sickle_ui::prelude::*;
 
+use super::navigation::HightlightChild;
+
 const BUTTON_WIDTH: Val = Val::Px(256.);
 const BUTTON_HEIGHT: Val = Val::Px(64.);
 
@@ -114,6 +116,72 @@ impl UiButtonWidget for UiBuilder<'_, Entity> {
                 bevy_alt_ui_navigation_lite::prelude::Focusable::default(),
                 component,
             ),
+            spawn_children,
+        )
+    }
+}
+
+/// Creates an option row
+/// It consist of a name to the left and anything to the left
+pub trait UiOptionRowWidget {
+    /// Append an option row element
+    fn option_row<T: Component>(
+        &mut self,
+        component: T,
+        text: String,
+        font: Handle<Font>,
+    ) -> UiBuilder<Entity>;
+
+    /// Option row button
+    fn option_button(
+        &mut self,
+        spawn_children: impl FnOnce(&mut UiBuilder<Entity>),
+    ) -> UiBuilder<Entity>;
+}
+
+impl UiOptionRowWidget for UiBuilder<'_, Entity> {
+    fn option_row<T: Component>(
+        &mut self,
+        component: T,
+        text: String,
+        font: Handle<Font>,
+    ) -> UiBuilder<Entity> {
+        self.row(|row| {
+            row.style()
+                .width(Val::Percent(80.))
+                .justify_content(JustifyContent::Center)
+                .column_gap(Val::Px(4.));
+
+            row.text(text, font).style().flex_grow(1.);
+
+            row.insert((
+                #[cfg(feature = "navigation")]
+                bevy_alt_ui_navigation_lite::prelude::Focusable::default(),
+                component,
+                HightlightChild,
+            ));
+        })
+    }
+
+    fn option_button(
+        &mut self,
+        spawn_children: impl FnOnce(&mut UiBuilder<Entity>),
+    ) -> UiBuilder<Entity> {
+        self.container(
+            ButtonType {
+                style: Style {
+                    width: BUTTON_WIDTH,
+                    height: BUTTON_HEIGHT,
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    border: UiRect::all(Val::Px(6.0)),
+                    ..default()
+                },
+                background_color: BUTTON_COLOR.into(),
+                #[cfg(not(feature = "pixel_perfect"))]
+                border_radius: BorderRadius::MAX,
+                ..default()
+            },
             spawn_children,
         )
     }

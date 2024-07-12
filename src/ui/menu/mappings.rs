@@ -10,11 +10,13 @@ use sickle_ui::prelude::*;
 
 use crate::{
     assets::CoreAssets,
+    camera::BACKGROUND_LUMINANCE,
+    data::{GameOptions, Persistent},
     input::Action,
     ui::{
-        menu::{MenuButton, MenuState, BACKGROUND_COLOR, UI_GAP},
+        menu::{MenuButton, MenuState, UI_GAP},
         navigation::FocusableHoverFill,
-        widgets::{UiButtonWidget, UiImageWidget, UiTextWidget},
+        widgets::{UiButtonWidget, UiImageWidget, UiOptionRowWidget, UiTextWidget},
         UiRootContainer,
     },
 };
@@ -30,6 +32,7 @@ pub(super) fn open(
     input_map: Query<&InputMap<Action>>,
     asset_server: Res<AssetServer>,
     assets: Res<CoreAssets>,
+    options: Res<Persistent<GameOptions>>,
 ) {
     let Ok(root) = root.get_single() else {
         return;
@@ -54,23 +57,19 @@ pub(super) fn open(
                 .iter()
                 .sorted_by_key(|(&a, _)| a.variant_name().to_string())
             {
-                column.row(|row| {
-                    row.style()
-                        .width(Val::Percent(80.))
-                        .justify_content(JustifyContent::Center)
-                        .column_gap(Val::Px(4.));
+                let mut row = column.option_row(
+                    MenuButton::None,
+                    action.variant_name().into(),
+                    assets.font.clone(),
+                );
 
-                    row.text(
-                        action.variant_name().into(),
-                        assets.font.clone(),
-                    )
-                    .style()
-                    .flex_grow(1.);
-
-                    for map in maps {
-                        row_mapping((**map).as_reflect(), row, &asset_server);
-                    }
-                });
+                for map in maps {
+                    row_mapping(
+                        (**map).as_reflect(),
+                        &mut row,
+                        &asset_server,
+                    );
+                }
             }
 
             column.button(MenuButton::ExitOrBack, |button| {
@@ -79,7 +78,7 @@ pub(super) fn open(
         })
         .insert(StateScoped(MenuState::Mappings))
         .style()
-        .background_color(BACKGROUND_COLOR);
+        .background_color(options.base_color.with_luminance(BACKGROUND_LUMINANCE));
 }
 
 // ·······
@@ -115,11 +114,12 @@ fn row_mapping(map: &dyn Reflect, row: &mut UiBuilder<Entity>, asset_server: &As
 
     for prompt in prompts {
         // Dynamic loading to avoid having all icons in memory
-        row.button(MenuButton::None, |button| {
+        row.option_button(|button| {
             button.image(asset_server.load(&prompt));
         })
         .insert(BorderRadius::all(Val::Px(16.)))
         .insert(BorderColor::from(Srgba::NONE))
+        .insert(BackgroundColor::from(Srgba::NONE))
         .insert(FocusableHoverFill)
         .style()
         .width(Val::Px(64.))

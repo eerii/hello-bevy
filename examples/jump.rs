@@ -5,8 +5,8 @@ use bevy::{math::bounding::*, prelude::*};
 use hello_bevy::{
     assets::CoreAssets,
     camera::GameCamera,
+    data::{GameOptions, Persistent},
     input::{Action, ActionState},
-    ui::{menu::BACKGROUND_COLOR, widgets::BUTTON_COLOR},
     AppConfig, GamePlugin, GameState,
 };
 use rand::Rng;
@@ -105,21 +105,12 @@ struct CameraFollow {
 // Systems
 // ·······
 
-fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, cam: Query<Entity, With<GameCamera>>) {
-    // Background
-    cmd.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                color: BACKGROUND_COLOR,
-                custom_size: Some(LEVEL_SIZE),
-                ..default()
-            },
-            transform: Transform::from_xyz(0., 0., -10.),
-            ..default()
-        },
-        CameraFollow::default(),
-    ));
-
+fn init_sample(
+    mut cmd: Commands,
+    assets: Res<CoreAssets>,
+    options: Res<Persistent<GameOptions>>,
+    cam: Query<Entity, With<GameCamera>>,
+) {
     // Player
     cmd.spawn((
         SpriteBundle {
@@ -141,7 +132,7 @@ fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, cam: Query<Entity, Wi
     cmd.spawn((
         SpriteBundle {
             sprite: Sprite {
-                color: BUTTON_COLOR,
+                color: options.accent_color,
                 custom_size: Some(Vec2::new(LEVEL_SIZE.x, 32.)),
                 ..default()
             },
@@ -158,7 +149,7 @@ fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, cam: Query<Entity, Wi
             text: Text::from_section("0", TextStyle {
                 font: assets.font.clone(),
                 font_size: 150.,
-                color: BUTTON_COLOR.lighter(0.3),
+                color: options.base_color.lighter(0.3),
             }),
             transform: Transform::from_xyz(5.3, 0.3, -1.),
             ..default()
@@ -309,7 +300,12 @@ fn update_counter(mut counter: Query<(&mut Counter, &mut Text)>, player: Query<&
     text.sections[0].value = counter.0.to_string();
 }
 
-fn spawn_platforms(mut cmd: Commands, mut info: ResMut<PlatformInfo>, player: Query<&Player>) {
+fn spawn_platforms(
+    mut cmd: Commands,
+    options: Res<Persistent<GameOptions>>,
+    mut info: ResMut<PlatformInfo>,
+    player: Query<&Player>,
+) {
     let Ok(player) = player.get_single() else {
         return;
     };
@@ -323,7 +319,7 @@ fn spawn_platforms(mut cmd: Commands, mut info: ResMut<PlatformInfo>, player: Qu
         cmd.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    color: BUTTON_COLOR,
+                    color: options.accent_color,
                     custom_size: Some(PLATFORM_SIZE),
                     ..default()
                 },

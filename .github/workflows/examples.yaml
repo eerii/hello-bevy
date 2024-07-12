@@ -32,7 +32,9 @@ jobs:
         uses: nixbuild/nix-quick-install-action@v28
 
       - name: Use nix flake
-        uses: nicknovitski/nix-develop@v1 
+        uses: nicknovitski/nix-develop@v1
+        with:
+          arguments: ".#web"
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2

@@ -5,8 +5,10 @@ use sickle_ui::prelude::*;
 
 use crate::{
     assets::CoreAssets,
+    camera::BACKGROUND_LUMINANCE,
+    data::{GameOptions, Persistent},
     ui::{
-        menu::{MenuButton, MenuState, BACKGROUND_COLOR, UI_GAP},
+        menu::{MenuButton, MenuState, UI_GAP},
         widgets::{UiButtonWidget, UiTextWidget},
         UiRootContainer,
     },
@@ -24,6 +26,7 @@ pub(super) fn open(
     mut cmd: Commands,
     root: Query<Entity, With<UiRootContainer>>,
     assets: Res<CoreAssets>,
+    options: Res<Persistent<GameOptions>>,
 ) {
     let Ok(root) = root.get_single() else {
         return;
@@ -55,5 +58,10 @@ pub(super) fn open(
         })
         .insert(StateScoped(MenuState::Main))
         .style()
-        .background_color(BACKGROUND_COLOR);
+        .background_color(
+            options
+                .base_color
+                .with_luminance(BACKGROUND_LUMINANCE)
+                .with_alpha(0.8),
+        );
 }

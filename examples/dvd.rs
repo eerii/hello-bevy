@@ -5,7 +5,6 @@ use bevy::{
 use hello_bevy::{
     assets::{CoreAssets, ExampleAssets},
     camera::GameCamera,
-    ui::menu::BACKGROUND_COLOR,
     AppConfig, GamePlugin, GameState,
 };
 
@@ -76,20 +75,6 @@ fn init_sample(
 
     let size = Vec2::new(win.width(), win.height());
     cmd.insert_resource(Bounds(size));
-
-    // Background
-    cmd.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                color: BACKGROUND_COLOR,
-                custom_size: Some(size),
-                ..default()
-            },
-            transform: Transform::from_xyz(0., 0., -10.),
-            ..default()
-        },
-        Background,
-    ));
 
     // Sprites
     for velocity in [

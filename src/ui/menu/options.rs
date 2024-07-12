@@ -3,13 +3,13 @@
 use bevy::prelude::*;
 use sickle_ui::prelude::*;
 
-#[cfg(feature = "tts")]
-use crate::data::{GameOptions, Persistent};
 use crate::{
     assets::CoreAssets,
+    camera::BACKGROUND_LUMINANCE,
+    data::{GameOptions, Persistent},
     ui::{
-        menu::{MenuButton, MenuState, BACKGROUND_COLOR, UI_GAP},
-        widgets::{UiButtonWidget, UiTextWidget},
+        menu::{MenuButton, MenuState, UI_GAP},
+        widgets::{UiButtonWidget, UiOptionRowWidget, UiTextWidget},
         UiRootContainer,
     },
 };
@@ -23,7 +23,7 @@ pub(super) fn open(
     mut cmd: Commands,
     root: Query<Entity, With<UiRootContainer>>,
     assets: Res<CoreAssets>,
-    #[cfg(feature = "tts")] options: Res<Persistent<GameOptions>>,
+    options: Res<Persistent<GameOptions>>,
 ) {
     let Ok(root) = root.get_single() else {
         return;
@@ -40,21 +40,30 @@ pub(super) fn open(
 
             column.title("Options".into(), assets.font.clone());
 
-            // TODO: Refactor into propper options
             #[cfg(feature = "tts")]
-            column.button(MenuButton::Speech, |button| {
-                button.text(
-                    format!(
-                        "Speech: {}",
-                        if options.text_to_speech { "Enabled" } else { "Disabled" }
-                    ),
+            column
+                .option_row(
+                    MenuButton::Speech,
+                    "Speech".into(),
                     assets.font.clone(),
-                );
-            });
+                )
+                .insert(crate::ui::menu::Focusable::new().prioritized())
+                .option_button(|button| {
+                    button.text(
+                        (if options.text_to_speech { "Enabled" } else { "Disabled" }).into(),
+                        assets.font.clone(),
+                    );
+                });
 
-            column.button(MenuButton::Mappings, |button| {
-                button.text("Mappings".into(), assets.font.clone());
-            });
+            column
+                .option_row(
+                    MenuButton::Mappings,
+                    "Mappings".into(),
+                    assets.font.clone(),
+                )
+                .option_button(|button| {
+                    button.text("View".into(), assets.font.clone());
+                });
 
             column.button(MenuButton::ExitOrBack, |button| {
                 button.text("Back".into(), assets.font.clone());
@@ -62,5 +71,5 @@ pub(super) fn open(
         })
         .insert(StateScoped(MenuState::Options))
         .style()
-        .background_color(BACKGROUND_COLOR);
+        .background_color(options.base_color.with_luminance(BACKGROUND_LUMINANCE));
 }

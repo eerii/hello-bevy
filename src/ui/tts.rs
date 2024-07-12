@@ -17,7 +17,7 @@ pub struct SpeechPlugin;
 
 impl Plugin for SpeechPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, init);
+        app.add_systems(PostStartup, init);
 
         #[cfg(feature = "navigation")]
         app.add_systems(
@@ -94,8 +94,15 @@ fn init(mut cmd: Commands) {
 
 #[cfg(feature = "navigation")]
 fn navigation_speech(
-    focusables: Query<Entity, With<Focusable>>,
-    speech_tag: Query<(Entity, &SpeechTag, Option<&Parent>)>,
+    query: Query<
+        (
+            Entity,
+            Option<&Focusable>,
+            Option<&Children>,
+        ),
+        With<Node>,
+    >,
+    speech_tag: Query<&SpeechTag>,
     options: Res<Persistent<GameOptions>>,
     speech: Option<ResMut<Speech>>,
     mut nav_event_reader: EventReader<NavEvent>,
@@ -108,20 +115,24 @@ fn navigation_speech(
     }
 
     for event in nav_event_reader.read() {
-        match event {
-            NavEvent::FocusChanged { to, from: _ } => speak_focusable(
-                to.first(),
-                &focusables,
+        let to = match event {
+            NavEvent::FocusChanged { to, from: _ } => to.first(),
+            NavEvent::InitiallyFocused(to) => to,
+            _ => {
+                continue;
+            },
+        };
+        for (entity, focusable, _) in query.iter() {
+            if focusable.is_none() || entity != *to {
+                continue;
+            }
+            speak_focusable(
+                entity,
+                &query,
                 &speech_tag,
                 &mut speech,
-            ),
-            NavEvent::InitiallyFocused(to) => speak_focusable(
-                to,
-                &focusables,
-                &speech_tag,
-                &mut speech,
-            ),
-            _ => {},
+                true,
+            );
         }
     }
 }
@@ -131,24 +142,37 @@ fn navigation_speech(
 // ·······
 
 fn speak_focusable(
-    to: &Entity,
-    focusables: &Query<Entity, With<Focusable>>,
-    speech_tag: &Query<(Entity, &SpeechTag, Option<&Parent>)>,
+    current: Entity,
+    query: &Query<
+        (
+            Entity,
+            Option<&Focusable>,
+            Option<&Children>,
+        ),
+        With<Node>,
+    >,
+    speech_tag: &Query<&SpeechTag>,
     speech: &mut Speech,
-) {
-    for (entity, tag, parent) in speech_tag.iter() {
-        let focus = focusables.get(entity).unwrap_or({
-            let Some(parent) = parent else {
-                continue;
-            };
-            let Ok(focus) = focusables.get(parent.get()) else {
-                continue;
-            };
-            focus
-        });
-        if *to == focus {
-            speech.speak(&tag.0, true);
-            return;
+    interrupt: bool,
+) -> bool {
+    let Ok((entity, _, children)) = query.get(current) else {
+        return false;
+    };
+
+    let mut interrupt = interrupt;
+    if let Ok(tag) = speech_tag.get(entity) {
+        speech.speak(&tag.0, interrupt);
+        interrupt = false;
+    }
+
+    if let Some(children) = children {
+        info!("call children");
+        for &child in children {
+            interrupt = speak_focusable(
+                child, query, speech_tag, speech, interrupt,
+            );
         }
     }
+
+    interrupt
 }

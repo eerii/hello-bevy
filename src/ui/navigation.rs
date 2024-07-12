@@ -27,7 +27,11 @@ impl Plugin for NavigationPlugin {
         .add_systems(Startup, init)
         .add_systems(
             Update,
-            ((handle_input, update_focus).run_if(in_state(GameState::Menu)),),
+            ((
+                handle_input.before(NavRequestSystem),
+                update_focus.after(NavRequestSystem),
+            )
+                .run_if(in_state(GameState::Menu)),),
         );
 
         #[cfg(feature = "menu")]
@@ -60,6 +64,10 @@ pub(super) enum UiAction {
 /// show that it is being hovered
 #[derive(Component)]
 pub(super) struct FocusableHoverFill;
+
+/// A focusable that should hightlight its children, not itself
+#[derive(Component)]
+pub(super) struct HightlightChild;
 
 // ·······
 // Systems
@@ -100,17 +108,31 @@ fn init(mut cmd: Commands) {
 fn update_focus(
     mut focusables: Query<
         (
+            Entity,
             &Focusable,
-            Option<&mut BorderColor>,
-            Option<&mut BackgroundColor>,
-            Option<&FocusableHoverFill>,
+            Option<&Children>,
+            Option<&HightlightChild>,
         ),
-        (Changed<Focusable>,),
+        Changed<Focusable>,
     >,
+    mut border: Query<&mut BorderColor>,
+    mut background: Query<&mut BackgroundColor>,
+    fill: Query<&FocusableHoverFill>,
 ) {
-    for (focus, border, background, fill) in focusables.iter_mut() {
-        if fill.is_some() {
-            let Some(mut color) = background else {
+    for (entity, focus, children, highlight_child) in focusables.iter_mut() {
+        let entity = match highlight_child {
+            Some(_) => {
+                if let Some(children) = children {
+                    *children.last().unwrap_or(&entity)
+                } else {
+                    entity
+                }
+            },
+            None => entity,
+        };
+
+        if fill.contains(entity) {
+            let Ok(mut color) = background.get_mut(entity) else {
                 continue;
             };
             *color = match focus.state() {
@@ -119,7 +141,7 @@ fn update_focus(
             }
             .into();
         } else {
-            let Some(mut color) = border else {
+            let Ok(mut color) = border.get_mut(entity) else {
                 continue;
             };
             *color = match focus.state() {

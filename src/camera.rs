@@ -2,6 +2,11 @@
 
 use bevy::prelude::*;
 
+use crate::data::{GameOptions, Persistent};
+
+/// The luminance of the background color
+pub const BACKGROUND_LUMINANCE: f32 = 0.05;
+
 // ······
 // Plugin
 // ······
@@ -13,7 +18,7 @@ pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreStartup, init);
+        app.add_systems(Startup, init);
     }
 }
 
@@ -36,12 +41,25 @@ pub struct FinalCamera;
 // ·······
 
 /// Creates the main cameras before the game starts
-fn init(mut cmd: Commands) {
+fn init(mut cmd: Commands, options: Res<Persistent<GameOptions>>) {
+    let clear_color =
+        ClearColorConfig::Custom(options.base_color.with_luminance(BACKGROUND_LUMINANCE));
+
     #[cfg(not(feature = "3d_camera"))]
-    let camera_bundle = Camera2dBundle { ..default() };
+    let camera_bundle = Camera2dBundle {
+        camera: Camera {
+            clear_color,
+            ..default()
+        },
+        ..default()
+    };
 
     #[cfg(feature = "3d_camera")]
     let camera_bundle = Camera3dBundle {
+        camera: Camera {
+            clear_color,
+            ..default()
+        },
         transform: Transform::from_xyz(0.0, 0.0, 10.0),
         ..default()
     };

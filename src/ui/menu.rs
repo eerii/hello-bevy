@@ -12,8 +12,6 @@ mod mappings;
 mod options;
 
 const UI_GAP: Val = Val::Px(16.);
-/// Background color of the menu
-pub const BACKGROUND_COLOR: Color = Color::srgba(0.0, 0.05, 0.1, 0.8);
 
 // ······
 // Plugin
@@ -92,6 +90,7 @@ enum MenuButton {
 /// Indicates what is the state being refreshed
 #[derive(Component)]
 struct MenuRefreshState(MenuState);
+
 // ·······
 // Systems
 // ·······

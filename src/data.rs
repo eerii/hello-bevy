@@ -19,7 +19,7 @@ pub struct DataPlugin;
 
 impl Plugin for DataPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, init);
+        app.add_systems(PreStartup, init);
     }
 }
 
@@ -30,11 +30,27 @@ impl Plugin for DataPlugin {
 /// Game options
 /// Useful for accesibility and the settings menu
 /// CHANGE: Add any configurable game options here
-#[derive(Default, Resource, Serialize, Deserialize)]
+#[derive(Resource, Serialize, Deserialize)]
 pub struct GameOptions {
+    /// Base color of the game, used for backgrounds, etc
+    pub base_color: Color,
+    /// Accent color, meant to contrast with the base color
+    pub accent_color: Color,
+
     /// Controlls if text to speech is enabled for menu navigation
     #[cfg(feature = "tts")]
     pub text_to_speech: bool,
+}
+
+impl Default for GameOptions {
+    fn default() -> Self {
+        Self {
+            base_color: Color::srgb(0.3, 0.5, 0.9),
+            accent_color: Color::srgb(0.3, 0.5, 0.9),
+            #[cfg(feature = "tts")]
+            text_to_speech: default(),
+        }
+    }
 }
 
 /// Save data
