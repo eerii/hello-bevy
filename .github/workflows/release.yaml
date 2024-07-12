@@ -13,10 +13,10 @@ on:
         type: string
 
 env:
-  binary: hello-bevy # [CHANGE]: This needs to match the project name in cargo.toml
-  add_binaries_to_github_release: true
-  itch_target: eerii/hello-bevy # [CHANGE]: If you want to deploy to itch, set this as your username/project-url
-  features: "release" # [CHANGE]: Add features here if you need them
+  binary: hello-bevy            # CHANGE: This needs to match the project name in Cargo.toml
+  itch_target: eerii/hello-bevy # CHANGE: If you want to deploy to itch, set this as your username/project-url
+  features: "release"           # CHANGE: Add features here if you need them
+  optimize: false               # CHANGE: This produces a smaller and faster web build, but it takes a long time
 
 jobs:
   get-version:
@@ -47,24 +47,29 @@ jobs:
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2 
+        with:
+          shared-key: "web-release"
 
       - name: Build
         run: |
-          trunk build --release --no-default-features --features ${{ env.features }}
+          cargo build --release --example ${{ matrix.name }} --no-default-features --features ${{ matrix.features }} --target wasm32-unknown-unknown
+
+      - name: Prepare package
+        run: |
+          wasm-bindgen --no-typescript --out-name ${{ env.binary }} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.binary }}.wasm
 
       - name: Optimize Wasm
-        uses: NiklasEi/wasm-opt-action@v2
-        with:
-          file: wasm/dist/*.wasm
-
-      - name: Make paths relative
+        if: ${{ env.optimize == 'true' }}
+        working-directory: ./wasm
         run: |
-          sed -i 's/\/${{ env.binary }}/.\/${{ env.binary }}/g' wasm/dist/index.html
+          mv ${{ env.binary }}_bg.wasm base.wasm
+          wasm-opt base.wasm -o ${{ env.binary }}_bg.wasm -Os
 
       - name: Package as a zip
-        working-directory: ./wasm/dist
+        working-directory: ./wasm
         run: |
-          zip --recurse-paths ../../${{ env.binary }}.zip .
+          sed -i "s/hello-bevy/${{ env.binary }}/g" index.html
+          zip --recurse-paths ../${{ matrix.name }}.zip .
 
       - name: Upload binaries to artifacts
         uses: actions/upload-artifact@v4
@@ -73,7 +78,6 @@ jobs:
           name: wasm
 
       - name: Upload binaries to release
-        if: ${{ env.add_binaries_to_github_release == 'true' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -126,7 +130,6 @@ jobs:
           name: linux
 
       - name: Upload binaries to release
-        if: ${{ env.add_binaries_to_github_release == 'true' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -176,7 +179,6 @@ jobs:
           name: windows
 
       - name: Upload binaries to release
-        if: ${{ env.add_binaries_to_github_release == 'true' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -246,7 +248,6 @@ jobs:
           name: mac
 
       - name: Upload binaries to release
-        if: ${{ env.add_binaries_to_github_release == 'true' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}

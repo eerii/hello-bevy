@@ -9,13 +9,13 @@ on:
         type: string
 
 env:
-  binary: hello-bevy
+  binary: hello-bevy # CHANGE: This needs to match the project name in Cargo.toml
+  optimize: false    # CHANGE: This produces a smaller and faster web build, but it takes a long time
 
 jobs:
   build-wasm:
     strategy:
       matrix:
-        name: [dvd jump]
         include:
           - name: dvd 
             features: "release"
@@ -37,29 +37,28 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          shared-key: "linux-release" 
+          shared-key: "web-release"
 
       - name: Build
         run: |
-          rm src/main.rs
-          cd src
-          ln -sf ../examples/jump.rs main.rs
-          cd ..
-          trunk build --release --no-default-features --features ${{ matrix.features }}
+          cargo build --release --example ${{ matrix.name }} --no-default-features --features ${{ matrix.features }} --target wasm32-unknown-unknown
+
+      - name: Prepare package
+        run: |
+          wasm-bindgen --no-typescript --out-name ${{ env.binary }} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.binary }}.wasm
 
       - name: Optimize Wasm
-        uses: NiklasEi/wasm-opt-action@v2
-        with:
-          file: wasm/dist/*.wasm
-
-      - name: Make paths relative
+        if: ${{ env.optimize == 'true' }}
+        working-directory: ./wasm
         run: |
-          sed -i 's/\/${{ env.binary }}/.\/${{ env.binary }}/g' wasm/dist/index.html
+          mv ${{ env.binary }}_bg.wasm base.wasm
+          wasm-opt base.wasm -o ${{ env.binary }}_bg.wasm -Os
 
       - name: Package as a zip
-        working-directory: ./wasm/dist
+        working-directory: ./wasm
         run: |
-          zip --recurse-paths ../../${{ matrix.name }}.zip .
+          sed -i "s/hello-bevy/${{ env.binary }}/g" index.html
+          zip --recurse-paths ../${{ matrix.name }}.zip .
 
       - name: Upload binaries to artifacts
         uses: actions/upload-artifact@v4

@@ -36,12 +36,6 @@ to run a debug build use cargo:
 cargo run
 ```
 
-and to start a local web build, use trunk:
-
-```sh
-trunk serve
-```
-
 you can also play around with some of the included examples with `cargo run --example <name>`. and if you want to get started quickly, copy any example to `src/main.rs`!
 
 in order to have a development environment up and ready, run `nix develop` or use [`nix-direnv`](https://github.com/nix-community/nix-direnv) installed create a `.envrc` like this:

@@ -1,7 +1,6 @@
 //! Key mappings menu submodule
 
 // TODO: Allow remapping
-// TODO: Same order every time
 // TODO: Mouse and other icons
 
 use bevy::{prelude::*, reflect::Enum};

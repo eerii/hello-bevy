@@ -7,13 +7,10 @@
   
   <title>Hello Bevy</title> <!-- CHANGE: Write your game name -->
 
-  <link data-trunk rel="inline" href="style.css"/>
-  <link data-trunk rel="rust" href="../Cargo.toml"/>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 
 <body>
-  <link data-trunk rel="inline" href="audio.js"/>
-
   <div class="game-container">
     <canvas id="bevy">
       Javascript and support for canvas is required
@@ -24,7 +21,16 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import './audio.js'
+    import init from './hello-bevy.js' // This is changed automatically in the release actions, it should match Cargo.toml
+
+    init().catch((error) => {
+      if (!error.message.startsWith("Using exceptions for control flow, don't mind me. This isn't actually an error!")) {
+        throw error;
+      }
+    });
+
     const bevy = document.getElementById('bevy');
     const loadingTitle = document.getElementById('loading');
     const observer = new MutationObserver(() => {

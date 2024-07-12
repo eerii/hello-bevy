@@ -8,3 +8,4 @@ graphs
 capture*
 *.tracy
 .direnv
+wasm/hello-bevy*
