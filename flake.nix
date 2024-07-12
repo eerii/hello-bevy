@@ -65,6 +65,9 @@
               toolchain
               # Toml
               taplo
+              # Web
+              wasm-bindgen-cli
+              trunk
             ];
 
             # For speechd

@@ -11,32 +11,61 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  clippy_fmt:
+    name: Cargo clippy and fmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install nix
+        uses: nixbuild/nix-quick-install-action@v28
+
+      - name: Use nix flake
+        uses: nicknovitski/nix-develop@v1 
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+
+      - name: Cargo clippy
+        run: cargo clippy --workspace --all-targets --all-features -- -Dwarnings --no-deps
+
+      - name: Cargo fmt
+        run: cargo fmt --all -- --check
+
+  check_toml:
+    name: Toml check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4 
+
+      - name: Install nix
+        uses: nixbuild/nix-quick-install-action@v28
+
+      - name: Run Taplo
+        run: nix run nixpkgs#taplo fmt -- --check --diff
+
   test:
     name: Cargo test
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Remove debug config
-        run: rm -f .cargo/config.toml
+      - name: Install nix
+        uses: nixbuild/nix-quick-install-action@v28
 
-      - name: Cache
-        uses: actions/cache@v3
+      - name: Use nix flake
+        uses: nicknovitski/nix-develop@v1
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2 
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.toml') }}
+          shared-key: "linux-debug"
 
-      - name: Install rust
-        uses: dtolnay/rust-toolchain@nightly
-
-      - name: Install dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev protobuf-compiler libprotobuf-dev libwayland-dev libspeechd-dev clang
       - name: Cargo test
         run: cargo test --workspace
 
@@ -46,34 +75,25 @@ jobs:
       - name: Cargo check main
         run: cargo check --workspace
 
-
   test_release:
     name: Cargo test (release)
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Remove debug config
-        run: rm -f .cargo/config.toml
+      - name: Install nix
+        uses: nixbuild/nix-quick-install-action@v28
 
-      - name: Cache
-        uses: actions/cache@v3
+      - name: Use nix flake
+        uses: nicknovitski/nix-develop@v1 
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-test-release-${{ hashFiles('**/Cargo.toml') }}
+          shared-key: "linux-release"
 
-      - name: Install rust
-        uses: dtolnay/rust-toolchain@nightly
-
-      - name: Install dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev protobuf-compiler libprotobuf-dev libwayland-dev libspeechd-dev clang
-      
       - name: Cargo test
         run: cargo test --workspace --release --no-default-features --features release
 
@@ -81,63 +101,4 @@ jobs:
         run: cargo check --workspace --examples --release --no-default-features --features release
 
       - name: Cargo check main
-        run: cargo check --workspace --release --no-default-features --features release
-
-  clippy_check:
-    name: Cargo clippy and fmt
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Remove debug config
-        run: rm -f .cargo/config.toml
-
-      - name: Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.toml') }}
-
-      - name: Install rust
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rustfmt, clippy
-
-      - name: Install dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev protobuf-compiler libprotobuf-dev libwayland-dev libspeechd-dev clang
-
-      - name: Cargo clippy
-        run: cargo clippy --workspace --all-targets --all-features -- -Dwarnings
-
-      - name: Cargo fmt
-        run: cargo fmt --all -- --check
-
-  check_toml:
-    name: Toml check
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install taplo
-        run: | 
-          curl -fsSL https://github.com/tamasfe/taplo/releases/latest/download/taplo-full-linux-x86_64.gz \
-          | gzip -d - \
-          | install -m 755 /dev/stdin /usr/local/bin/taplo
-
-      - name: Run Taplo
-        id: taplo
-        run: taplo fmt --check --diff
-
-      - name: Taplo info
-        if: failure()
-        run: |
-          echo 'To fix toml fmt, please run `taplo fmt`'
-          echo 'Or if you use VSCode, use the Even Better Toml extension'
+        run: cargo check --workspace --release --no-default-features --features release  

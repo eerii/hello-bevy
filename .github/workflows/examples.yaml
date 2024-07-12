@@ -28,25 +28,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Remove debug config
-        run: rm -f .cargo/config.toml
+      - name: Install nix
+        uses: nixbuild/nix-quick-install-action@v28
 
-      - uses: dtolnay/rust-toolchain@nightly
+      - name: Use nix flake
+        uses: nicknovitski/nix-develop@v1 
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
         with:
-          targets: wasm32-unknown-unknown
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libwayland-dev libspeechd-dev clang
-      
-      - name: Install wasm-bindgen-cli
-        run: |
-          cargo install wasm-bindgen-cli
-
-      - name: Install trunk
-        uses: jetli/trunk-action@v0.1.0
-        with:
-          version: latest
+          shared-key: "linux-release" 
 
       - name: Build
         run: |
@@ -71,7 +62,7 @@ jobs:
           zip --recurse-paths ../../${{ matrix.name }}.zip .
 
       - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ matrix.name }}.zip
           name: wasm

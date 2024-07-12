@@ -39,25 +39,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Remove debug config
-        run: rm -f .cargo/config.toml
+      - name: Install nix
+        uses: nixbuild/nix-quick-install-action@v28
 
-      - uses: dtolnay/rust-toolchain@nightly
-        with:
-          targets: wasm32-unknown-unknown
+      - name: Use nix flake
+        uses: nicknovitski/nix-develop@v1 
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libwayland-dev libspeechd-dev clang
-      
-      - name: Install wasm-bindgen-cli
-        run: |
-          cargo install wasm-bindgen-cli
-
-      - name: Install trunk
-        uses: jetli/trunk-action@v0.1.0
-        with:
-          version: latest
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2 
 
       - name: Build
         run: |
@@ -78,7 +67,7 @@ jobs:
           zip --recurse-paths ../../${{ env.binary }}.zip .
 
       - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ env.binary }}.zip
           name: wasm
@@ -104,16 +93,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Remove debug config
-        run: rm -f .cargo/config.toml
+      - name: Install nix
+        uses: nixbuild/nix-quick-install-action@v28
 
-      - uses: dtolnay/rust-toolchain@nightly
+      - name: Use nix flake
+        uses: nicknovitski/nix-develop@v1 
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
         with:
-          targets: x86_64-unknown-linux-gnu
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libwayland-dev
+          shared-key: "linux-release"
 
       - name: Build
         run: |
@@ -131,7 +120,7 @@ jobs:
           zip --recurse-paths ../${{ env.binary }}.zip .
 
       - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ env.binary }}.zip
           name: linux
@@ -164,6 +153,9 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
 
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+
       - name: Build
         run: |
           cargo build --release --target x86_64-pc-windows-msvc --no-default-features --features ${{ env.features }}
@@ -178,7 +170,7 @@ jobs:
           Compress-Archive -Path windows/* -DestinationPath ${{ env.binary }}.zip
 
       - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ env.binary }}.zip
           name: windows
@@ -213,6 +205,11 @@ jobs:
         with:
           targets: aarch64-apple-darwin
 
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          key: "arm"
+
       - name: Build release for Apple Silicon
         run: |
           SDKROOT=$(xcrun -sdk macosx --show-sdk-path) cargo build --release --target=aarch64-apple-darwin --no-default-features --features ${{ env.features }}
@@ -221,6 +218,11 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-apple-darwin
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          key: "x86"
 
       - name: Build release for x86 Apple
         run: |
@@ -238,7 +240,7 @@ jobs:
           hdiutil create -fs HFS+ -volname "${{ env.binary }}" -srcfolder ${{ env.binary }}.app ${{ env.binary }}.dmg
 
       - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ${{ env.binary }}.dmg
           name: mac
