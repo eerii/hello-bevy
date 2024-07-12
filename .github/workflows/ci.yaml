@@ -36,8 +36,7 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
 
       - name: Install dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev protobuf-compiler libprotobuf-dev libwayland-dev
-      
+        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev protobuf-compiler libprotobuf-dev libwayland-dev libspeechd-dev clang
       - name: Cargo test
         run: cargo test --workspace
 
@@ -73,7 +72,7 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
 
       - name: Install dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev protobuf-compiler libprotobuf-dev libwayland-dev
+        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev protobuf-compiler libprotobuf-dev libwayland-dev libspeechd-dev clang
       
       - name: Cargo test
         run: cargo test --workspace --release --no-default-features --features release
@@ -111,7 +110,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Install dependencies
-        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev protobuf-compiler libprotobuf-dev libwayland-dev
+        run: sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev protobuf-compiler libprotobuf-dev libwayland-dev libspeechd-dev clang
 
       - name: Cargo clippy
         run: cargo clippy --workspace --all-targets --all-features -- -Dwarnings

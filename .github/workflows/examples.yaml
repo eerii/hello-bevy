@@ -15,9 +15,11 @@ jobs:
   build-wasm:
     strategy:
       matrix:
-        name: [dvd]
+        name: [dvd jump]
         include:
           - name: dvd 
+            features: "release"
+          - name: jump
             features: "release"
 
     runs-on: ubuntu-latest
@@ -35,7 +37,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libwayland-dev
+          sudo apt-get update; sudo apt-get install pkg-config libx11-dev libasound2-dev libudev-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev libwayland-dev libspeechd-dev clang
       
       - name: Install wasm-bindgen-cli
         run: |

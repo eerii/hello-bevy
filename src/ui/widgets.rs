@@ -15,7 +15,7 @@ const FONT_SIZE_TEXT: f32 = 36. * FONT_SIZE_MULT;
 const FONT_SIZE_TITLE: f32 = 64. * FONT_SIZE_MULT;
 
 /// Base color for UI buttons
-pub(crate) const BUTTON_COLOR: Color = Color::srgb(0.3, 0.5, 0.9);
+pub const BUTTON_COLOR: Color = Color::srgb(0.3, 0.5, 0.9);
 
 // ······
 // Traits

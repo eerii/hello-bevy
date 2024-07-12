@@ -5,6 +5,7 @@ use bevy::{
 use hello_bevy::{
     assets::{CoreAssets, ExampleAssets},
     camera::GameCamera,
+    ui::menu::BACKGROUND_COLOR,
     AppConfig, GamePlugin, GameState,
 };
 
@@ -80,7 +81,7 @@ fn init_sample(
     cmd.spawn((
         SpriteBundle {
             sprite: Sprite {
-                color: Color::srgb(0.05, 0.07, 0.15),
+                color: BACKGROUND_COLOR,
                 custom_size: Some(size),
                 ..default()
             },

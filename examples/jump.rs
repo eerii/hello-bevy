@@ -6,6 +6,7 @@ use hello_bevy::{
     assets::CoreAssets,
     camera::GameCamera,
     input::{Action, ActionState},
+    ui::{menu::BACKGROUND_COLOR, widgets::BUTTON_COLOR},
     AppConfig, GamePlugin, GameState,
 };
 use rand::Rng;
@@ -27,10 +28,6 @@ const MAX_JUMPS: u8 = 1;
 
 const CAMERA_VEL: f32 = 20.;
 const JUMP_BUFFER: f32 = 0.1;
-
-const COLOR_BACKGROUND: Color = Color::srgb(0.0, 0.05, 0.1);
-const COLOR_PLATFORMS: Color = Color::srgb(0.2, 0.3, 0.5);
-const COLOR_TEXT: Color = Color::srgb(0.5, 0.5, 0.9);
 
 fn main() {
     App::new()
@@ -113,7 +110,7 @@ fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, cam: Query<Entity, Wi
     cmd.spawn((
         SpriteBundle {
             sprite: Sprite {
-                color: COLOR_BACKGROUND,
+                color: BACKGROUND_COLOR,
                 custom_size: Some(LEVEL_SIZE),
                 ..default()
             },
@@ -144,7 +141,7 @@ fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, cam: Query<Entity, Wi
     cmd.spawn((
         SpriteBundle {
             sprite: Sprite {
-                color: COLOR_PLATFORMS,
+                color: BUTTON_COLOR,
                 custom_size: Some(Vec2::new(LEVEL_SIZE.x, 32.)),
                 ..default()
             },
@@ -161,7 +158,7 @@ fn init_sample(mut cmd: Commands, assets: Res<CoreAssets>, cam: Query<Entity, Wi
             text: Text::from_section("0", TextStyle {
                 font: assets.font.clone(),
                 font_size: 150.,
-                color: COLOR_TEXT,
+                color: BUTTON_COLOR.lighter(0.3),
             }),
             transform: Transform::from_xyz(5.3, 0.3, -1.),
             ..default()
@@ -326,7 +323,7 @@ fn spawn_platforms(mut cmd: Commands, mut info: ResMut<PlatformInfo>, player: Qu
         cmd.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    color: COLOR_PLATFORMS,
+                    color: BUTTON_COLOR,
                     custom_size: Some(PLATFORM_SIZE),
                     ..default()
                 },
