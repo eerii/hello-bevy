@@ -1,10 +1,11 @@
 # Based on https://github.com/bevyengine/bevy_github_ci_template/blob/main/.github/workflows/release.yaml
+# For cache to work in tags, you need to create it first in main
+# The recommended way to do this is to dispatch a job manually, then the subsequent tag releases can use that cache
 name: release
 
 on:
   push:
-    tags:
-      - "*[0-9]+.[0-9]+"
+    tags: [ "*[0-9]+.[0-9]+" ]
   workflow_dispatch:
     inputs:
       version:
@@ -37,7 +38,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install nix
         uses: nixbuild/nix-quick-install-action@v28
@@ -48,17 +49,16 @@ jobs:
           arguments: ".#web"
 
       - name: Rust cache
-        uses: swatinem/rust-cache@v2 
-        with:
-          shared-key: "web-release"
+        uses: swatinem/rust-cache@v2
 
       - name: Build
         run: |
-          cargo build --release --example ${{ matrix.name }} --no-default-features --features ${{ matrix.features }} --target wasm32-unknown-unknown
+          cargo build --release --target wasm32-unknown-unknown --no-default-features --features ${{ env.features }}
 
       - name: Prepare package
         run: |
           wasm-bindgen --no-typescript --out-name ${{ env.binary }} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.binary }}.wasm
+          sed -i "s/hello-bevy/${{ env.binary }}/g" wasm/index.html
 
       - name: Optimize Wasm
         if: ${{ env.optimize == 'true' }}
@@ -67,17 +67,16 @@ jobs:
           mv ${{ env.binary }}_bg.wasm base.wasm
           wasm-opt base.wasm -o ${{ env.binary }}_bg.wasm -Os
 
-      - name: Package as a zip
-        working-directory: ./wasm
-        run: |
-          sed -i "s/hello-bevy/${{ env.binary }}/g" index.html
-          zip --recurse-paths ../${{ matrix.name }}.zip .
-
       - name: Upload binaries to artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.binary }}.zip
+          path: wasm/*
           name: wasm
+
+      - name: Package as a zip
+        working-directory: ./wasm
+        run: |
+          zip --recurse-paths ../${{ env.binary }}.zip .
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
@@ -97,7 +96,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install nix
         uses: nixbuild/nix-quick-install-action@v28
@@ -107,8 +106,6 @@ jobs:
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
-        with:
-          shared-key: "linux-release"
 
       - name: Build
         run: |
@@ -120,16 +117,16 @@ jobs:
           cp target/x86_64-unknown-linux-gnu/release/${{ env.binary }} linux/
           strip linux/${{ env.binary }}
 
+      - name: Upload binaries to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          path: linux/*
+          name: linux
+
       - name: Package as a zip
         working-directory: ./linux
         run: |
           zip --recurse-paths ../${{ env.binary }}.zip .
-
-      - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          path: ${{ env.binary }}.zip
-          name: linux
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
@@ -149,7 +146,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Remove debug config (windows)
         run: Remove-Item -Path .cargo/config.toml
@@ -170,15 +167,15 @@ jobs:
           mkdir windows
           cp target/x86_64-pc-windows-msvc/release/${{ env.binary }}.exe windows/
 
-      - name: Package as a zip
-        run: |
-          Compress-Archive -Path windows/* -DestinationPath ${{ env.binary }}.zip
-
       - name: Upload binaries to artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ env.binary }}.zip
+          path: windows/*
           name: windows
+
+      - name: Package as a zip
+        run: |
+          Compress-Archive -Path windows/* -DestinationPath ${{ env.binary }}.zip
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
@@ -199,7 +196,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Remove debug config
         run: rm -f .cargo/config.toml
@@ -211,8 +208,6 @@ jobs:
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
-        with:
-          key: "arm"
 
       - name: Build release for Apple Silicon
         run: |
@@ -223,11 +218,6 @@ jobs:
         with:
           targets: x86_64-apple-darwin
 
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          key: "x86"
-
       - name: Build release for x86 Apple
         run: |
           SDKROOT=$(xcrun -sdk macosx --show-sdk-path) cargo build --release --target=x86_64-apple-darwin --no-default-features --features ${{ env.features }}
@@ -235,7 +225,7 @@ jobs:
       - name: Create Universal Binary
         run: |
           lipo -create -output target/release/${{ env.binary }} target/aarch64-apple-darwin/release/${{ env.binary }} target/x86_64-apple-darwin/release/${{ env.binary }}
-      
+
       - name: Prepare package
         run: |
           mkdir -p ${{ env.binary }}.app/Contents/MacOS
@@ -277,8 +267,8 @@ jobs:
       - check-upload-to-itch
       - release-wasm
       - release-linux
-      # - release-windows # [CHANGE]: Uncomment this if you want to automaticall deploy mac and windows builds to itch
-      # - release-macos   #           It is disabled by default because they take a loong time
+      - release-windows
+      - release-macos
     if: ${{ needs.check-upload-to-itch.outputs.should-upload == 'yes' }}
 
     env:
@@ -286,7 +276,7 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: ./builds
 
@@ -307,6 +297,6 @@ jobs:
             ./butler push \
                 --fix-permissions \
                 --userversion="${{ env.version }}" \
-                builds/$channel/* \
+                builds/$channel \
                 ${{ env.itch_target }}:$channel
           done
