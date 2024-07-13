@@ -23,6 +23,15 @@ impl Plugin for InputPlugin {
             Update,
             handle_input.run_if(in_state(crate::GameState::Play)),
         );
+
+        #[cfg(feature = "touch")]
+        app.add_systems(
+            PreUpdate,
+            touch_system
+                .chain()
+                .after(bevy::input::InputSystem)
+                .before(leafwing_input_manager::plugin::InputManagerSystem::Update),
+        );
     }
 }
 
@@ -52,10 +61,15 @@ fn init(mut cmd: Commands) {
     input_map
         .insert(Action::Jump, KeyCode::Space)
         .insert(Action::Jump, GamepadButtonType::South)
+        .insert(Action::Jump, MouseButton::Left)
         .insert(Action::Move, KeyboardVirtualDPad::WASD)
         .insert(Action::Move, GamepadStick::LEFT)
         .insert(Action::Pause, KeyCode::Escape)
         .insert(Action::Pause, GamepadButtonType::Start);
+
+    // If touch input is enabled, make the touch movement map to the move action
+    #[cfg(feature = "touch")]
+    input_map.insert(Action::Move, MouseMove::default());
 
     cmd.spawn(InputManagerBundle::with_map(input_map));
 }
@@ -73,4 +87,45 @@ fn handle_input(
     if input.just_pressed(&Action::Pause) {
         next_state.set(crate::GameState::Menu)
     }
+}
+
+/// Touch inputs are converted to equivalent mouse values to make them
+/// compatible with leafwing
+#[cfg(feature = "touch")]
+fn touch_system(
+    window: Query<Entity, With<bevy::window::PrimaryWindow>>,
+    touches: Res<Touches>,
+    mut mouse_button_writer: EventWriter<bevy::input::mouse::MouseButtonInput>,
+    mut cursor_moved_writer: EventWriter<CursorMoved>,
+) {
+    use bevy::input::{mouse::MouseButtonInput, ButtonState};
+
+    let Ok(window) = window.get_single() else { return };
+
+    for _ in touches.iter_just_pressed() {
+        mouse_button_writer.send(MouseButtonInput {
+            button: MouseButton::Left,
+            state: ButtonState::Pressed,
+            window,
+        });
+    }
+
+    for _ in touches.iter_just_released() {
+        mouse_button_writer.send(MouseButtonInput {
+            button: MouseButton::Left,
+            state: ButtonState::Released,
+            window,
+        });
+    }
+
+    // Doesn't support multitouch
+    let Some(touch) = touches.iter().next() else {
+        return;
+    };
+
+    cursor_moved_writer.send(CursorMoved {
+        position: touch.position(),
+        delta: Some(touch.delta()),
+        window,
+    });
 }

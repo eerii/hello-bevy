@@ -25,8 +25,9 @@ release = [ # Only in release (build with --release --no-default-features --feat
   "bevy_embedded_assets",
   "common",
   "tts",
+  "touch",
 ]
-common = ["input", "menu", "ui", "persist"]
+common = ["input", "menu", "persist", "ui"]
 
 3d_camera = []
 input = ["leafwing-input-manager"]
@@ -35,6 +36,7 @@ navigation = ["bevy-alt-ui-navigation-lite"]
 persist = ["bevy-persistent"]
 pixel_perfect = []
 resizable = []
+touch = ["input"]
 trace = ["release", "bevy/trace_tracy"]
 ui = ["sickle_ui"]
 
