@@ -62,9 +62,7 @@ jobs:
         uses: nicknovitski/nix-develop@v1
 
       - name: Rust cache
-        uses: swatinem/rust-cache@v2 
-        with:
-          shared-key: "linux-debug"
+        uses: swatinem/rust-cache@v2
 
       - name: Cargo test
         run: cargo test --workspace
@@ -91,8 +89,6 @@ jobs:
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
-        with:
-          shared-key: "linux-release"
 
       - name: Cargo test
         run: cargo test --workspace --release --no-default-features --features release

@@ -61,11 +61,7 @@ to run a release build locally:
 cargo run --release --no-default-features --features release
 ```
 
-on nixos, you might have trouble if you are downloading the linux precompiled binary from releases. this is because nixos does not follow fhs and it doesn't have a global library path. a workarround for running games there is to use this command:
-
-```sh
-NIXPKGS_ALLOW_UNFREE=1 nix-shell -p steam-run --run "steam-run GAME_PATH"
-```
+if the `tts` feature is enabled, you may need to install [speech dispatcher](https://wiki.archlinux.org/title/Speech_dispatcher) on linux.
 
 ### profiling 📈
 

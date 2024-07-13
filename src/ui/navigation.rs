@@ -232,6 +232,7 @@ fn on_mouse_move(
         .cursor_position()
         .map(|cursor| Aabb2d::new(cursor, Vec2::ZERO))
     {
+        warn!("{:?}", mouse);
         for (entity, node, trans) in focusables.iter() {
             let focused = focused.get_single().ok().unwrap_or(Entity::PLACEHOLDER);
             if entity == focused {

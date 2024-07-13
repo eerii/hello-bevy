@@ -203,7 +203,7 @@ fn update_player(
     };
 
     // Move
-    let axis = input.axis_pair(&Action::Move);
+    let axis = input.clamped_axis_pair(&Action::Move);
     let dir = axis.unwrap_or_default().x();
     if dir.abs() > 0. {
         player.velocity.x = dir * MOVE_VEL;

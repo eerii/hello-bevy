@@ -52,6 +52,7 @@ fn init(mut cmd: Commands) {
     input_map
         .insert(Action::Jump, KeyCode::Space)
         .insert(Action::Jump, GamepadButtonType::South)
+        .insert(Action::Jump, MouseButton::Left)
         .insert(Action::Move, KeyboardVirtualDPad::WASD)
         .insert(Action::Move, GamepadStick::LEFT)
         .insert(Action::Pause, KeyCode::Escape)
@@ -66,9 +67,7 @@ fn handle_input(
     input: Query<&ActionState<Action>>,
     mut next_state: ResMut<NextState<crate::GameState>>,
 ) {
-    let Ok(input) = input.get_single() else {
-        return;
-    };
+    let Ok(input) = input.get_single() else { return };
 
     if input.just_pressed(&Action::Pause) {
         next_state.set(crate::GameState::Menu)
