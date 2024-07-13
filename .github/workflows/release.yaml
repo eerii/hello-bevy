@@ -3,8 +3,8 @@ name: release
 
 on:
   push:
-    tags:
-      - "*[0-9]+.[0-9]+"
+    branches: [ main ]
+    tags: [ "*[0-9]+.[0-9]+" ]
   workflow_dispatch:
     inputs:
       version:
@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install nix
         uses: nixbuild/nix-quick-install-action@v28
@@ -48,17 +48,16 @@ jobs:
           arguments: ".#web"
 
       - name: Rust cache
-        uses: swatinem/rust-cache@v2 
-        with:
-          shared-key: "web-release"
+        uses: swatinem/rust-cache@v2
 
       - name: Build
         run: |
-          cargo build --release --example ${{ matrix.name }} --no-default-features --features ${{ matrix.features }} --target wasm32-unknown-unknown
+          cargo build --release --target wasm32-unknown-unknown --no-default-features --features ${{ env.features }}
 
       - name: Prepare package
         run: |
           wasm-bindgen --no-typescript --out-name ${{ env.binary }} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.binary }}.wasm
+          sed -i "s/hello-bevy/${{ env.binary }}/g" wasm/index.html
 
       - name: Optimize Wasm
         if: ${{ env.optimize == 'true' }}
@@ -70,14 +69,7 @@ jobs:
       - name: Package as a zip
         working-directory: ./wasm
         run: |
-          sed -i "s/hello-bevy/${{ env.binary }}/g" index.html
           zip --recurse-paths ../${{ matrix.name }}.zip .
-
-      - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          path: ${{ env.binary }}.zip
-          name: wasm
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
@@ -97,7 +89,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install nix
         uses: nixbuild/nix-quick-install-action@v28
@@ -107,8 +99,6 @@ jobs:
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
-        with:
-          shared-key: "linux-release"
 
       - name: Build
         run: |
@@ -124,12 +114,6 @@ jobs:
         working-directory: ./linux
         run: |
           zip --recurse-paths ../${{ env.binary }}.zip .
-
-      - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          path: ${{ env.binary }}.zip
-          name: linux
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
@@ -149,7 +133,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Remove debug config (windows)
         run: Remove-Item -Path .cargo/config.toml
@@ -174,12 +158,6 @@ jobs:
         run: |
           Compress-Archive -Path windows/* -DestinationPath ${{ env.binary }}.zip
 
-      - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          path: ${{ env.binary }}.zip
-          name: windows
-
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
@@ -199,7 +177,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Remove debug config
         run: rm -f .cargo/config.toml
@@ -211,8 +189,6 @@ jobs:
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
-        with:
-          key: "arm"
 
       - name: Build release for Apple Silicon
         run: |
@@ -222,11 +198,6 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: x86_64-apple-darwin
-
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          key: "x86"
 
       - name: Build release for x86 Apple
         run: |
@@ -242,12 +213,6 @@ jobs:
           cp target/release/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
           strip ${{ env.binary }}.app/Contents/MacOS/${{ env.binary }}
           hdiutil create -fs HFS+ -volname "${{ env.binary }}" -srcfolder ${{ env.binary }}.app ${{ env.binary }}.dmg
-
-      - name: Upload binaries to artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          path: ${{ env.binary }}.dmg
-          name: mac
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2

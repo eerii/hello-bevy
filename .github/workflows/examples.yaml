@@ -21,12 +21,13 @@ jobs:
             features: "release"
           - name: jump
             features: "release"
+      fail-fast: false
 
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install nix
         uses: nixbuild/nix-quick-install-action@v28
@@ -38,8 +39,6 @@ jobs:
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
-        with:
-          shared-key: "web-release"
 
       - name: Build
         run: |
@@ -47,7 +46,8 @@ jobs:
 
       - name: Prepare package
         run: |
-          wasm-bindgen --no-typescript --out-name ${{ env.binary }} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.binary }}.wasm
+          wasm-bindgen --no-typescript --out-name ${{ env.binary }} --out-dir wasm --target web target/wasm32-unknown-unknown/release/examples/${{ matrix.name }}.wasm
+          sed -i "s/hello-bevy/${{ env.binary }}/g" wasm/index.html
 
       - name: Optimize Wasm
         if: ${{ env.optimize == 'true' }}
@@ -56,14 +56,8 @@ jobs:
           mv ${{ env.binary }}_bg.wasm base.wasm
           wasm-opt base.wasm -o ${{ env.binary }}_bg.wasm -Os
 
-      - name: Package as a zip
-        working-directory: ./wasm
-        run: |
-          sed -i "s/hello-bevy/${{ env.binary }}/g" index.html
-          zip --recurse-paths ../${{ matrix.name }}.zip .
-
       - name: Upload binaries to artifacts
         uses: actions/upload-artifact@v4
         with:
-          path: ${{ matrix.name }}.zip
-          name: wasm
+          path: wasm/*
+          name: ${{ matrix.name }}
