@@ -57,9 +57,7 @@ pub struct SpeechTag(pub String);
 
 /// Create a text to speech system and save it as a resource
 fn init(mut cmd: Commands) {
-    let Ok(mut tts) = Tts::default() else {
-        return;
-    };
+    let Ok(mut tts) = Tts::default() else { return };
 
     info!(
         "{} screen reader is available on this platform.",
@@ -74,9 +72,8 @@ fn init(mut cmd: Commands) {
         if !voice {
             break 'v;
         }
-        let Ok(voices) = tts.voices() else {
-            break 'v;
-        };
+        let Ok(voices) = tts.voices() else { break 'v };
+
         if let Some(voice) = voices
             .iter()
             .find(|&v| v.language().primary_language() == "en")
@@ -107,9 +104,7 @@ fn navigation_speech(
     speech: Option<ResMut<Speech>>,
     mut nav_event_reader: EventReader<NavEvent>,
 ) {
-    let Some(mut speech) = speech else {
-        return;
-    };
+    let Some(mut speech) = speech else { return };
     if !options.text_to_speech {
         return;
     }
@@ -155,9 +150,7 @@ fn speak_focusable(
     speech: &mut Speech,
     interrupt: bool,
 ) -> bool {
-    let Ok((entity, _, children)) = query.get(current) else {
-        return false;
-    };
+    let Ok((entity, _, children)) = query.get(current) else { return false };
 
     let mut interrupt = interrupt;
     if let Ok(tag) = speech_tag.get(entity) {

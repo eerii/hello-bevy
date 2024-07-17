@@ -60,8 +60,7 @@ impl Plugin for SampleGamePlugin {
                 )
                     .run_if(in_state(GameState::Play)),
             )
-            .add_systems(OnEnter(GameState::End), restart_game)
-            .register_type::<Player>();
+            .add_systems(OnEnter(GameState::End), restart_game);
     }
 }
 
@@ -78,7 +77,7 @@ struct PlatformInfo {
 // Components
 // ··········
 
-#[derive(Reflect, Component, Default)]
+#[derive(Component, Default)]
 struct Player {
     velocity: Vec2,
     remainder: Vec2,
@@ -168,13 +167,9 @@ fn update_player(
     mut player: Query<(&mut Player, &mut Transform)>,
     platforms: Query<(&Sprite, &Transform), (With<Platform>, Without<Player>)>,
 ) {
-    let Ok((mut player, mut trans)) = player.get_single_mut() else {
-        return;
-    };
+    let Ok((mut player, mut trans)) = player.get_single_mut() else { return };
 
-    let Ok(input) = input.get_single() else {
-        return;
-    };
+    let Ok(input) = input.get_single() else { return };
 
     let mut pos = trans.translation.xy();
     pos += player.remainder;
@@ -270,9 +265,7 @@ fn update_camera(
     mut cam: Query<(&mut Transform, &mut CameraFollow)>,
     player: Query<&Player>,
 ) {
-    let Ok(player) = player.get_single() else {
-        return;
-    };
+    let Ok(player) = player.get_single() else { return };
 
     for (mut trans, mut follow) in cam.iter_mut() {
         let vel = (CAMERA_VEL * follow.target_pos / LEVEL_SIZE.y).powf(0.8);
@@ -289,12 +282,8 @@ fn update_camera(
 }
 
 fn update_counter(mut counter: Query<(&mut Counter, &mut Text)>, player: Query<&Player>) {
-    let Ok((mut counter, mut text)) = counter.get_single_mut() else {
-        return;
-    };
-    let Ok(player) = player.get_single() else {
-        return;
-    };
+    let Ok((mut counter, mut text)) = counter.get_single_mut() else { return };
+    let Ok(player) = player.get_single() else { return };
 
     counter.0 = (player.max_height as u32 / SPACE_BETWEEN_PLATFORMS).saturating_sub(1);
     text.sections[0].value = counter.0.to_string();
@@ -306,9 +295,7 @@ fn spawn_platforms(
     mut info: ResMut<PlatformInfo>,
     player: Query<&Player>,
 ) {
-    let Ok(player) = player.get_single() else {
-        return;
-    };
+    let Ok(player) = player.get_single() else { return };
 
     while info.last_platform * SPACE_BETWEEN_PLATFORMS
         < (player.max_height + LEVEL_SIZE.y * 0.5) as u32
@@ -340,9 +327,7 @@ fn check_game_over(
     player: Query<&Transform, With<Player>>,
     cam: Query<&CameraFollow, With<GameCamera>>,
 ) {
-    let Ok(player) = player.get_single() else {
-        return;
-    };
+    let Ok(player) = player.get_single() else { return };
     let Ok(cam) = cam.get_single() else { return };
 
     if player.translation.y < cam.target_pos - LEVEL_SIZE.y * 0.5 {
@@ -358,9 +343,7 @@ fn restart_game(
     mut follow: Query<&mut CameraFollow>,
     platforms: Query<Entity, (With<Platform>, Without<Floor>)>,
 ) {
-    let Ok((mut player, mut trans)) = player.get_single_mut() else {
-        return;
-    };
+    let Ok((mut player, mut trans)) = player.get_single_mut() else { return };
 
     player.max_height = 0.;
     trans.translation.y = -32.;

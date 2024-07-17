@@ -34,9 +34,7 @@ pub(super) fn open(
     assets: Res<CoreAssets>,
     options: Res<Persistent<GameOptions>>,
 ) {
-    let Ok(root) = root.get_single() else {
-        return;
-    };
+    let Ok(root) = root.get_single() else { return };
 
     cmd.ui_builder(root)
         .column(|column| {
@@ -49,9 +47,7 @@ pub(super) fn open(
 
             column.title("Mappings".into(), assets.font.clone());
 
-            let Ok(input_map) = input_map.get_single() else {
-                return;
-            };
+            let Ok(input_map) = input_map.get_single() else { return };
 
             for (action, maps) in input_map
                 .iter()

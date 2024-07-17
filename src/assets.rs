@@ -121,19 +121,20 @@ impl LoadingData {
     fn current(&mut self, asset_server: &AssetServer) -> (usize, usize) {
         // Find assets that have already been loaded and remove them from the list
         self.assets.retain(|asset| {
-            if let Some(state) = asset_server.get_load_states(asset) {
-                if let bevy::asset::RecursiveDependencyLoadState::Loaded = state.2 {
-                    self.loaded += 1;
-                    debug!(
-                        "\"{:?}\" loaded! ({}/{})",
-                        asset.path(),
-                        self.loaded,
-                        self.total
-                    );
-                    return false;
-                }
-            }
-            true
+            let Some(state) = asset_server.get_load_states(asset) else { return true };
+
+            let bevy::asset::RecursiveDependencyLoadState::Loaded = state.2 else {
+                return true;
+            };
+
+            self.loaded += 1;
+            debug!(
+                "\"{:?}\" loaded! ({}/{})",
+                asset.path(),
+                self.loaded,
+                self.total
+            );
+            false
         });
 
         (self.loaded, self.total)

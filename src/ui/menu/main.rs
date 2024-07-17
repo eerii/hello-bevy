@@ -28,9 +28,7 @@ pub(super) fn open(
     assets: Res<CoreAssets>,
     options: Res<Persistent<GameOptions>>,
 ) {
-    let Ok(root) = root.get_single() else {
-        return;
-    };
+    let Ok(root) = root.get_single() else { return };
 
     cmd.ui_builder(root)
         .column(|column| {

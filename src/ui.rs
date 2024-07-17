@@ -53,9 +53,7 @@ struct UiRootContainer;
 
 /// Create a new input manager if there are no others
 fn init(mut cmd: Commands, camera: Query<Entity, With<FinalCamera>>) {
-    let Ok(camera) = camera.get_single() else {
-        return;
-    };
+    let Ok(camera) = camera.get_single() else { return };
 
     // Ui Root
     cmd.ui_builder(UiRoot).container(

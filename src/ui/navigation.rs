@@ -132,18 +132,14 @@ fn update_focus(
         };
 
         if fill.contains(entity) {
-            let Ok(mut color) = background.get_mut(entity) else {
-                continue;
-            };
+            let Ok(mut color) = background.get_mut(entity) else { continue };
             *color = match focus.state() {
                 FocusState::Focused => BUTTON_COLOR,
                 _ => Srgba::NONE.into(),
             }
             .into();
         } else {
-            let Ok(mut color) = border.get_mut(entity) else {
-                continue;
-            };
+            let Ok(mut color) = border.get_mut(entity) else { continue };
             *color = match focus.state() {
                 FocusState::Focused => BUTTON_COLOR.lighter(0.3),
                 FocusState::Blocked => BUTTON_COLOR.darker(0.3),
@@ -164,9 +160,7 @@ fn handle_input(
     focusables: Query<(Entity, &Node, &GlobalTransform), With<Focusable>>,
     mut nav_request_writer: EventWriter<NavRequest>,
 ) {
-    let Ok(input) = input.get_single() else {
-        return;
-    };
+    let Ok(input) = input.get_single() else { return };
 
     // Either go back a level or go back to the game
     if input.just_pressed(&UiAction::Back) {
@@ -225,14 +219,11 @@ fn on_mouse_move(
     focusables: Query<(Entity, &Node, &GlobalTransform), With<Focusable>>,
     mut nav_request_writer: EventWriter<NavRequest>,
 ) {
-    let Ok(window) = window.get_single() else {
-        return;
-    };
+    let Ok(window) = window.get_single() else { return };
     if let Some(mouse) = window
         .cursor_position()
         .map(|cursor| Aabb2d::new(cursor, Vec2::ZERO))
     {
-        warn!("{:?}", mouse);
         for (entity, node, trans) in focusables.iter() {
             let focused = focused.get_single().ok().unwrap_or(Entity::PLACEHOLDER);
             if entity == focused {

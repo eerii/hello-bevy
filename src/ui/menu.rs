@@ -47,7 +47,7 @@ impl Plugin for MenuPlugin {
 
 /// Menu state
 /// Useful for navigating submenus
-#[derive(SubStates, Debug, Default, Clone, Eq, PartialEq, Hash, Reflect)]
+#[derive(SubStates, Debug, Default, Clone, Eq, PartialEq, Hash)]
 #[source(GameState = GameState::Menu)]
 pub(super) enum MenuState {
     /// Main menu screen, allows to play or exit the game and access further
@@ -118,9 +118,7 @@ fn handle_buttons(
                 request: NavRequest::Action,
             } => {
                 // If the action matches one of our buttons
-                let Ok(buttons) = buttons.get(*from.first()) else {
-                    continue;
-                };
+                let Ok(buttons) = buttons.get(*from.first()) else { continue };
 
                 // Do something based on the button type
                 match buttons {
