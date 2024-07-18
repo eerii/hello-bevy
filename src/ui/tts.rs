@@ -5,7 +5,10 @@ use bevy::prelude::*;
 use bevy_alt_ui_navigation_lite::prelude::*;
 use tts::{Features, Tts};
 
-use crate::data::{GameOptions, Persistent};
+use crate::{
+    data::{GameOptions, Persistent},
+    GameState,
+};
 
 // ······
 // Plugin
@@ -17,12 +20,12 @@ pub struct SpeechPlugin;
 
 impl Plugin for SpeechPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PostStartup, init);
+        app.add_systems(OnExit(GameState::Startup), init);
 
         #[cfg(feature = "navigation")]
         app.add_systems(
             Update,
-            navigation_speech.run_if(in_state(crate::GameState::Menu)),
+            navigation_speech.run_if(in_state(GameState::Menu)),
         );
     }
 }

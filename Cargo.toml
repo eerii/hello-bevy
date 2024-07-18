@@ -24,14 +24,16 @@ default = [ # Only in debug
 release = [ # Only in release (build with --release --no-default-features --features release)
   "bevy_embedded_assets",
   "common",
+  "loading",
   "tts",
 ]
-common = ["input", "menu", "persist", "ui"]
+common = ["menu", "persist"]
 
 3d_camera = []
 input = ["leafwing-input-manager"]
-menu = ["navigation", "input"]
-navigation = ["bevy-alt-ui-navigation-lite"]
+loading = ["ui"]
+menu = ["navigation", "input", "ui"]
+navigation = ["bevy-alt-ui-navigation-lite", "ui"]
 persist = ["bevy-persistent"]
 pixel_perfect = []
 resizable = []

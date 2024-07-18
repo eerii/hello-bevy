@@ -16,7 +16,7 @@ pub struct AssetLoaderPlugin;
 impl Plugin for AssetLoaderPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(LoadingData::default())
-            .add_systems(Startup, load_core)
+            .add_systems(OnEnter(GameState::Startup), load_core)
             .add_systems(
                 OnEnter(GameState::Loading),
                 load_example,
@@ -62,7 +62,7 @@ pub struct ExampleAssets {
 // Systems
 // ·······
 
-fn load_core(mut cmd: Commands, asset_server: Res<AssetServer>) {
+pub(crate) fn load_core(mut cmd: Commands, asset_server: Res<AssetServer>) {
     // They use the asset server directly
     let assets = CoreAssets {
         bevy_icon: asset_server.load(if cfg!(feature = "pixel_perfect") {
@@ -99,7 +99,7 @@ fn load_example(
 // ·······
 
 #[derive(Resource, Debug, Default)]
-struct LoadingData {
+pub(crate) struct LoadingData {
     assets: Vec<UntypedHandle>,
     loaded: usize,
     total: usize,
@@ -118,7 +118,7 @@ impl LoadingData {
     }
 
     /// Returns the current loaded assets and the total assets registered
-    fn current(&mut self, asset_server: &AssetServer) -> (usize, usize) {
+    pub(crate) fn current(&mut self, asset_server: &AssetServer) -> (usize, usize) {
         // Find assets that have already been loaded and remove them from the list
         self.assets.retain(|asset| {
             let Some(state) = asset_server.get_load_states(asset) else { return true };
@@ -142,10 +142,21 @@ impl LoadingData {
 }
 
 fn check_load_state(
+    #[cfg(feature = "loading")] curr_loading_state: Res<
+        State<crate::ui::loading::LoadingScreenState>,
+    >,
     mut next_state: ResMut<NextState<GameState>>,
     mut loading_data: ResMut<LoadingData>,
     asset_server: Res<AssetServer>,
 ) {
+    #[cfg(feature = "loading")]
+    if !matches!(
+        curr_loading_state.get(),
+        crate::ui::loading::LoadingScreenState::Loading
+    ) {
+        return;
+    }
+
     let (loaded, total) = loading_data.current(&asset_server);
     if loaded == total {
         next_state.set(if cfg!(feature = "menu") { GameState::Menu } else { GameState::Play });

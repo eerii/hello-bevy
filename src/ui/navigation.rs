@@ -24,7 +24,7 @@ impl Plugin for NavigationPlugin {
             AltNavigationPlugin::new(),
             InputManagerPlugin::<UiAction>::default(),
         ))
-        .add_systems(Startup, init)
+        .add_systems(OnExit(GameState::Startup), init)
         .add_systems(
             Update,
             ((

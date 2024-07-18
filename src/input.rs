@@ -4,6 +4,8 @@ use bevy::prelude::*;
 pub use leafwing_input_manager::prelude::ActionState;
 use leafwing_input_manager::prelude::*;
 
+use crate::GameState;
+
 // ······
 // Plugin
 // ······
@@ -16,12 +18,15 @@ pub struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(InputManagerPlugin::<Action>::default())
-            .add_systems(Startup, init);
+            .add_systems(
+                OnEnter(GameState::Play),
+                init.run_if(run_once()),
+            );
 
         #[cfg(feature = "menu")]
         app.add_systems(
             Update,
-            handle_input.run_if(in_state(crate::GameState::Play)),
+            handle_input.run_if(in_state(GameState::Play)),
         );
     }
 }

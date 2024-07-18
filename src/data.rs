@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 
 #[cfg(not(feature = "persist"))]
 pub use self::alt::Persistent;
+use crate::GameState;
 
 // ······
 // Plugin
@@ -19,7 +20,7 @@ pub struct DataPlugin;
 
 impl Plugin for DataPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(PreStartup, init);
+        app.add_systems(OnEnter(GameState::Startup), init_data);
     }
 }
 
@@ -102,7 +103,7 @@ mod alt {
 // Systems
 // ·······
 #[cfg(feature = "persist")]
-fn init(mut cmd: Commands) {
+pub(crate) fn init_data(mut cmd: Commands) {
     let path = std::path::Path::new(if cfg!(target_arch = "wasm32") { "local" } else { ".data" });
     info!("{:?}", path);
 
@@ -132,7 +133,7 @@ fn init(mut cmd: Commands) {
 }
 
 #[cfg(not(feature = "persist"))]
-fn init(mut cmd: Commands) {
+pub(crate) fn init_data(mut cmd: Commands) {
     cmd.insert_resource(Persistent(GameOptions::default()));
     cmd.insert_resource(Persistent(SaveData::default()));
 }

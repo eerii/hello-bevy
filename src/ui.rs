@@ -3,8 +3,10 @@
 use bevy::prelude::*;
 use sickle_ui::{prelude::*, SickleUiPlugin};
 
-use crate::camera::FinalCamera;
+use crate::{camera::FinalCamera, GameState};
 
+#[cfg(feature = "loading")]
+pub mod loading;
 #[cfg(feature = "menu")]
 pub mod menu;
 #[cfg(feature = "navigation")]
@@ -12,6 +14,8 @@ pub mod navigation;
 #[cfg(feature = "tts")]
 pub mod tts;
 pub mod widgets;
+
+const UI_GAP: Val = Val::Px(16.);
 
 // ······
 // Plugin
@@ -24,7 +28,10 @@ pub struct UiPlugin;
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(SickleUiPlugin)
-            .add_systems(PostStartup, init);
+            .add_systems(OnExit(GameState::Startup), init);
+
+        #[cfg(feature = "loading")]
+        app.add_plugins(loading::LoadingScreenPlugin);
 
         #[cfg(feature = "menu")]
         app.add_plugins(menu::MenuPlugin);

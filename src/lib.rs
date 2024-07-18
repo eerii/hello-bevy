@@ -22,9 +22,13 @@ use bevy::{log::LogPlugin, prelude::*, window::WindowResolution};
 /// be deleted automatically when the state ends
 #[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
 pub enum GameState {
-    /// The game starts on the loading state
-    /// It stays here until all the relevant assets are ready
+    /// The game starts on the setup state
+    /// This runs before *anything*, including Startup
+    /// It inmediately transitions to loading, so only use it for OnEnter
     #[default]
+    Startup,
+    /// After startup it transitions to loading, which handles splash screens
+    /// and assets. It stays here until all the relevant assets are ready
     Loading,
     /// The main menu of the game, everything is paused
     Menu,
@@ -160,5 +164,22 @@ impl Plugin for GamePlugin {
 
         #[cfg(feature = "ui")]
         app.add_plugins(ui::UiPlugin);
+
+        app.add_systems(
+            Update,
+            finish_setup.run_if(in_state(GameState::Startup)),
+        );
     }
+}
+
+// ·······
+// Systems
+// ·······
+
+/// This system inmediately transitions Startup to Loading, ensuring that the
+/// first only lasts for a frame and that only the OnEnter and OnExit schedules
+/// are valid. This is a replacement for PreStartup and PostStartup that works
+/// with the new 0.14 schedule ordering.
+fn finish_setup(mut next_state: ResMut<NextState<GameState>>) {
+    next_state.set(GameState::Loading);
 }

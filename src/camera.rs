@@ -2,7 +2,10 @@
 
 use bevy::prelude::*;
 
-use crate::data::{GameOptions, Persistent};
+use crate::{
+    data::{init_data, GameOptions, Persistent},
+    GameState,
+};
 
 /// The luminance of the background color
 pub const BACKGROUND_LUMINANCE: f32 = 0.05;
@@ -18,7 +21,10 @@ pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, init);
+        app.add_systems(
+            OnEnter(GameState::Startup),
+            init.after(init_data),
+        );
     }
 }
 
