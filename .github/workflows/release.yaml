@@ -5,6 +5,7 @@ name: release
 
 on:
   push:
+    branches: [main]
     tags: [ "*[0-9]+.[0-9]+" ]
   workflow_dispatch:
     inputs:
@@ -49,36 +50,42 @@ jobs:
           arguments: ".#web"
 
       - name: Rust cache
+        id: cache
         uses: swatinem/rust-cache@v2
 
       - name: Build
+        if: ${{ github.ref_name != 'main' || steps.cache.outputs.cache-hit != 'true' }}
         run: |
           cargo build --release --target wasm32-unknown-unknown --no-default-features --features ${{ env.features }}
 
       - name: Prepare package
+        if: ${{ github.ref_name != 'main' }}
         run: |
           wasm-bindgen --no-typescript --out-name ${{ env.binary }} --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.binary }}.wasm
           sed -i "s/hello-bevy/${{ env.binary }}/g" wasm/index.html
 
       - name: Optimize Wasm
-        if: ${{ env.optimize == 'true' }}
+        if: ${{ env.optimize == 'true' && github.ref_name != 'main' }}
         working-directory: ./wasm
         run: |
           mv ${{ env.binary }}_bg.wasm base.wasm
           wasm-opt base.wasm -o ${{ env.binary }}_bg.wasm -Os
 
       - name: Upload binaries to artifacts
+        if: ${{ github.ref_name != 'main' }}
         uses: actions/upload-artifact@v4
         with:
           path: wasm/*
           name: wasm
 
       - name: Package as a zip
+        if: ${{ github.ref_name != 'main' }}
         working-directory: ./wasm
         run: |
           zip --recurse-paths ../${{ env.binary }}.zip .
 
       - name: Upload binaries to release
+        if: ${{ github.ref_name != 'main' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -105,30 +112,36 @@ jobs:
         uses: nicknovitski/nix-develop@v1
 
       - name: Rust cache
+        id: cache
         uses: swatinem/rust-cache@v2
 
       - name: Build
+        if: ${{ github.ref_name != 'main' || steps.cache.outputs.cache-hit != 'true' }}
         run: |
           cargo build --release --target x86_64-unknown-linux-gnu --no-default-features --features ${{ env.features }}
 
       - name: Prepare package
+        if: ${{ github.ref_name != 'main' }}
         run: |
           mkdir linux
           cp target/x86_64-unknown-linux-gnu/release/${{ env.binary }} linux/
           strip linux/${{ env.binary }}
 
       - name: Upload binaries to artifacts
+        if: ${{ github.ref_name != 'main' }}
         uses: actions/upload-artifact@v4
         with:
           path: linux/*
           name: linux
 
       - name: Package as a zip
+        if: ${{ github.ref_name != 'main' }}
         working-directory: ./linux
         run: |
           zip --recurse-paths ../${{ env.binary }}.zip .
 
       - name: Upload binaries to release
+        if: ${{ github.ref_name != 'main' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -156,28 +169,34 @@ jobs:
           targets: x86_64-pc-windows-msvc
 
       - name: Rust cache
+        id: cache
         uses: swatinem/rust-cache@v2
 
       - name: Build
+        if: ${{ github.ref_name != 'main' || steps.cache.outputs.cache-hit != 'true' }}
         run: |
           cargo build --release --target x86_64-pc-windows-msvc --no-default-features --features ${{ env.features }}
 
       - name: Prepare package
+        if: ${{ github.ref_name != 'main' }}
         run: |
           mkdir windows
           cp target/x86_64-pc-windows-msvc/release/${{ env.binary }}.exe windows/
 
       - name: Upload binaries to artifacts
+        if: ${{ github.ref_name != 'main' }}
         uses: actions/upload-artifact@v4
         with:
           path: windows/*
           name: windows
 
       - name: Package as a zip
+        if: ${{ github.ref_name != 'main' }}
         run: |
           Compress-Archive -Path windows/* -DestinationPath ${{ env.binary }}.zip
 
       - name: Upload binaries to release
+        if: ${{ github.ref_name != 'main' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -207,9 +226,11 @@ jobs:
           targets: aarch64-apple-darwin
 
       - name: Rust cache
+        id: cache
         uses: swatinem/rust-cache@v2
 
       - name: Build release for Apple Silicon
+        if: ${{ github.ref_name != 'main' || steps.cache.outputs.cache-hit != 'true' }}
         run: |
           SDKROOT=$(xcrun -sdk macosx --show-sdk-path) cargo build --release --target=aarch64-apple-darwin --no-default-features --features ${{ env.features }}
 
@@ -219,14 +240,17 @@ jobs:
           targets: x86_64-apple-darwin
 
       - name: Build release for x86 Apple
+        if: ${{ github.ref_name != 'main' || steps.cache.outputs.cache-hit != 'true' }}
         run: |
           SDKROOT=$(xcrun -sdk macosx --show-sdk-path) cargo build --release --target=x86_64-apple-darwin --no-default-features --features ${{ env.features }}
 
       - name: Create Universal Binary
+        if: ${{ github.ref_name != 'main' }}
         run: |
           lipo -create -output target/release/${{ env.binary }} target/aarch64-apple-darwin/release/${{ env.binary }} target/x86_64-apple-darwin/release/${{ env.binary }}
 
       - name: Prepare package
+        if: ${{ github.ref_name != 'main' }}
         run: |
           mkdir -p ${{ env.binary }}.app/Contents/MacOS
           cp target/release/${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
@@ -234,12 +258,14 @@ jobs:
           hdiutil create -fs HFS+ -volname "${{ env.binary }}" -srcfolder ${{ env.binary }}.app ${{ env.binary }}.dmg
 
       - name: Upload binaries to artifacts
+        if: ${{ github.ref_name != 'main' }}
         uses: actions/upload-artifact@v4
         with:
           path: ${{ env.binary }}.dmg
           name: mac
 
       - name: Upload binaries to release
+        if: ${{ github.ref_name != 'main' }}
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -269,7 +295,7 @@ jobs:
       - release-linux
       - release-windows
       - release-macos
-    if: ${{ needs.check-upload-to-itch.outputs.should-upload == 'yes' }}
+    if: ${{ needs.check-upload-to-itch.outputs.should-upload == 'yes' && github.ref_name != 'main' }}
 
     env:
       version: ${{needs.get-version.outputs.version}}
