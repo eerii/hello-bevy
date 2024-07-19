@@ -19,7 +19,7 @@ impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(InputManagerPlugin::<Action>::default())
             .add_systems(
-                OnEnter(GameState::Play),
+                OnEnter(if cfg!(feature = "menu") { GameState::Menu } else { GameState::Play }),
                 init.run_if(run_once()),
             );
 

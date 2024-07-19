@@ -14,10 +14,10 @@ use crate::{
     data::{GameOptions, Persistent},
     input::Action,
     ui::{
-        menu::{MenuButton, MenuState},
+        menu::{MenuButton, MenuState, UI_GAP},
         navigation::FocusableHoverFill,
         widgets::{UiButtonWidget, UiImageWidget, UiOptionRowWidget, UiTextWidget},
-        UiRootContainer, UI_GAP,
+        UiRootContainer,
     },
 };
 
@@ -47,26 +47,26 @@ pub(super) fn open(
 
             column.title("Mappings".into(), assets.font.clone());
 
-            let Ok(input_map) = input_map.get_single() else { return };
-
-            for (action, maps) in input_map
-                .iter()
-                .sorted_by_key(|(&a, _)| a.variant_name().to_string())
-            {
-                let mut row = column.option_row(
-                    MenuButton::None,
-                    action.variant_name().into(),
-                    assets.font.clone(),
-                );
-
-                for map in maps {
-                    row_mapping(
-                        (**map).as_reflect(),
-                        &mut row,
-                        &asset_server,
+            if let Ok(input_map) = input_map.get_single() {
+                for (action, maps) in input_map
+                    .iter()
+                    .sorted_by_key(|(&a, _)| a.variant_name().to_string())
+                {
+                    let mut row = column.option_row(
+                        MenuButton::None,
+                        action.variant_name().into(),
+                        assets.font.clone(),
                     );
+
+                    for map in maps {
+                        row_mapping(
+                            (**map).as_reflect(),
+                            &mut row,
+                            &asset_server,
+                        );
+                    }
                 }
-            }
+            };
 
             column.button(MenuButton::ExitOrBack, |button| {
                 button.text("Back".into(), assets.font.clone());

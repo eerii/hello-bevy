@@ -20,8 +20,7 @@ pub struct SpeechPlugin;
 
 impl Plugin for SpeechPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnExit(GameState::Startup), init);
-
+        app.add_systems(OnEnter(GameState::Loading), init);
         #[cfg(feature = "navigation")]
         app.add_systems(
             Update,
@@ -162,7 +161,6 @@ fn speak_focusable(
     }
 
     if let Some(children) = children {
-        info!("call children");
         for &child in children {
             interrupt = speak_focusable(
                 child, query, speech_tag, speech, interrupt,

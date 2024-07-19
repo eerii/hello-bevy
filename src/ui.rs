@@ -15,8 +15,6 @@ pub mod navigation;
 pub mod tts;
 pub mod widgets;
 
-const UI_GAP: Val = Val::Px(16.);
-
 // ······
 // Plugin
 // ······

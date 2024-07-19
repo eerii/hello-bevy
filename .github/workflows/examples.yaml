@@ -21,6 +21,8 @@ jobs:
             features: "release"
           - name: jump
             features: "release"
+          - name: breakout
+            features: "release"
       fail-fast: false
 
     runs-on: ubuntu-latest

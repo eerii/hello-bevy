@@ -131,7 +131,7 @@ fn init_sample(
     cmd.spawn((
         SpriteBundle {
             sprite: Sprite {
-                color: options.accent_color,
+                color: options.base_color.darker(0.2),
                 custom_size: Some(Vec2::new(LEVEL_SIZE.x, 32.)),
                 ..default()
             },
@@ -148,7 +148,7 @@ fn init_sample(
             text: Text::from_section("0", TextStyle {
                 font: assets.font.clone(),
                 font_size: 150.,
-                color: options.base_color.lighter(0.3),
+                color: Color::WHITE,
             }),
             transform: Transform::from_xyz(5.3, 0.3, -1.),
             ..default()
@@ -306,7 +306,9 @@ fn spawn_platforms(
         cmd.spawn((
             SpriteBundle {
                 sprite: Sprite {
-                    color: options.accent_color,
+                    color: options
+                        .base_color
+                        .lighter(rand::random::<f32>() * 0.2 - 0.1),
                     custom_size: Some(PLATFORM_SIZE),
                     ..default()
                 },

@@ -8,9 +8,9 @@ use crate::{
     camera::BACKGROUND_LUMINANCE,
     data::{GameOptions, Persistent},
     ui::{
-        menu::{MenuButton, MenuState},
+        menu::{MenuButton, MenuState, UI_GAP},
         widgets::{UiButtonWidget, UiTextWidget},
-        UiRootContainer, UI_GAP,
+        UiRootContainer,
     },
 };
 

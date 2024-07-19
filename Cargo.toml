@@ -27,12 +27,12 @@ release = [ # Only in release (build with --release --no-default-features --feat
   "loading",
   "tts",
 ]
-common = ["menu", "persist"]
+common = ["input", "navigation", "persist", "ui"]
 
 3d_camera = []
 input = ["leafwing-input-manager"]
 loading = ["ui"]
-menu = ["navigation", "input", "ui"]
+menu = ["input", "navigation", "ui"]
 navigation = ["bevy-alt-ui-navigation-lite", "ui"]
 persist = ["bevy-persistent"]
 pixel_perfect = []
@@ -65,4 +65,12 @@ tts = { version = "0.26.3", optional = true }
 
 [[example]]
 name = "dvd"
+required-features = []
+
+[[example]]
+name = "jump"
+required-features = []
+
+[[example]]
+name = "breakout"
 required-features = []
