@@ -1,0 +1,45 @@
+[package]
+name = "game"
+description = "a bevy game template"
+repository = "https://github.com/eerii/hello-bevy"
+authors = ["Eri <eri@inventati.org>"]
+license = "Apache-2.0 OR MIT"
+version = "0.14.1"
+edition = "2021"
+# exclude = ["assets", "wasm", ".data"]
+
+[features]
+default = ["dev"]
+dev = [
+  "common",
+  "bevy/dynamic_linking",
+  "bevy/bevy_dev_tools",
+  "bevy/embedded_watcher",
+  "bevy/file_watcher",
+]
+release = ["common"]
+common = []
+
+[dependencies]
+bevy = { version = "0.14", features = ["serialize", "wayland"] }
+leafwing-input-manager = { git = "https://github.com/Leafwing-Studios/leafwing-input-manager" }
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3 # Improves performance when developing, but slows down first compilation significantly
+debug = false # Disabled debug symbols for dependencies
+
+[profile.dev.package.wgpu-types]
+debug-assertions = false
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+opt-level = 3     # Optimize for performance
+
+[profile.release-web] # Overrides for web builds
+inherits = "release"
+opt-level = "s"      # Optimize for size
+strip = "debuginfo"  # Removes debug information
