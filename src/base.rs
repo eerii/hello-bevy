@@ -8,6 +8,5 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 pub mod prelude {
-    pub use super::sets::PlaySet;
-    pub use super::states::GameState;
+    pub use super::{sets::PlaySet, states::GameState};
 }

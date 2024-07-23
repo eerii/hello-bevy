@@ -9,13 +9,16 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 pub mod prelude {
-    pub use super::Action;
     pub use leafwing_input_manager::prelude::ActionState;
+
+    pub use super::Action;
 }
 
 /// These are all the possible game actions that have an input mapping
 /// You can use them like so:
 /// ```
+/// use bevy::prelude::*;
+/// use game::prelude::*;
 /// fn handle_input(input: Query<&ActionState<Action>>) {
 ///     let Ok(input) = input.get_single() else { return };
 ///     if input.just_pressed(&Action::Jump) {

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8"/>
+  <meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no" />
+  
+  <title>Hello Bevy</title>
+
+  <link rel="stylesheet" href="style.css"/>
+</head>
+
+<body>
+  <div class="game-container">
+    <canvas id="bevy">
+      Javascript and support for canvas is required
+    </canvas>
+    <div id="loading">
+      <h1 class="text-loading">Loading</h1>
+      <span class="loader"></span>
+    </div>
+  </div>
+
+  <script type="module">
+    import './audio.js'
+    import init from './GAME.js' // This is changed automatically in the release actions, it should match Cargo.toml
+
+    init().catch((error) => {
+      if (!error.message.startsWith("Using exceptions for control flow, don't mind me. This isn't actually an error!")) {
+        throw error;
+      }
+    });
+
+    const bevy = document.getElementById('bevy');
+    const loadingTitle = document.getElementById('loading');
+    const observer = new MutationObserver(() => {
+      if (bevy.height > 1) {
+        loadingTitle.style.display = 'none';
+      }
+    });
+    observer.observe(bevy, { attributes: true });
+  </script>
+</body>
+
+</html>

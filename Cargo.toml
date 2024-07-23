@@ -23,6 +23,10 @@ common = []
 [dependencies]
 bevy = { version = "0.14", features = ["serialize", "wayland"] }
 leafwing-input-manager = { git = "https://github.com/Leafwing-Studios/leafwing-input-manager" }
+log = { version = "*", features = [
+  "max_level_debug",
+  "release_max_level_warn",
+] }
 
 [profile.dev]
 opt-level = 1

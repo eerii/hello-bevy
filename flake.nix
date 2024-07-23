@@ -24,25 +24,22 @@
       let
         overlays = [ (import rust-overlay) ];
         pkgs = import nixpkgs { inherit system overlays; };
-        inherit (pkgs) lib mkShell stdenv;
+        inherit (pkgs) mkShell;
+        inherit (pkgs.lib) optionals makeLibraryPath;
+        inherit (pkgs.stdenv) isLinux isDarwin;
 
         general-deps = with pkgs; [
-          # Vulkan
-          vulkan-tools
-          vulkan-loader
-          vulkan-validation-layers
           # Rust
           cargo-watch
           rust-analyzer-unwrapped
           # Toml
           taplo
+          # Other
+          vulkan-loader
+          vulkan-tools
         ];
 
         linux-deps = with pkgs; [
-          openssl
-          pkg-config
-          alsa-lib
-          udev
           # Wayland
           libxkbcommon
           wayland
@@ -52,6 +49,33 @@
           xorg.libXcursor
           xorg.libXi
           xorg.libXrandr
+          # Other
+          openssl
+          pkg-config
+          alsa-lib
+          udev
+          vulkan-validation-layers
+        ];
+
+        darwin-deps = with pkgs.darwin.apple_sdk.frameworks; [
+          AppKit
+          ApplicationServices
+          AudioToolbox
+          AudioUnit
+          Carbon
+          CoreAudio
+          CoreFoundation
+          CoreGraphics
+          CoreServices
+          CoreVideo
+          CoreMIDI
+          Foundation
+          IOKit
+          QuartzCore
+          Metal
+          OpenAL
+          Security
+          pkgs.libiconv
         ];
 
         web-deps = with pkgs; [
@@ -70,13 +94,23 @@
           # Regular shell
           default =
             let
-              toolchain = pkgs.rust-bin.nightly.latest.default.override { inherit extensions; };
+              toolchain = pkgs.rust-bin.nightly.latest.default.override {
+                inherit extensions;
+                targets = optionals isDarwin [
+                  "x86_64-apple-darwin"
+                  "aarch64-apple-darwin"
+                ];
+              };
+              platform = pkgs.makeRustPlatform { inherit (toolchain) cargo rustc; };
             in
             mkShell rec {
-              buildInputs = [ toolchain ] ++ general-deps ++ lib.optionals stdenv.isLinux linux-deps;
+              buildInputs = [
+                toolchain
+                platform.bindgenHook
+              ] ++ general-deps ++ optionals isLinux linux-deps ++ optionals isDarwin darwin-deps;
 
               RUST_SRC_PATH = "${toolchain}/lib/rustlib/src/rust/library";
-              LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
+              LD_LIBRARY_PATH = makeLibraryPath buildInputs;
               RUSTFLAGS = "-Zshare-generics=y -Zthreads=0";
             };
           # For web builds
@@ -90,7 +124,7 @@
               buildInputs = [ toolchain ] ++ general-deps ++ web-deps;
 
               RUST_SRC_PATH = "${toolchain}/lib/rustlib/src/rust/library";
-              LD_LIBRARY_PATH = lib.makeLibraryPath buildInputs;
+              LD_LIBRARY_PATH = makeLibraryPath buildInputs;
               RUSTFLAGS = "-Zshare-generics=y -Zthreads=0";
             };
         };

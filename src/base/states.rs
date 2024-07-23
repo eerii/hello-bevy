@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 
 /// Adds the `GameState` to the `App`.
-/// Also enables `StateScoped` for this state so enitities can be automatically cleaned up.
+/// Also enables `StateScoped` for this state so enitities can be automatically
+/// cleaned up.
 pub(super) fn plugin(app: &mut App) {
     app.insert_state(GameState::default())
         .enable_state_scoped_entities::<GameState>();

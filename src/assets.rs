@@ -10,11 +10,14 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 pub mod prelude {
-    pub use super::fonts::FontAssetKey;
-    pub use super::meta::MetaAssetKey;
-    pub use super::music::MusicAssetKey;
-    pub use super::sound::SoundAssetKey;
-    pub use super::{AssetKey, AssetMap};
+    pub use super::{
+        fonts::FontAssetKey,
+        meta::MetaAssetKey,
+        music::MusicAssetKey,
+        sound::SoundAssetKey,
+        AssetKey,
+        AssetMap,
+    };
 }
 
 /// Represent a handle to any asset type

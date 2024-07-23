@@ -1,0 +1,211 @@
+# Based on https://github.com/bevyengine/bevy_github_ci_template/blob/main/.github/workflows/release.yaml
+# and on https://github.com/TheBevyFlock/bevy_quickstart/blob/main/.github/workflows/release.yaml
+# For cache to work in tags, you need to create it first in main, this should be handled automatically
+# Note that main runs of this workflow will only create the cache and not the actual release
+name: release
+
+on:
+  push:
+    branches: [main, dev]
+    tags: [ "*[0-9]+.[0-9]+" ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version as '<anything>0.1'"
+        required: true
+        type: string
+
+env:
+  binary: game                  # This needs to match the project name in Cargo.toml
+  itch_target: eerii/hello-bevy # If you want to deploy to itch, set this as your username/project-url
+  features: "release"           # Add features here if you need them
+  optimize: false               # This produces a smaller and faster web build, but it takes a long time
+
+jobs:
+  get-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get tag
+        id: tag
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+    outputs:
+      version: ${{ inputs.version || steps.tag.outputs.tag }}
+
+  build:
+    needs: get-version
+    env:
+      version: ${{needs.get-version.outputs.version}}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: wasm
+            runner: ubuntu-latest
+            targets: wasm32-unknown-unknown
+            nix: .#web
+            profile: release-web
+
+          - platform: linux
+            runner: ubuntu-latest
+            targets: x86_64-unknown-linux-gnu
+            nix: .#default
+            profile: release
+
+          - platform: windows
+            runner: windows-latest
+            targets: x86_64-pc-windows-msvc
+            nix: ''
+            profile: release
+
+          - platform: macos
+            runner: macos-13
+            targets: x86_64-apple-darwin # Disabled for now, build failing aarch64-apple-darwin
+            nix: .#default
+            profile: release
+            out_dir_suffix: .app/Contents/MacOS
+
+    runs-on: ${{ matrix.runner }}
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install nix
+        if: ${{ matrix.nix != '' }}
+        uses: nixbuild/nix-quick-install-action@v28
+
+      - name: Use nix flake
+        if: ${{ matrix.nix != '' }}
+        uses: nicknovitski/nix-develop@v1
+        with:
+          arguments: ${{ matrix.nix }}
+
+      - name: Install Rust toolchain (not nix)
+        if: ${{ matrix.nix == '' }}
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ matrix.targets }}
+
+      - name: Set rust linker (windows)
+        if: ${{ matrix.platform == 'windows' }}
+        run: |
+            echo "RUSTFLAGS=$RUSTFLAGS -Clinker=rust-lld.exe" >> $GITHUB_ENV
+
+      - name: Rust cache
+        id: cache
+        uses: leafwing-studios/cargo-cache@v2
+
+      - name: Build
+        if: ${{ github.ref_name != 'main' || steps.cache.outputs.cache-hit != 'true' }} # Skip if cache is a hit on main
+        run: |
+          for target in ${{ matrix.targets }}; do
+            cargo build --profile='${{ matrix.profile }}' --target="${target}" --no-default-features --features='${{ env.features }}'
+          done
+
+      - name: Prepare package (linux and windows)
+        if: ${{ (matrix.platform == 'linux' || matrix.platform == 'windows') && github.ref_name != 'main' }}
+        run: |
+          mkdir ${{ matrix.platform }}
+          cp target/${{ matrix.targets }}/release/${{ env.binary }} ${{ matrix.platform }}/
+          if [ '${{ matrix.platform }}' == 'linux' ]; then
+            strip ${{ matrix.platform }}/${{ env.binary }}
+          fi
+
+      - name: Prepare package (web)
+        if: ${{ matrix.platform == 'wasm' && github.ref_name != 'main' }}
+        run: |
+          wasm-bindgen --no-typescript --out-name ${{ env.binary }} --out-dir wasm --target web target/${{ matrix.targets }}/release-web/${{ env.binary }}.wasm
+          sed -i "s/GAME/${{ env.binary }}/g" wasm/index.html
+
+      - name: Prepare package (mac)
+        if: ${{ matrix.platform == 'macos' && github.ref_name != 'main' }}
+        run: |
+          mkdir ${{ matrix.platform }}
+          # lipo -create -output ${{ env.binary }} target/aarch64-apple-darwin/release/${{ env.binary }} target/x86_64-apple-darwin/release/${{ env.binary }}
+          cp target/x86_64-apple-darwin/release/${{ env.binary }} ${{ env.binary }}
+          mkdir -p ${{ env.binary }}.app/Contents/MacOS
+          cp ${{ env.binary }} ${{ env.binary }}.app/Contents/MacOS/
+          strip ${{ env.binary }}.app/Contents/MacOS/${{ env.binary }}
+          hdiutil create -fs HFS+ -volname "${{ env.binary }}" -srcfolder ${{ env.binary }}.app ${{ matrix.platform }}/${{ env.binary }}.dmg
+
+      - name: Optimize Wasm
+        if: ${{ matrix.platform == 'wasm' && env.optimize == 'true' && github.ref_name != 'main' }}
+        working-directory: ./wasm
+        run: |
+          mv ${{ env.binary }}_bg.wasm base.wasm
+          wasm-opt base.wasm -o ${{ env.binary }}_bg.wasm -Os
+
+      - name: Upload binaries to artifacts
+        if: ${{ github.ref_name != 'main' }}
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ matrix.platform }}/*
+          name: ${{ matrix.platform }}
+
+      - name: Package as a zip
+        if: ${{ matrix.platform != 'windows' && github.ref_name != 'main' }}
+        run: |
+          zip --recurse-paths ./${{ env.binary }}.zip ./${{ matrix.platform }}
+
+      - name: Package as a zip (windows)
+        if: ${{ matrix.platform == 'windows' && github.ref_name != 'main' }}
+        shell: pwsh
+        run: |
+          Compress-Archive -Path windows/* -DestinationPath ${{ env.binary }}.zip
+
+      - name: Upload binaries to release
+        if: ${{ github.ref_name != 'main' }}
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ${{ env.binary }}.zip
+          asset_name: ${{ env.binary }}-$${{ matrix.platform }}-${{ env.version }}.zip
+          tag: ${{ github.ref }}
+          overwrite: true
+
+  get-itch-target:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Do nothing
+        run: 'true'
+    outputs:
+      itch-target: ${{ env.itch_target }}
+
+  upload-to-itch:
+    runs-on: ubuntu-latest
+    needs:
+      - get-itch-target
+      - build
+    if: ${{ needs.get-itch-target.outputs.itch-target != '' && github.ref_name != 'main' }}
+    env:
+      version: ${{ needs.get-version.outputs.version }}
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: builds
+
+      - name: Install butler
+        run: |
+          curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default
+          unzip butler.zip
+          chmod +x butler
+          ./butler -V
+
+      - name: Upload to itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.ITCH_API_KEY }}
+        run: |
+          echo $(ls builds)
+          for channel in $(ls builds); do
+            ./butler push \
+                --fix-permissions \
+                --userversion="${{ env.version }}" \
+                builds/$channel \
+                ${{ env.itch_target }}:$channel
+          done

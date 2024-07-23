@@ -2,3 +2,4 @@
 .data
 .direnv
 .envrc
+wasm/game*

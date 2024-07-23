@@ -2,8 +2,9 @@
 #![allow(clippy::type_complexity)]
 // #![warn(missing_docs)]
 
-// TODO: Bring back formatter and CI
 // TODO: Documentation and code examples
+//       Readme
+// TODO: Embedded assets
 // TODO: Data persistence (custom implementation)
 //       If using derive macros, also use them for assets
 // TODO: UI Widgets
@@ -20,10 +21,12 @@ mod components;
 mod input;
 
 pub mod prelude {
-    pub use super::assets::prelude::*;
-    pub use super::base::prelude::*;
-    pub use super::components::prelude::*;
-    pub use super::input::prelude::*;
+    pub use super::{
+        assets::prelude::*,
+        base::prelude::*,
+        components::prelude::*,
+        input::prelude::*,
+    };
 }
 
 pub struct GamePlugin;
