@@ -23,6 +23,8 @@ use bevy::{
 };
 use include_dir::{include_dir, Dir};
 
+use crate::prelude::*;
+
 const ASSET_DIR: Dir = include_dir!("assets");
 
 pub(crate) fn plugin(app: &mut App) {
@@ -40,7 +42,7 @@ pub(crate) fn plugin(app: &mut App) {
 }
 
 /// A wrapper around the raw bytes of an asset
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Copy!)]
 pub struct DataReader(pub &'static [u8]);
 
 impl AsyncRead for DataReader {

@@ -3,6 +3,9 @@
 #![allow(clippy::type_complexity)]
 // #![warn(missing_docs)]
 
+#[macro_use]
+extern crate macro_rules_attribute;
+
 // TODO: Documentation and code examples
 //       Readme
 // TODO: UI Widgets
@@ -10,6 +13,7 @@
 //       UI Navigation with input (custom implementation)
 // TODO: Keybind remapping
 // TODO: Text to speech
+// TODO: Migrate proc macros to macro_rules_attribute?
 
 use bevy::{prelude::*, window::WindowResolution};
 
@@ -25,6 +29,14 @@ pub mod prelude {
         components::prelude::*,
         input::prelude::*,
     };
+
+    // Shorthands for derive macros
+    macro_rules_attribute::derive_alias! {
+        #[derive(Eq!)] = #[derive(Eq, PartialEq)];
+        #[derive(Ord!)] = #[derive(Ord, PartialOrd, Eq!)];
+        #[derive(Copy!)] = #[derive(Copy, Clone)];
+        #[derive(Std!)] = #[derive(Debug, Copy!, Ord!, Hash)];
+    }
 }
 
 pub struct GamePlugin;

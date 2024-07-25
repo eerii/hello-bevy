@@ -9,5 +9,9 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 pub mod prelude {
-    pub use super::{sets::PlaySet, states::GameState};
+    pub use super::{
+        data::{Persistent, SaveData},
+        sets::PlaySet,
+        states::GameState,
+    };
 }

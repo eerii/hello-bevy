@@ -1,9 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    base::prelude::*,
-    prelude::{AssetMap, MetaAssetKey},
-};
+use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(GameState::Startup), init);

@@ -8,7 +8,7 @@ use syn::{parse2, Data, DeriveInput, Meta};
 
 const DATA_PATH: &str = ".data";
 
-#[derive(Debug, FromMeta)]
+#[derive(FromMeta)]
 struct PersistentArgs {
     name: String,
 }

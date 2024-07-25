@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::prelude::*;
+
 /// Adds the `GameState` to the `App`.
 /// Also enables `StateScoped` for this state so enitities can be automatically
 /// cleaned up.
@@ -12,7 +14,7 @@ pub(super) fn plugin(app: &mut App) {
 /// systems run when (in_state) and to create transitions (OnEnter/OnExit)
 /// You can also scope entities to a state with StateScoped, and they will
 /// be deleted automatically when the state ends
-#[derive(States, Debug, Default, Clone, Eq, PartialEq, Hash)]
+#[derive(Default, States, Std!)]
 pub enum GameState {
     /// The game starts on the `Startup` state.
     /// It runs before *anything*, including the `Startup` schedule.

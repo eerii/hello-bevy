@@ -22,7 +22,7 @@ pub mod prelude {
     };
 }
 
-/// Represent a handle to any asset type
+/// Represents a handle to any asset type
 pub trait AssetKey: Sized + Eq + std::hash::Hash {
     type Asset: Asset;
 }

@@ -26,7 +26,7 @@ pub mod prelude {
 ///     }
 /// }
 /// ```
-#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug, Reflect)]
+#[derive(Reflect, Std!)]
 pub enum Action {
     /// Button press usually assigned to Space or the A button in the gamepad
     Jump,
