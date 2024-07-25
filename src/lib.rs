@@ -1,3 +1,4 @@
+#![feature(path_add_extension)]
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
 // #![warn(missing_docs)]
@@ -33,10 +34,11 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        // Default bevy plugins
+        // The embedded plugin, if enabled, must come before bevy's `AssetPlugin`
+        #[cfg(feature = "embedded")]
+        app.add_plugins(assets::embedded::plugin);
 
-        // The window plugin specifies the main window properties like its size,
-        // if it is resizable and its title
+        // Default bevy plugins
         let window_plugin = WindowPlugin {
             primary_window: Some(Window {
                 title: "Hello Bevy".into(),
@@ -48,7 +50,6 @@ impl Plugin for GamePlugin {
             }),
             ..default()
         };
-
         app.add_plugins(DefaultPlugins.set(window_plugin));
 
         // Game plugins

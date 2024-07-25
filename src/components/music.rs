@@ -9,7 +9,7 @@ pub(super) fn plugin(app: &mut App) {
 fn init(mut cmd: Commands, music_assets: Res<AssetMap<MusicAssetKey>>) {
     cmd.spawn((
         AudioBundle {
-            source: music_assets[&MusicAssetKey::Ambient].clone_weak(),
+            source: music_assets.get(&MusicAssetKey::Ambient),
             settings: PlaybackSettings {
                 mode: PlaybackMode::Loop,
                 paused: true,

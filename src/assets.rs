@@ -1,5 +1,7 @@
 use bevy::{prelude::*, utils::HashMap};
 
+#[cfg(feature = "embedded")]
+pub(crate) mod embedded;
 mod fonts;
 mod meta;
 mod music;
@@ -21,7 +23,7 @@ pub mod prelude {
 }
 
 /// Represent a handle to any asset type
-pub trait AssetKey: Sized {
+pub trait AssetKey: Sized + Eq + std::hash::Hash {
     type Asset: Asset;
 }
 
@@ -43,5 +45,10 @@ impl<K: AssetKey> AssetMap<K> {
     pub fn all_loaded(&self, asset_server: &AssetServer) -> bool {
         self.values()
             .all(|x| asset_server.is_loaded_with_dependencies(x))
+    }
+
+    /// Returns a weak clone of the asset handle
+    pub fn get(&self, key: &K) -> Handle<K::Asset> {
+        self[key].clone_weak()
     }
 }
