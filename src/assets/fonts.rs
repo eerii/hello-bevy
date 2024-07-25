@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use macros::asset_key;
 
 use crate::prelude::*;
 
@@ -9,18 +10,8 @@ pub(super) fn plugin(app: &mut App) {
 
 /// Defines all of the font assets
 /// Easy to access on any system using `Res<AssetMap<FontAssetKey>>`
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
+#[asset_key(Font)]
 pub enum FontAssetKey {
+    #[asset = "fonts/sans.ttf"]
     Main,
-}
-
-impl AssetKey for FontAssetKey {
-    type Asset = Font;
-}
-
-impl FromWorld for AssetMap<FontAssetKey> {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.resource::<AssetServer>();
-        [(FontAssetKey::Main, asset_server.load("fonts/sans.ttf"))].into()
-    }
 }

@@ -5,7 +5,6 @@
 
 // TODO: Documentation and code examples
 //       Readme
-// TODO: Also use derive macros for assets
 // TODO: UI Widgets
 //       Main menu
 //       UI Navigation with input (custom implementation)

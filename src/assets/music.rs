@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use macros::asset_key;
 
 use crate::prelude::*;
 
@@ -9,18 +10,8 @@ pub(super) fn plugin(app: &mut App) {
 
 /// Defines all of the musical assets
 /// Easy to access on any system using `Res<AssetMap<MusicAssetKey>>`
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
+#[asset_key(AudioSource)]
 pub enum MusicAssetKey {
+    #[asset = "music/rain.ogg"]
     Ambient,
-}
-
-impl AssetKey for MusicAssetKey {
-    type Asset = AudioSource;
-}
-
-impl FromWorld for AssetMap<MusicAssetKey> {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.resource::<AssetServer>();
-        [(MusicAssetKey::Ambient, asset_server.load("music/rain.ogg"))].into()
-    }
 }

@@ -4,7 +4,7 @@ use darling::{ast::NestedMeta, FromMeta};
 use proc_macro as pm;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{parse2, DeriveInput};
+use syn::{parse2, Data, DeriveInput, Meta};
 
 const DATA_PATH: &str = ".data";
 
@@ -33,6 +33,7 @@ pub fn persistent(args: pm::TokenStream, input: pm::TokenStream) -> pm::TokenStr
     let path = format!("{}/{}.toml", DATA_PATH, args.name);
     let name = ident.to_string();
 
+    // TODO: Propperly handle errors
     let output = quote! {
         #[derive(Resource, Serialize, Deserialize)]
         #input
@@ -65,6 +66,58 @@ pub fn persistent(args: pm::TokenStream, input: pm::TokenStream) -> pm::TokenStr
             fn reset(&mut self) {
                 *self = Self::default();
                 self.persist()
+            }
+        }
+    };
+    output.into()
+}
+
+#[proc_macro_derive(AssetAttr, attributes(asset))]
+pub fn derive_asset_attr(_item: pm::TokenStream) -> pm::TokenStream {
+    pm::TokenStream::new()
+}
+
+#[proc_macro_attribute]
+pub fn asset_key(args: pm::TokenStream, input: pm::TokenStream) -> pm::TokenStream {
+    let input: TokenStream = input.into();
+    let DeriveInput { ident, data, .. } = parse2(input.clone()).unwrap();
+
+    let Data::Enum(data) = data else {
+        panic!("An asset key must be an Enum");
+    };
+
+    let names: Vec<_> = data
+        .variants
+        .iter()
+        .map(|v| {
+            // TODO: Check that the value path is "asset" and allow multiple attrs
+            let name = v.ident.clone();
+            let attr = v
+                .attrs
+                .get(0)
+                .expect("Each asset must provide a path attribute");
+            let Meta::NameValue(value) = attr.meta.clone() else {
+                panic!("The asset attribute must be in the form #[asset = \"path\"]");
+            };
+            let asset_path = value.value;
+            quote!((#ident::#name, asset_server.load(#asset_path)))
+        })
+        .collect();
+
+    let args: TokenStream = args.into();
+
+    let output = quote! {
+        #[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect, macros::AssetAttr)]
+        #input
+
+        impl AssetKey for #ident {
+            type Asset = #args;
+        }
+
+        impl FromWorld for AssetMap<#ident> {
+            fn from_world(world: &mut World) -> Self {
+                let asset_server = world.resource::<AssetServer>();
+                [#(#names),*].into()
             }
         }
     };

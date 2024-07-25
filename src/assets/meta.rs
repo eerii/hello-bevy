@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use macros::asset_key;
 
 use crate::prelude::*;
 
@@ -9,18 +10,8 @@ pub(super) fn plugin(app: &mut App) {
 
 /// Defines all of the meta assets
 /// Easy to access on any system using `Res<AssetMap<MetaAssetKey>>`
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Reflect)]
+#[asset_key(Image)]
 pub enum MetaAssetKey {
+    #[asset = "meta/bevy.png"]
     BevyLogo,
-}
-
-impl AssetKey for MetaAssetKey {
-    type Asset = Image;
-}
-
-impl FromWorld for AssetMap<MetaAssetKey> {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.resource::<AssetServer>();
-        [(MetaAssetKey::BevyLogo, asset_server.load("meta/bevy.png"))].into()
-    }
 }
