@@ -5,9 +5,7 @@
 
 // TODO: Documentation and code examples
 //       Readme
-// TODO: Embedded assets
-// TODO: Data persistence (custom implementation)
-//       If using derive macros, also use them for assets
+// TODO: Also use derive macros for assets
 // TODO: UI Widgets
 //       Main menu
 //       UI Navigation with input (custom implementation)

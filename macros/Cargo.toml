@@ -1,0 +1,17 @@
+[package]
+name = "macros"
+description = "procedural macros for the game"
+repository = "https://github.com/eerii/hello-bevy"
+authors = ["Eri <eri@inventati.org>"]
+license = "Apache-2.0 OR MIT"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+darling = { version = "0.20" }
+quote = { version = "1.0" }
+syn = { version = "2.0" }
+proc-macro2 = { version = "1.0" }

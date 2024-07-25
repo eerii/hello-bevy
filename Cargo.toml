@@ -28,12 +28,17 @@ embedded = ["include_dir"]
 bevy = { version = "0.14", features = ["serialize", "wayland"] }
 leafwing-input-manager = { git = "https://github.com/Leafwing-Studios/leafwing-input-manager" }
 
+# Local crates
+macros = { path = "macros" }
+
 # Other dependencies
-include_dir = { version = "0.7.4", optional = true }
+include_dir = { version = "0.7", optional = true }
 log = { version = "*", features = [
   "max_level_debug",
   "release_max_level_warn",
 ] }
+serde = { version = "1.0", features = ["derive"] }
+toml = { version = "0.8" }
 
 [profile.dev]
 opt-level = 1

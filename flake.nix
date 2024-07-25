@@ -31,6 +31,7 @@
         general-deps = with pkgs; [
           # Rust
           cargo-watch
+          cargo-expand
           rust-analyzer-unwrapped
           # Toml
           taplo
