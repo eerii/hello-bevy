@@ -29,7 +29,7 @@ pub mod prelude {
 #[derive(Reflect, Std!)]
 pub enum Action {
     /// Button press usually assigned to Space or the A button in the gamepad
-    Jump,
+    Act,
     /// Button press usually assigned to Escape or Start
     Pause,
     /// Dual axis input usually assigned to WASD or the left gamepad stick
@@ -49,12 +49,14 @@ impl Action {
     fn default_input_map() -> InputMap<Self> {
         let mut input_map = InputMap::default();
         input_map
-            .insert(Action::Jump, KeyCode::Space)
-            .insert(Action::Jump, GamepadButtonType::South)
-            .insert(Action::Jump, MouseButton::Left)
+            .insert(Action::Act, KeyCode::Space)
+            .insert(Action::Act, KeyCode::Enter)
+            .insert(Action::Act, GamepadButtonType::South)
+            .insert(Action::Act, MouseButton::Left)
             .insert(Action::Pause, KeyCode::Escape)
             .insert(Action::Pause, GamepadButtonType::Start)
             .insert_dual_axis(Action::Move, KeyboardVirtualDPad::WASD)
+            .insert_dual_axis(Action::Move, KeyboardVirtualDPad::ARROW_KEYS)
             .insert_dual_axis(Action::Move, GamepadStick::LEFT);
         input_map
     }

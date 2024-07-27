@@ -27,6 +27,11 @@ embedded = ["include_dir"]
 # Bevy and plugins
 bevy = { version = "0.14", features = ["serialize", "wayland"] }
 leafwing-input-manager = { git = "https://github.com/Leafwing-Studios/leafwing-input-manager" }
+bevy_mod_picking = { version = "0.20", default-features = false, features = [
+  "backend_bevy_ui",
+] }
+# TODO: https://github.com/JoJoJet/bevy-trait-query/issues/59#issuecomment-2212516814
+bevy-trait-query = { git = "https://github.com/RobWalt/bevy-trait-query.git", branch = "bevy-0.14-partial-update" }
 
 # Local crates
 macros = { path = "macros" }
@@ -47,9 +52,6 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = 3 # Improves performance when developing, but slows down first compilation significantly
 debug = false # Disabled debug symbols for dependencies
-
-[profile.dev.package.wgpu-types]
-debug-assertions = false
 
 [profile.release]
 codegen-units = 1

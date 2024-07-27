@@ -8,8 +8,7 @@ extern crate macro_rules_attribute;
 
 // TODO: Documentation and code examples
 //       Readme
-// TODO: UI Widgets
-//       Main menu
+// TODO: Main menu
 //       UI Navigation with input (custom implementation)
 // TODO: Keybind remapping
 // TODO: Text to speech
@@ -21,6 +20,7 @@ mod assets;
 mod base;
 mod components;
 mod input;
+mod ui;
 
 pub mod prelude {
     pub use super::{
@@ -28,6 +28,7 @@ pub mod prelude {
         base::prelude::*,
         components::prelude::*,
         input::prelude::*,
+        ui::prelude::*,
     };
 
     // Shorthands for derive macros
@@ -67,6 +68,7 @@ impl Plugin for GamePlugin {
             base::plugin,
             components::plugin,
             input::plugin,
+            ui::plugin,
         ));
     }
 }
