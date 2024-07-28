@@ -16,12 +16,8 @@ pub(super) fn plugin(app: &mut App) {
 pub enum GameState {
     /// The game starts on the `Startup` state.
     /// It runs before *anything*, including the `Startup` schedule.
-    /// It inmediately transitions to `Loading`.
     #[default]
     Startup,
-    /// Handles splash screens and assets.
-    /// The game stays here until all of the assets are ready.
-    Loading,
     /// The main menu of the game. All of the game systems are paused.
     Menu,
     /// Main state representing the actual gameplay.

@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 /// Preloads the music assets when the game starts
 pub(super) fn plugin(app: &mut App) {
-    app.init_resource::<AssetMap<MusicAssetKey>>();
+    app.load_asset::<MusicAssetKey>();
 }
 
 /// Defines all of the musical assets

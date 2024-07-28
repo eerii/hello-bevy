@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 /// Preloads the font assets when the game starts
 pub(super) fn plugin(app: &mut App) {
-    app.init_resource::<AssetMap<FontAssetKey>>();
+    app.load_asset::<FontAssetKey>();
 }
 
 /// Defines all of the font assets

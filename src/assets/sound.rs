@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 /// Preloads the sound assets when the game starts
 pub(super) fn plugin(app: &mut App) {
-    app.init_resource::<AssetMap<SoundAssetKey>>();
+    app.load_asset::<SoundAssetKey>();
 }
 
 /// Defines all of the sound effects
