@@ -17,9 +17,7 @@ use bevy::{
         PathStream,
         Reader,
     },
-    prelude::*,
     tasks::futures_lite::{AsyncRead, AsyncSeek, Stream},
-    utils::HashMap,
 };
 use include_dir::{include_dir, Dir};
 

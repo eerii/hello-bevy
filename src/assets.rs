@@ -1,4 +1,4 @@
-use bevy::{prelude::*, utils::HashMap};
+use crate::prelude::*;
 
 #[cfg(feature = "embedded")]
 pub(crate) mod embedded;

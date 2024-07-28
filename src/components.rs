@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use crate::prelude::*;
 
 mod camera;
 mod music;

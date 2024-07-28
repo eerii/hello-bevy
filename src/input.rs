@@ -1,4 +1,3 @@
-use bevy::prelude::*;
 use leafwing_input_manager::prelude::*;
 
 use crate::prelude::*;
@@ -17,10 +16,9 @@ pub mod prelude {
 /// These are all the possible game actions that have an input mapping
 /// You can use them like so:
 /// ```
-/// use bevy::prelude::*;
 /// use game::prelude::*;
 /// fn handle_input(input: Query<&ActionState<Action>>) {
-///     let Ok(input) = input.get_single() else { return };
+///     let input = single!(input);
 ///     if input.just_pressed(&Action::Jump) {
 ///         info!("Hi! c:");
 ///     }

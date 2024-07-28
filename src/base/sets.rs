@@ -1,5 +1,3 @@
-use bevy::prelude::*;
-
 use crate::prelude::*;
 
 /// Adds the `PlaySet` to the `App`.

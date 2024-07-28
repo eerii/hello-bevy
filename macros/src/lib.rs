@@ -33,7 +33,7 @@ pub fn persistent(args: pm::TokenStream, input: pm::TokenStream) -> pm::TokenStr
     let path = format!("{}/{}.toml", DATA_PATH, args.name);
     let name = ident.to_string();
 
-    // TODO: Propperly handle errors
+    // TODO: Wasm support
     let output = quote! {
         #[derive(Resource, Serialize, Deserialize)]
         #input
@@ -52,18 +52,19 @@ pub fn persistent(args: pm::TokenStream, input: pm::TokenStream) -> pm::TokenStr
                 };
             }
 
-            fn persist(&self) {
-                let data = toml::to_string(self).unwrap();
-                let _ = std::fs::write(#path, data);
+            fn persist(&self) -> Result<()> {
+                let data = toml::to_string(self).with_context(|| format!("Failed to serialize data for {}", #name))?;
+                std::fs::write(#path, data).with_context(|| format!("Failed to save serialized data to {} for {}", #path, #name))?;
                 debug!("{} updated, saved in {}", #name, #path);
+                Ok(())
             }
 
-            fn update(&mut self, f: impl Fn(&mut #ident)) {
+            fn update(&mut self, f: impl Fn(&mut #ident)) -> Result<()> {
                 f(self);
                 self.persist()
             }
 
-            fn reset(&mut self) {
+            fn reset(&mut self) -> Result<()> {
                 *self = Self::default();
                 self.persist()
             }

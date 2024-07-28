@@ -1,6 +1,3 @@
-use bevy::prelude::*;
-use macros::asset_key;
-
 use crate::prelude::*;
 
 /// Preloads the meta assets when the game starts

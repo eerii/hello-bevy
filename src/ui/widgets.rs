@@ -1,19 +1,24 @@
 #![allow(dead_code)]
 
-use bevy::{color::palettes::css, ecs::system::EntityCommands, prelude::*, ui::Val::*};
+use bevy::{ecs::system::EntityCommands, ui::Val::*};
 use bevy_mod_picking::prelude::*;
 
 use crate::prelude::*;
 
 const UI_GAP: Val = Px(10.);
 
+pub(super) fn plugin(app: &mut App) {
+    app.register_component_as::<dyn Navigable, SimpleNavigable>();
+}
+
 pub trait Widget {
     fn button(&mut self, text: impl Into<String>) -> EntityCommands;
     fn text(&mut self, text: impl Into<String>) -> EntityCommands;
 }
 
-impl<T: Spawn> Widget for T {
+impl<T: SpawnExt> Widget for T {
     fn button(&mut self, text: impl Into<String>) -> EntityCommands {
+        let text = text.into();
         let mut button = self.spawn((
             NodeBundle {
                 style: Style {
@@ -25,6 +30,9 @@ impl<T: Spawn> Widget for T {
                 },
                 background_color: css::ROYAL_BLUE.into(),
                 ..default()
+            },
+            SimpleNavigable {
+                label: text.clone(),
             },
             NavBundle::default(),
         ));
@@ -116,21 +124,54 @@ impl Stylable for NodeBundle {
     }
 }
 
+#[derive(Component)]
+struct SimpleNavigable {
+    label: String,
+}
+
+impl Navigable for SimpleNavigable {
+    fn label(&self) -> String {
+        self.label.clone()
+    }
+
+    fn action(&self) {
+        info!("action {}", self.label());
+    }
+}
+
+pub trait NavigableExt<'a> {
+    fn nav_container(&'a mut self) -> &mut EntityCommands;
+    fn no_nav(&'a mut self) -> &mut EntityCommands;
+}
+
+impl<'a> NavigableExt<'a> for EntityCommands<'a> {
+    fn nav_container(&'a mut self) -> &mut EntityCommands {
+        self.insert(NavContainer);
+        self
+    }
+
+    fn no_nav(&'a mut self) -> &mut EntityCommands {
+        self.remove::<SimpleNavigable>();
+        self.remove::<NavBundle>();
+        self
+    }
+}
+
 /// An internal trait for types that can spawn entities.
 /// This is here so that [`Widgets`] can be implemented on all types that
 /// are able to spawn entities.
 /// Ideally, this trait should be [part of Bevy itself](https://github.com/bevyengine/bevy/issues/14231).
-trait Spawn {
+trait SpawnExt {
     fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands;
 }
 
-impl Spawn for Commands<'_, '_> {
+impl SpawnExt for Commands<'_, '_> {
     fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
         self.spawn(bundle)
     }
 }
 
-impl Spawn for ChildBuilder<'_> {
+impl SpawnExt for ChildBuilder<'_> {
     fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
         self.spawn(bundle)
     }

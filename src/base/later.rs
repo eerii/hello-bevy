@@ -1,6 +1,8 @@
 //! Based on the work by dylanj https://discord.com/channels/691052431525675048/937158127491633152/1266369728402948136
 
-use bevy::{ecs::system::EntityCommands, prelude::*};
+use bevy::ecs::system::EntityCommands;
+
+use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(PreUpdate, handle_later_commands);

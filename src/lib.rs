@@ -9,7 +9,6 @@ extern crate macro_rules_attribute;
 // TODO: Documentation and code examples
 //       Readme
 // TODO: Main menu
-//       UI Navigation with input (custom implementation)
 // TODO: Keybind remapping
 // TODO: Text to speech
 // TODO: Migrate proc macros to macro_rules_attribute?
@@ -19,16 +18,23 @@ use bevy::{prelude::*, window::WindowResolution};
 mod assets;
 mod base;
 mod components;
+#[macro_use]
+mod helpers;
 mod input;
 mod ui;
 
 pub mod prelude {
+    pub use anyhow::{Context, Result};
+    pub use bevy::{color::palettes::css, prelude::*, utils::HashMap};
+    pub use macros::*;
+
     pub use super::{
         assets::prelude::*,
         base::prelude::*,
         components::prelude::*,
         input::prelude::*,
         ui::prelude::*,
+        GamePlugin,
     };
 
     // Shorthands for derive macros
