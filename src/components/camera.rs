@@ -15,7 +15,14 @@ pub struct GameCamera;
 pub struct FinalCamera;
 
 /// Spawn the main cameras
-fn init(mut cmd: Commands) {
-    let camera_bundle = Camera2dBundle::default();
+fn init(mut cmd: Commands, options: Res<GameOptions>) {
+    let clear_color = ClearColorConfig::Custom(options.palette.darker);
+    let camera_bundle = Camera2dBundle {
+        camera: Camera {
+            clear_color,
+            ..default()
+        },
+        ..default()
+    };
     cmd.spawn((camera_bundle, GameCamera, FinalCamera));
 }

@@ -1,15 +1,19 @@
 #![allow(dead_code)]
 
-use bevy::{ecs::system::EntityCommands, ui::Val::*};
+use bevy::{
+    ecs::{
+        component::{ComponentHooks, StorageType},
+        system::EntityCommands,
+        world::DeferredWorld,
+    },
+    state::state::FreelyMutableState,
+    ui::Val::*,
+};
 use bevy_mod_picking::prelude::*;
 
 use crate::prelude::*;
 
 const UI_GAP: Val = Px(10.);
-
-pub(super) fn plugin(app: &mut App) {
-    app.register_component_as::<dyn Navigable, SimpleNavigable>();
-}
 
 pub trait Widget {
     fn button(&mut self, text: impl Into<String>) -> EntityCommands;
@@ -17,6 +21,7 @@ pub trait Widget {
 }
 
 impl<T: SpawnExt> Widget for T {
+    /// Color palette
     fn button(&mut self, text: impl Into<String>) -> EntityCommands {
         let text = text.into();
         let mut button = self.spawn((
@@ -28,13 +33,9 @@ impl<T: SpawnExt> Widget for T {
                     align_items: AlignItems::Center,
                     ..default()
                 },
-                background_color: css::ROYAL_BLUE.into(),
                 ..default()
             },
-            SimpleNavigable {
-                label: text.clone(),
-            },
-            NavBundle::default(),
+            UiBackgroundColor("primary"),
         ));
         button.with_children(|node| {
             node.text(text).insert(Pickable::IGNORE);
@@ -43,11 +44,13 @@ impl<T: SpawnExt> Widget for T {
     }
 
     fn text(&mut self, text: impl Into<String>) -> EntityCommands {
-        self.spawn(TextBundle::from_section(text, TextStyle {
-            font_size: 24.,
-            color: Color::WHITE,
-            ..default()
-        }))
+        self.spawn((
+            TextBundle::from_section(text, TextStyle {
+                font_size: 24.,
+                ..default()
+            }),
+            UiTextColor("light"),
+        ))
     }
 }
 
@@ -124,24 +127,10 @@ impl Stylable for NodeBundle {
     }
 }
 
-#[derive(Component)]
-struct SimpleNavigable {
-    label: String,
-}
-
-impl Navigable for SimpleNavigable {
-    fn label(&self) -> String {
-        self.label.clone()
-    }
-
-    fn action(&self) {
-        info!("action {}", self.label());
-    }
-}
-
 pub trait NavigableExt<'a> {
     fn nav_container(&'a mut self) -> &mut EntityCommands;
-    fn no_nav(&'a mut self) -> &mut EntityCommands;
+    fn nav<Marker>(&'a mut self, callback: impl IntoSystem<(), (), Marker>) -> &mut EntityCommands;
+    fn nav_state<S: FreelyMutableState>(&'a mut self, state: S) -> &mut EntityCommands;
 }
 
 impl<'a> NavigableExt<'a> for EntityCommands<'a> {
@@ -150,10 +139,22 @@ impl<'a> NavigableExt<'a> for EntityCommands<'a> {
         self
     }
 
-    fn no_nav(&'a mut self) -> &mut EntityCommands {
-        self.remove::<SimpleNavigable>();
-        self.remove::<NavBundle>();
+    fn nav<Marker>(&'a mut self, callback: impl IntoSystem<(), (), Marker>) -> &mut EntityCommands {
+        self.insert((
+            Navigable {
+                label: "TODO".into(),
+            },
+            NavBundle::default(),
+            On::<NavActionEvent>::run(callback),
+        ));
         self
+    }
+
+    fn nav_state<S: FreelyMutableState>(&'a mut self, state: S) -> &mut EntityCommands {
+        let callback = move |mut next_state: ResMut<NextState<S>>| {
+            next_state.set(state.clone());
+        };
+        self.nav(callback)
     }
 }
 
@@ -175,4 +176,79 @@ impl SpawnExt for ChildBuilder<'_> {
     fn spawn<B: Bundle>(&mut self, bundle: B) -> EntityCommands {
         self.spawn(bundle)
     }
+}
+
+/// Adds a themable background color to an Ui node. The literal parameter must
+/// be the name of one of the fields of `ColorPalette`.
+#[derive(Clone)]
+struct UiBackgroundColor(&'static str);
+
+impl Default for UiBackgroundColor {
+    fn default() -> Self {
+        Self("primary")
+    }
+}
+
+impl Component for UiBackgroundColor {
+    const STORAGE_TYPE: StorageType = StorageType::Table;
+
+    fn register_component_hooks(hooks: &mut ComponentHooks) {
+        hooks.on_add(|mut world, entity, _id| {
+            let field = world
+                .get::<UiBackgroundColor>(entity)
+                .cloned()
+                .unwrap_or_default()
+                .0;
+            let color = color_from_palette(&world, field);
+            let Some(mut background) = world.get_mut::<BackgroundColor>(entity) else {
+                return;
+            };
+            *background = color.into();
+        });
+    }
+}
+
+/// Adds a themable text color to an Ui text node. The literal parameter must
+/// be the name of one of the fields of `ColorPalette`.
+#[derive(Clone)]
+struct UiTextColor(&'static str);
+
+impl Default for UiTextColor {
+    fn default() -> Self {
+        Self("light")
+    }
+}
+
+impl Component for UiTextColor {
+    const STORAGE_TYPE: StorageType = StorageType::Table;
+
+    fn register_component_hooks(hooks: &mut ComponentHooks) {
+        hooks.on_add(|mut world, entity, _id| {
+            let field = world
+                .get::<UiTextColor>(entity)
+                .cloned()
+                .unwrap_or_default()
+                .0;
+            let color = color_from_palette(&world, field);
+            let Some(mut text) = world.get_mut::<Text>(entity) else {
+                return;
+            };
+            for section in &mut text.sections {
+                section.style.color = color;
+            }
+        });
+    }
+}
+
+/// Converts from a named palette field to the corresponding color
+fn color_from_palette(world: &DeferredWorld, field: &'static str) -> Color {
+    let palette = world
+        .get_resource::<GameOptions>()
+        .map(|data| data.palette)
+        .unwrap_or_default();
+    let Some(reflect) = palette.field(field) else { return css::RED.into() };
+    reflect
+        .downcast_ref::<Color>()
+        .cloned()
+        .unwrap_or(css::RED.into())
 }

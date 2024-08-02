@@ -3,24 +3,12 @@ use bevy_mod_picking::prelude::*;
 
 use crate::prelude::*;
 
-// TODO: Create macro to derive navigable
-//       Automatically register_component_as and create an interaction
-//       handler for then the navigable is pressed
-//       Also add the option to change state and send events,
-//       these need to pass parameters into the function, so the
-//       systems they generate need to have them
-
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins(DefaultPickingPlugins)
-        .add_systems(Update, (handle_next_prev, handle_press).chain());
-}
-
-/// An UI element that can be navigated to.
-/// When clicked, it runs `action`.
-#[bevy_trait_query::queryable]
-pub trait Navigable {
-    fn label(&self) -> String; // For tts
-    fn action(&self);
+    app.add_plugins((
+        DefaultPickingPlugins,
+        EventListenerPlugin::<NavActionEvent>::default(),
+    ))
+    .add_systems(Update, (handle_next_prev, handle_press).chain());
 }
 
 /// `Navigable` children of entities with this components can be selected and
@@ -28,6 +16,12 @@ pub trait Navigable {
 /// Nesting is not properly supported yet.
 #[derive(Component)]
 pub struct NavContainer;
+
+/// An UI element that can be navigated to.
+#[derive(Component)]
+pub struct Navigable {
+    pub label: String,
+}
 
 /// A marker for the selected `Navigable` entity of a `NavContainer`.
 /// It has custom component hooks to change properties of its entity when it is
@@ -40,21 +34,34 @@ impl Component for NavSelected {
 
     fn register_component_hooks(hooks: &mut ComponentHooks) {
         hooks.on_add(|mut world, entity, _id| {
-            // TODO: Color palette
+            let color = world
+                .get_resource::<GameOptions>()
+                .map(|data| data.palette)
+                .unwrap_or_default()
+                .dark;
             let Some(mut background) = world.get_mut::<BackgroundColor>(entity) else {
                 return;
             };
-            *background = css::MEDIUM_SEA_GREEN.into();
+            *background = color.into();
         });
 
         hooks.on_remove(|mut world, entity, _id| {
+            let color = world
+                .get_resource::<GameOptions>()
+                .map(|data| data.palette)
+                .unwrap_or_default()
+                .primary;
             let Some(mut background) = world.get_mut::<BackgroundColor>(entity) else {
                 return;
             };
-            *background = css::ROYAL_BLUE.into();
+            *background = color.into();
         });
     }
 }
+
+/// Prevents navigation movement actions from happenning too quickly.
+#[derive(Component)]
+struct InputRepeatDelay;
 
 /// Component bundle for added cursor support for selection changes.
 #[derive(Bundle)]
@@ -81,9 +88,11 @@ impl Default for NavBundle {
     }
 }
 
-/// Prevents navigation movement actions from happenning too quickly.
-#[derive(Component)]
-struct InputRepeatDelay;
+#[derive(Clone, Event, EntityEvent)]
+pub struct NavActionEvent {
+    #[target]
+    pub target: Entity,
+}
 
 /// Uses `Action::Move` to switch the focus of the `Selected` entity inside a
 /// `NavContainer` to the next or previous entity. It has wrapping and it focus
@@ -92,7 +101,7 @@ fn handle_next_prev(
     mut cmd: Commands,
     input: Query<&ActionState<Action>>,
     navigation: Query<&Children, With<NavContainer>>,
-    navigables: Query<(Entity, &dyn Navigable)>,
+    navigables: Query<(), With<Navigable>>,
     selected: Query<Entity, With<NavSelected>>,
     repeat_delay: Query<Entity, With<InputRepeatDelay>>,
 ) {
@@ -130,7 +139,6 @@ fn handle_next_prev(
                 cmd.entity(children[prev]).remove::<NavSelected>();
                 let mut next = prev;
                 for i in 1..children.len() {
-                    info!("{}", i);
                     let value = if move_forward { prev + i } else { prev + children.len() - i }
                         % children.len();
                     if navigables.contains(children[value]) {
@@ -146,18 +154,16 @@ fn handle_next_prev(
     }
 }
 
-/// When `Action::Act` is pressed, trigger the `Selected` `Navigable::action()`
-/// function.
+/// When `Action::Act` is pressed, trigger the `NavActionEvent` for
+/// `NavSelected`
 fn handle_press(
     input: Query<&ActionState<Action>>,
-    selected: Query<&dyn Navigable, With<NavSelected>>,
+    selected: Query<Entity, With<NavSelected>>,
+    mut nav_action_writer: EventWriter<NavActionEvent>,
 ) {
     let input = single!(input);
-
     if input.just_pressed(&Action::Act) {
         let selected = single!(selected);
-        for selected in &selected {
-            selected.action();
-        }
+        nav_action_writer.send(NavActionEvent { target: selected });
     }
 }

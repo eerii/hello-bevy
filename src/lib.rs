@@ -7,8 +7,7 @@
 extern crate macro_rules_attribute;
 
 // TODO: Documentation and code examples
-//       Readme
-// TODO: Main menu
+// TODO: Readme
 // TODO: Keybind remapping
 // TODO: Text to speech
 // TODO: Migrate proc macros to macro_rules_attribute?

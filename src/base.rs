@@ -11,7 +11,7 @@ pub(super) fn plugin(app: &mut App) {
 
 pub mod prelude {
     pub use super::{
-        data::{Persistent, SaveData},
+        data::{GameOptions, Persistent, SaveData},
         later::LaterCommandExt,
         sets::PlaySet,
         states::GameState,
