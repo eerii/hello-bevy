@@ -1,3 +1,8 @@
+//! Mappings menu screen.
+
+// TODO: Show keymaps
+// TODO: Remapping
+
 use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {

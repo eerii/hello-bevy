@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+//! Reusable Ui widgets to easily build interfaces.
 
 use bevy::{
     ecs::{
@@ -13,15 +13,19 @@ use bevy_mod_picking::prelude::*;
 
 use crate::prelude::*;
 
+/// The default gap between Ui elements.
 const UI_GAP: Val = Px(10.);
 
+/// An extension trait for spawning useful Ui widgets.
 pub trait Widget {
+    /// An Ui element that is a box with text inside. For it to be functional,
+    /// add navigation with `.nav()` or `.nav_state()`.
     fn button(&mut self, text: impl Into<String>) -> EntityCommands;
+    /// A text bundle with one section.
     fn text(&mut self, text: impl Into<String>) -> EntityCommands;
 }
 
 impl<T: SpawnExt> Widget for T {
-    /// Color palette
     fn button(&mut self, text: impl Into<String>) -> EntityCommands {
         let text = text.into();
         let mut button = self.spawn((
@@ -54,10 +58,13 @@ impl<T: SpawnExt> Widget for T {
     }
 }
 
-/// An extension trait for spawning UI containers.
+/// An extension trait for spawning Ui containers.
 pub trait Container {
+    /// Creates an Ui node that orders elements vertically (a div)
     fn col(&mut self) -> EntityCommands;
+    /// Creates an Ui node that orders elements horizontally (a span)
     fn row(&mut self) -> EntityCommands;
+    /// Base Ui node from where to build interfaces.
     fn ui_root(&mut self) -> EntityCommands;
 }
 
@@ -80,6 +87,7 @@ impl Container for Commands<'_, '_> {
     }
 }
 
+/// Ui node that takes the whole screen and centers the content.
 fn container() -> NodeBundle {
     NodeBundle {
         style: Style {
@@ -97,9 +105,14 @@ fn container() -> NodeBundle {
     }
 }
 
+/// Convenience function for easily modifying usual style properties of an Ui
+/// node.
 pub trait StyleBuilder {
+    /// Modifies the `width` of the node.
     fn width(&mut self, value: Val);
+    /// Modifies the `height` of the node.
     fn height(&mut self, value: Val);
+    /// Modifies the `flex_direction` of the node.
     fn dir(&mut self, dir: FlexDirection);
 }
 
@@ -117,7 +130,9 @@ impl StyleBuilder for Style {
     }
 }
 
+/// Convenience function for modifying the style of an Ui node.
 pub trait Stylable {
+    /// Returns a reference to the `Style` of this node.
     fn style(&mut self) -> &mut Style;
 }
 
@@ -127,9 +142,16 @@ impl Stylable for NodeBundle {
     }
 }
 
+/// Convenience functions for adding navigation capabilities to Ui nodes.
 pub trait NavigableExt<'a> {
+    /// Converts the node into a `NavContainer`, allowing for navigation of its
+    /// child elements.
     fn nav_container(&'a mut self) -> &mut EntityCommands;
+    /// Converts the node into `Navigable`, adding the propper bundles. Takes a
+    /// bevy system as a callback.
     fn nav<Marker>(&'a mut self, callback: impl IntoSystem<(), (), Marker>) -> &mut EntityCommands;
+    /// Converts the node into `Navigable`, making the callback a transition
+    /// into a new state.
     fn nav_state<S: FreelyMutableState>(&'a mut self, state: S) -> &mut EntityCommands;
 }
 
@@ -224,23 +246,30 @@ impl Component for UiTextColor {
 
     fn register_component_hooks(hooks: &mut ComponentHooks) {
         hooks.on_add(|mut world, entity, _id| {
+            // Color
             let field = world
                 .get::<UiTextColor>(entity)
                 .cloned()
                 .unwrap_or_default()
                 .0;
             let color = color_from_palette(&world, field);
+
+            // Font
+            let Some(font) = world.get_resource::<AssetMap<FontAssetKey>>() else { return };
+            let font = font.get(&FontAssetKey::Main);
+
             let Some(mut text) = world.get_mut::<Text>(entity) else {
                 return;
             };
             for section in &mut text.sections {
                 section.style.color = color;
+                section.style.font = font.clone_weak();
             }
         });
     }
 }
 
-/// Converts from a named palette field to the corresponding color
+/// Converts from a named palette field to the corresponding color.
 fn color_from_palette(world: &DeferredWorld, field: &'static str) -> Color {
     let palette = world
         .get_resource::<GameOptions>()

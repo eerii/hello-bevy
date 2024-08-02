@@ -1,3 +1,5 @@
+//! Global helper functions and macros.
+
 /// Gets a single `Entity` from a `Query` or returns gracefully (no panic).
 #[macro_export]
 macro_rules! single {

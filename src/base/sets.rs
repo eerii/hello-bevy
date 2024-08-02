@@ -1,3 +1,8 @@
+//! `SystemSet`s in bevy allow to group systems inside an `Schedule`, allowing
+//! for global ordering between each group. This is very useful since some
+//! systems need to happen before others, but it is not good to abuse it to
+//! allow paralellization.
+
 use crate::prelude::*;
 
 /// Adds the `PlaySet` to the `App`.

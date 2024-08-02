@@ -1,3 +1,5 @@
+//! This module handles the input using `leafwing_input_manager`.
+
 use leafwing_input_manager::prelude::*;
 
 use crate::prelude::*;
@@ -7,19 +9,22 @@ pub(super) fn plugin(app: &mut App) {
         .add_systems(OnEnter(GameState::Startup), init);
 }
 
+/// The prelude of this module.
 pub mod prelude {
     pub use leafwing_input_manager::prelude::ActionState;
 
     pub use super::Action;
 }
 
-/// These are all the possible game actions that have an input mapping
-/// You can use them like so:
+/// These are all the possible game actions that have an input mapping.
+///
+/// # Examples
+///
 /// ```
 /// use game::prelude::*;
 /// fn handle_input(input: Query<&ActionState<Action>>) {
 ///     let input = single!(input);
-///     if input.just_pressed(&Action::Jump) {
+///     if input.just_pressed(&Action::Act) {
 ///         info!("Hi! c:");
 ///     }
 /// }
@@ -60,7 +65,7 @@ impl Action {
     }
 }
 
-/// Create a new input manager
+/// Creates a new input manager
 fn init(mut cmd: Commands) {
     cmd.spawn(InputManagerBundle::with_map(Action::default_input_map()));
 }

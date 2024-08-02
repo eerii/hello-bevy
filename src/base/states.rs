@@ -1,3 +1,6 @@
+//! `State`s are a FSM that allows to differentiate between scenarios and
+//! conditionally run systems based on which is active.
+
 use crate::prelude::*;
 
 /// Adds the `GameState` to the `App`.
@@ -9,7 +12,7 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 /// Indicates at which point the game is. Very useful for controlling which
-/// systems run when (in_state) and to create transitions (OnEnter/OnExit)
+/// systems run when (`in_state`) and to create transitions (`OnEnter`/`OnExit`)
 /// You can also scope entities to a state with StateScoped, and they will
 /// be deleted automatically when the state ends
 #[derive(Default, States, Std!)]

@@ -1,3 +1,6 @@
+//! Main menu screen. Contains play and exit buttons and a way to access more
+//! options.
+
 use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {

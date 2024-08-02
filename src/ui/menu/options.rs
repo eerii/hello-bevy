@@ -1,3 +1,5 @@
+//! Menu screen for customizing game options.
+
 use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {

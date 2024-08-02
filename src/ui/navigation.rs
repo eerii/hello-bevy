@@ -1,7 +1,11 @@
+//! Ui navigation system that allows for mouse, keyboard and gamepad input.
+
 use bevy::ecs::component::{ComponentHooks, StorageType};
 use bevy_mod_picking::prelude::*;
 
 use crate::prelude::*;
+
+// TODO: Text to speech
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((
@@ -20,6 +24,8 @@ pub struct NavContainer;
 /// An UI element that can be navigated to.
 #[derive(Component)]
 pub struct Navigable {
+    /// Text associated with the navigation item that can be read aloud with
+    /// screen readers.
     pub label: String,
 }
 
@@ -88,8 +94,11 @@ impl Default for NavBundle {
     }
 }
 
+/// Event that is triggered when an action is requested for the selected
+/// navigation item.
 #[derive(Clone, Event, EntityEvent)]
 pub struct NavActionEvent {
+    /// The entity that triggered the event.
     #[target]
     pub target: Entity,
 }

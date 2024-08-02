@@ -1,3 +1,5 @@
+//! The main menu of the game.
+
 use crate::prelude::*;
 
 mod main;
@@ -17,6 +19,7 @@ pub(super) fn plugin(app: &mut App) {
         );
 }
 
+/// Substate to handle the different menu screens.
 #[derive(SubStates, Std!, Default)]
 #[source(GameState = GameState::Menu)]
 pub enum MenuState {
@@ -29,6 +32,8 @@ pub enum MenuState {
     Mappings,
 }
 
+/// When the `Pause` key is pressed in the menu, go to the previous menu screen.
+/// If the player is in the main menu screen, resume the game.
 fn handle_back(
     input: Query<&ActionState<Action>>,
     menu_state: Res<State<MenuState>>,
@@ -45,6 +50,7 @@ fn handle_back(
     }
 }
 
+/// When the `Pause` key is pressed while playing, open the menu.
 fn handle_pause(input: Query<&ActionState<Action>>, mut next_state: ResMut<NextState<GameState>>) {
     let input = single!(input);
     if input.just_pressed(&Action::Pause) {

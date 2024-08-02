@@ -1,4 +1,5 @@
-//! Based on the work by dylanj https://discord.com/channels/691052431525675048/937158127491633152/1266369728402948136
+//! Allows to schedule a `Commands` a certain time in the future.
+//! Based on the work by dylanj <https://discord.com/channels/691052431525675048/937158127491633152/1266369728402948136>
 
 use bevy::ecs::system::EntityCommands;
 
@@ -8,13 +9,27 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(PreUpdate, handle_later_commands);
 }
 
+/// Scheduled version of a `Commands` that runs after a timer is done.
+///
+/// # Examples
+///
+/// ```
+/// use game::prelude::*;
+///
+/// fn system(mut cmd: Commands) {
+///     cmd.later(1., |cmd| {
+///         info!("Hi from the future :3");
+///     });
+/// }
+/// ```
 #[derive(Component)]
 pub struct LaterCommand {
-    pub cmd: Box<dyn FnMut(&mut Commands) + Send + Sync + 'static>,
-    pub delay: Timer,
+    cmd: Box<dyn FnMut(&mut Commands) + Send + Sync + 'static>,
+    delay: Timer,
 }
 
 impl LaterCommand {
+    /// Creates a new `LaterCommand` from a duration in seconds and a closure.
     pub fn new(secs: f32, command: impl FnMut(&mut Commands) + Send + Sync + 'static) -> Self {
         Self {
             cmd: Box::new(command),
@@ -23,6 +38,8 @@ impl LaterCommand {
     }
 }
 
+/// Ticks `LaterCommand` timers and executes the scheduled commands after the
+/// timers run out.
 fn handle_later_commands(
     mut cmd: Commands,
     mut later: Query<(Entity, &mut LaterCommand)>,
@@ -37,7 +54,9 @@ fn handle_later_commands(
     }
 }
 
+/// Convenience function that allows to call `cmd.later(...)`.
 pub trait LaterCommandExt {
+    /// Spawns a `LaterCommand` with the specified duration and callback.
     fn later(
         &mut self,
         secs: f32,

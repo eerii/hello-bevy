@@ -1,6 +1,7 @@
-// For a more complete solution, look at https://github.com/umut-sahin/bevy-persistent
+//! Procedural macro helpers for some game systems.
 
-use darling::{ast::NestedMeta, FromMeta};
+#![warn(missing_docs)]
+
 use proc_macro as pm;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -8,30 +9,29 @@ use syn::{parse2, Data, DeriveInput, Meta};
 
 const DATA_PATH: &str = ".data";
 
-#[derive(FromMeta)]
-struct PersistentArgs {
-    name: String,
-}
-
+/// Declares a bevy resource that can serialize data locally and persist it
+/// between game restarts.
+///
+/// # Examples
+///
+/// ```
+/// pub fn plugin(app: &mut App) {
+///     app.insert_resource(SomeData::load());
+/// }
+///
+/// #[persistent]
+/// #[derive(Default)]
+/// pub struct SomeData {
+///     pub test: bool,
+/// }
+/// ```
 #[proc_macro_attribute]
-pub fn persistent(args: pm::TokenStream, input: pm::TokenStream) -> pm::TokenStream {
+pub fn persistent(_: pm::TokenStream, input: pm::TokenStream) -> pm::TokenStream {
     let input: TokenStream = input.into();
     let DeriveInput { ident, .. } = parse2(input.clone()).unwrap();
 
-    let attr_args = match NestedMeta::parse_meta_list(args.into()) {
-        Ok(v) => v,
-        Err(e) => {
-            return pm::TokenStream::from(darling::Error::from(e).write_errors());
-        },
-    };
-    let args = match PersistentArgs::from_list(&attr_args) {
-        Ok(v) => v,
-        Err(e) => {
-            return pm::TokenStream::from(e.write_errors());
-        },
-    };
-    let path = format!("{}/{}.toml", DATA_PATH, args.name);
     let name = ident.to_string();
+    let path = format!("{}/{}.toml", DATA_PATH, name.to_lowercase());
 
     // TODO: Wasm support
     let output = quote! {
@@ -73,11 +73,31 @@ pub fn persistent(args: pm::TokenStream, input: pm::TokenStream) -> pm::TokenStr
     output.into()
 }
 
+/// Helper macro to allow deriving `asset` attributes for struct fields.
+/// There may be better ways to do this.
 #[proc_macro_derive(AssetAttr, attributes(asset))]
 pub fn derive_asset_attr(_item: pm::TokenStream) -> pm::TokenStream {
     pm::TokenStream::new()
 }
 
+/// Defines an `AssetKey`, a collection of assets of the same type that are
+/// loaded together.
+///
+/// # Examples
+///
+/// ```ignore
+/// use game::prelude::*;
+///
+/// pub fn plugin(app: &mut App) {
+///     app.load_asset::<SomeAssetKey>();
+/// }
+///
+/// #[asset_key(Image)]
+/// pub enum SomeAssetKey {
+///     #[asset = "some/asset.png"]
+///     SomeVariant,
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn asset_key(args: pm::TokenStream, input: pm::TokenStream) -> pm::TokenStream {
     let input: TokenStream = input.into();

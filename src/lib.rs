@@ -1,50 +1,32 @@
+//! Bevy game template.
+//! It uses plugins and submodules to structure the code.
+
+// TODO: Code examples
+// TODO: Readme
+
 #![feature(path_add_extension)]
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
-// #![warn(missing_docs)]
+#![warn(missing_docs)]
 
 #[macro_use]
 extern crate macro_rules_attribute;
 
-// TODO: Documentation and code examples
-// TODO: Readme
-// TODO: Keybind remapping
-// TODO: Text to speech
-// TODO: Migrate proc macros to macro_rules_attribute?
-
 use bevy::{prelude::*, window::WindowResolution};
 
-mod assets;
-mod base;
-mod components;
+pub mod assets;
+pub mod base;
+pub mod components;
 #[macro_use]
-mod helpers;
-mod input;
-mod ui;
+pub mod helpers;
+pub mod input;
+pub mod prelude;
+pub mod ui;
 
-pub mod prelude {
-    pub use anyhow::{Context, Result};
-    pub use bevy::{color::palettes::css, prelude::*, utils::HashMap};
-    pub use macros::*;
-
-    pub use super::{
-        assets::prelude::*,
-        base::prelude::*,
-        components::prelude::*,
-        input::prelude::*,
-        ui::prelude::*,
-        GamePlugin,
-    };
-
-    // Shorthands for derive macros
-    macro_rules_attribute::derive_alias! {
-        #[derive(Eq!)] = #[derive(Eq, PartialEq)];
-        #[derive(Ord!)] = #[derive(Ord, PartialOrd, Eq!)];
-        #[derive(Copy!)] = #[derive(Copy, Clone)];
-        #[derive(Std!)] = #[derive(Debug, Copy!, Ord!, Hash)];
-    }
-}
-
+/// The base plugin for the game. It recursively adds all of the plugins
+/// declared in submodules as well as the default plugin collection.
+/// A plugin in bevy allows you to extend the `App` at the start of the game,
+/// adding systems, resources and other plugins.
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
