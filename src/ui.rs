@@ -13,7 +13,6 @@ pub(super) fn plugin(app: &mut App) {
 /// The prelude of this module
 pub mod prelude {
     pub use bevy_mod_picking::prelude::Listener;
-    pub use bevy_trait_query::RegisterExt;
 
     pub use super::{
         menu::MenuState,

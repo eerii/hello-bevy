@@ -33,8 +33,6 @@ leafwing-input-manager = { git = "https://github.com/Leafwing-Studios/leafwing-i
 bevy_mod_picking = { version = "0.20", default-features = false, features = [
   "backend_bevy_ui",
 ] }
-# TODO: https://github.com/JoJoJet/bevy-trait-query/issues/59#issuecomment-2212516814
-bevy-trait-query = { git = "https://github.com/RobWalt/bevy-trait-query.git", branch = "bevy-0.14-partial-update" }
 bevy-inspector-egui = { version = "0.25", optional = true }
 
 # Local crates
@@ -50,6 +48,9 @@ macro_rules_attribute = { version = "0.2" }
 serde = { version = "1.0", features = ["derive"] }
 toml = { version = "0.8" }
 anyhow = { version = "1.0" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+web-sys = { version = "0.3", features = ["Storage"] }
 
 [profile.dev]
 opt-level = 1

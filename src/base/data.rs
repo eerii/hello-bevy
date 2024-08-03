@@ -6,10 +6,8 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::prelude::*;
 
-// TODO: Wasm data persistence
-
 /// The directory where the persistent data should be saved in.
-const DATA_PATH: &str = ".data"; // If changed, update in `macros/lib.rs`
+const DATA_PATH: &str = ".data";
 
 pub(super) fn plugin(app: &mut App) {
     #[cfg(not(target_arch = "wasm32"))]
@@ -27,7 +25,7 @@ pub(super) fn plugin(app: &mut App) {
 
 /// Stores options that can be configured on the menu, related to accesibility
 /// and customization.
-#[persistent]
+#[derive(Reflect, Resource, Serialize, Deserialize)]
 pub struct GameOptions {
     /// The user configurable color palette of the game.
     pub palette: ColorPalette,
@@ -36,6 +34,8 @@ pub struct GameOptions {
     /// The last saved resolution of the window
     pub resolution: UVec2,
 }
+
+persistent!(GameOptions);
 
 impl Default for GameOptions {
     fn default() -> Self {
@@ -48,12 +48,13 @@ impl Default for GameOptions {
 }
 
 /// Used to store information about the player, the level and game progress.
-#[persistent]
-#[derive(Default)]
+#[derive(Reflect, Resource, Serialize, Deserialize, Default)]
 pub struct SaveData {
     /// Placeholder.
     pub test: bool,
 }
+
+persistent!(SaveData);
 
 // Systems
 // ---
@@ -79,6 +80,8 @@ fn on_resize(mut resize_events: EventReader<WindowResized>, mut options: ResMut<
 // Helpers
 // ---
 
+// TODO: Look into macro_rules_attribute to derive this instead
+
 /// Indicates that a `Resource` can be saved and loaded from disk.
 /// This is implemented automatically when using `persistent`.
 ///
@@ -88,11 +91,11 @@ fn on_resize(mut resize_events: EventReader<WindowResized>, mut options: ResMut<
 /// use game::prelude::*;
 /// use serde::{Deserialize, Serialize};
 ///
-/// #[persistent]
-/// #[derive(Default)]
+/// #[derive(Reflect, Resource, Serialize, Deserialize, Default)]
 /// pub struct SomeData {
 ///     pub test: bool,
 /// }
+/// persistent!(SomeData);
 ///
 /// // The persistent data can be accessed in any system.
 /// fn read(data: Res<SomeData>) {
@@ -110,17 +113,75 @@ fn on_resize(mut resize_events: EventReader<WindowResized>, mut options: ResMut<
 ///     data.persist();
 /// }
 /// ```
-pub trait Persistent: Resource + Serialize + DeserializeOwned + Default {
+pub trait Persistent: Resource + Serialize + DeserializeOwned + Default + TypePath {
+    /// Returns the path that this resource needs to write to.
+    fn path() -> &'static str;
     /// Reads a resource from disk if it exists. If it doesn't it returns the
     /// default value.
-    fn load() -> Self;
+    fn load() -> Self {
+        let mut data = Self::default();
+        data.reload();
+        data
+    }
     /// Reads the saved value of this resource and overwrites its current value.
-    fn reload(&mut self);
+    fn reload(&mut self) {
+        #[cfg(not(target_arch = "wasm32"))]
+        let data = {
+            let path = format!("{}/{}.toml", DATA_PATH, Self::path());
+            std::fs::read_to_string(path).ok()
+        };
+
+        #[cfg(target_arch = "wasm32")]
+        let data = (|| {
+            let local_storage = web_sys::window()?.local_storage().ok()??;
+            local_storage.get(Self::path()).ok()?
+        })();
+
+        *self = match data {
+            Some(data) => toml::from_str(&data).unwrap_or_default(),
+            None => Self::default(),
+        };
+    }
     /// Serializes the data of this resource and saves it.
-    fn persist(&self) -> Result<()>;
+    fn persist(&self) -> Result<()> {
+        let name = Self::type_path();
+        let data = toml::to_string(self)
+            .with_context(|| format!("Failed to serialize data for {}", name))?;
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let path = format!("{}/{}.toml", DATA_PATH, Self::path());
+            std::fs::write(path.clone(), data)
+                .with_context(|| format!("Failed to save serialized data for {}", name))?;
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            let local_storage = web_sys::window()
+                .context("Error getting the JavaScript window")?
+                .local_storage()
+                .ok()
+                .context("No access to localStorage")?
+                .context("No access to localStorage")?;
+            local_storage
+                .set(Self::path(), &data)
+                .ok()
+                .with_context(|| format!("Failed to save serialized data for {}", name))?;
+        }
+
+        debug!("{} updated", name);
+        Ok(())
+    }
+
     /// Mutates the values of the resource using a closure and writes the result
     /// to disk after it is done.
-    fn update(&mut self, f: impl Fn(&mut Self)) -> Result<()>;
+    fn update(&mut self, f: impl Fn(&mut Self)) -> Result<()> {
+        f(self);
+        self.persist()
+    }
     /// Returns the resource to its default value and saves it.
-    fn reset(&mut self) -> Result<()>;
+    fn reset(&mut self) -> Result<()> {
+        *self = Self::default();
+        self.persist()
+    }
 }

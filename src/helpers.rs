@@ -8,7 +8,7 @@ use crate::prelude::*;
 /// The prelude of this module.
 pub mod prelude {
     pub use super::{color_from_palette, ColorPalette};
-    pub use crate::{component_palette, single, single_mut};
+    pub use crate::{component_palette, persistent, single, single_mut};
 }
 
 /// Gets a single component from a `Query` or returns gracefully (no panic).
@@ -43,6 +43,20 @@ macro_rules! single_mut {
     };
     ($q:expr) => {
         single_mut!($q, return)
+    };
+}
+
+/// Declares a bevy resource that can serialize data locally and persist it
+/// between game restarts.
+#[macro_export]
+macro_rules! persistent {
+    ($i:ident) => {
+        impl Persistent for $i {
+            #[inline]
+            fn path() -> &'static str {
+                stringify!($i)
+            }
+        }
     };
 }
 

@@ -87,7 +87,6 @@ impl Container for Commands<'_, '_> {
     }
 
     fn ui_root(&mut self) -> EntityCommands {
-        // TODO: Target camera, maybe with an on_insert
         let mut root = self.col();
         root.insert((UiRoot, Name::new("UI Root")));
         root
@@ -253,6 +252,8 @@ struct UiRoot;
 /// the `UiRoot` component will be removed after the target camera is appended
 /// so don't use it for queries. This is done to avoid running this system every
 /// frame and instead only do it when a root is added.
+/// This can't easily be a component hook since it is hard to make queries from
+/// a DeferredWorld.
 fn add_target_camera_to_ui(
     mut cmd: Commands,
     roots: Query<Entity, With<UiRoot>>,
