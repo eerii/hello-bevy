@@ -1,6 +1,7 @@
 //! Defines persistent data structures.
 //! For a more complete solution, look at <https://github.com/umut-sahin/bevy-persistent>
 
+use bevy::window::{PrimaryWindow, WindowResized};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::prelude::*;
@@ -16,7 +17,9 @@ pub(super) fn plugin(app: &mut App) {
         warn!("Couldn't create the save directory {}: {}", DATA_PATH, e);
     };
     app.insert_resource(SaveData::load())
-        .insert_resource(GameOptions::load());
+        .insert_resource(GameOptions::load())
+        .add_systems(OnEnter(GameState::Startup), init)
+        .add_systems(Update, on_resize.run_if(on_event::<WindowResized>()));
 }
 
 // Resources
@@ -25,35 +28,22 @@ pub(super) fn plugin(app: &mut App) {
 /// Stores options that can be configured on the menu, related to accesibility
 /// and customization.
 #[persistent]
-#[derive(Default)]
 pub struct GameOptions {
     /// The user configurable color palette of the game.
     pub palette: ColorPalette,
+    /// If the window is allowed to resize
+    pub resizable: bool,
+    /// The last saved resolution of the window
+    pub resolution: UVec2,
 }
 
-/// Base colors used in the game and the ui.
-#[derive(Debug, Reflect, Serialize, Deserialize, Copy!)]
-pub struct ColorPalette {
-    pub light: Color,
-    pub primary: Color,
-    pub dark: Color,
-    pub darker: Color,
-}
-
-impl ColorPalette {
-    pub fn monocrome(base: Color) -> Self {
-        Self {
-            light: base.with_luminance(0.7).lighter(0.6),
-            primary: base.with_luminance(0.5),
-            dark: base.with_luminance(0.3),
-            darker: base.with_luminance(0.3).darker(0.07),
-        }
-    }
-}
-
-impl Default for ColorPalette {
+impl Default for GameOptions {
     fn default() -> Self {
-        Self::monocrome(css::ROYAL_BLUE.into())
+        Self {
+            palette: ColorPalette::default(),
+            resizable: false,
+            resolution: UVec2::new(600, 600),
+        }
     }
 }
 
@@ -63,6 +53,27 @@ impl Default for ColorPalette {
 pub struct SaveData {
     /// Placeholder.
     pub test: bool,
+}
+
+// Systems
+// ---
+
+/// When the game starts, set the window resolution and resizability to the
+/// value read in the options
+fn init(mut window: Query<&mut Window, With<PrimaryWindow>>, options: Res<GameOptions>) {
+    let mut window = single_mut!(window);
+    let res = options.resolution.as_vec2();
+    window.resolution.set(res.x, res.y);
+    window.resizable = options.resizable;
+}
+
+/// When the window is resized, updates the saved resolution
+fn on_resize(mut resize_events: EventReader<WindowResized>, mut options: ResMut<GameOptions>) {
+    for event in resize_events.read() {
+        let _ = options.update(|options| {
+            options.resolution = UVec2::new(event.width as u32, event.height as u32);
+        });
+    }
 }
 
 // Helpers

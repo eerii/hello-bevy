@@ -2,9 +2,18 @@
 
 use crate::prelude::*;
 
+#[cfg(feature = "deferred")]
+pub mod deferred;
+
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(OnEnter(GameState::Startup), init);
+
+    #[cfg(feature = "deferred")]
+    app.add_plugins(deferred::plugin);
 }
+
+// Components
+// ---
 
 /// The camera where the game is being rendered.
 #[derive(Component)]
@@ -16,15 +25,20 @@ pub struct GameCamera;
 #[derive(Component)]
 pub struct FinalCamera;
 
+// Systems
+// ---
+
 /// Spawn the main cameras.
 fn init(mut cmd: Commands, options: Res<GameOptions>) {
-    let clear_color = ClearColorConfig::Custom(options.palette.darker);
-    let camera_bundle = Camera2dBundle {
-        camera: Camera {
-            clear_color,
+    cmd.spawn((
+        Camera2dBundle {
+            camera: Camera {
+                clear_color: ClearColorConfig::Custom(options.palette.darker),
+                ..default()
+            },
             ..default()
         },
-        ..default()
-    };
-    cmd.spawn((camera_bundle, GameCamera, FinalCamera));
+        GameCamera,
+        FinalCamera,
+    ));
 }

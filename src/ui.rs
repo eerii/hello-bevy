@@ -7,7 +7,7 @@ pub mod navigation;
 pub mod widgets;
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_plugins((menu::plugin, navigation::plugin));
+    app.add_plugins((menu::plugin, navigation::plugin, widgets::plugin));
 }
 
 /// The prelude of this module

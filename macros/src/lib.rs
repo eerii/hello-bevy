@@ -111,16 +111,19 @@ pub fn asset_key(args: pm::TokenStream, input: pm::TokenStream) -> pm::TokenStre
         .variants
         .iter()
         .map(|v| {
-            // TODO: Check that the value path is "asset" and allow multiple attrs
             let name = v.ident.clone();
-            let attr = v
+            let asset_path = v
                 .attrs
-                .get(0)
+                .iter()
+                .filter_map(|attr| {
+                    let Meta::NameValue(value) = attr.meta.clone() else { return None };
+                    if value.path.get_ident()? != "asset" {
+                        return None;
+                    };
+                    Some(value.value)
+                })
+                .next()
                 .expect("Each asset must provide a path attribute");
-            let Meta::NameValue(value) = attr.meta.clone() else {
-                panic!("The asset attribute must be in the form #[asset = \"path\"]");
-            };
-            let asset_path = value.value;
             quote!((#ident::#name, asset_server.load(#asset_path)))
         })
         .collect();

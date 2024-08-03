@@ -1,11 +1,7 @@
 //! Reusable Ui widgets to easily build interfaces.
 
 use bevy::{
-    ecs::{
-        component::{ComponentHooks, StorageType},
-        system::EntityCommands,
-        world::DeferredWorld,
-    },
+    ecs::{system::EntityCommands, world::DeferredWorld},
     state::state::FreelyMutableState,
     ui::Val::*,
 };
@@ -15,6 +11,13 @@ use crate::prelude::*;
 
 /// The default gap between Ui elements.
 const UI_GAP: Val = Px(10.);
+
+pub(super) fn plugin(app: &mut App) {
+    app.add_systems(
+        Update,
+        add_target_camera_to_ui.run_if(any_with_component::<UiRoot>),
+    );
+}
 
 /// An extension trait for spawning useful Ui widgets.
 pub trait Widget {
@@ -35,11 +38,14 @@ impl<T: SpawnExt> Widget for T {
                     height: Px(65.),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
+                    border: UiRect::all(Val::Px(3.0)),
                     ..default()
                 },
+                border_radius: BorderRadius::MAX,
                 ..default()
             },
             UiBackgroundColor("primary"),
+            UiBorderColor("light"),
         ));
         button.with_children(|node| {
             node.text(text).insert(Pickable::IGNORE);
@@ -81,8 +87,9 @@ impl Container for Commands<'_, '_> {
     }
 
     fn ui_root(&mut self) -> EntityCommands {
+        // TODO: Target camera, maybe with an on_insert
         let mut root = self.col();
-        root.insert(Name::new("UI Root"));
+        root.insert((UiRoot, Name::new("UI Root")));
         root
     }
 }
@@ -205,79 +212,56 @@ impl SpawnExt for ChildBuilder<'_> {
 #[derive(Clone)]
 struct UiBackgroundColor(&'static str);
 
-impl Default for UiBackgroundColor {
-    fn default() -> Self {
-        Self("primary")
-    }
-}
+component_palette!(UiBackgroundColor, BackgroundColor, "primary");
 
-impl Component for UiBackgroundColor {
-    const STORAGE_TYPE: StorageType = StorageType::Table;
-
-    fn register_component_hooks(hooks: &mut ComponentHooks) {
-        hooks.on_add(|mut world, entity, _id| {
-            let field = world
-                .get::<UiBackgroundColor>(entity)
-                .cloned()
-                .unwrap_or_default()
-                .0;
-            let color = color_from_palette(&world, field);
-            let Some(mut background) = world.get_mut::<BackgroundColor>(entity) else {
-                return;
-            };
-            *background = color.into();
-        });
-    }
-}
-
-/// Adds a themable text color to an Ui text node. The literal parameter must
+/// Adds a themable border color to an Ui node. The literal parameter must
 /// be the name of one of the fields of `ColorPalette`.
+#[derive(Clone)]
+struct UiBorderColor(&'static str);
+
+component_palette!(UiBorderColor, BorderColor, "dark");
+
+/// Adds a themable text color to an Ui text node and also sets the propper
+/// font. The literal parameter must be the name of one of the fields of
+/// `ColorPalette`.
 #[derive(Clone)]
 struct UiTextColor(&'static str);
 
-impl Default for UiTextColor {
-    fn default() -> Self {
-        Self("light")
+component_palette!(
+    UiTextColor,
+    Text,
+    "light",
+    |mut world: DeferredWorld, entity: Entity, color: Color| {
+        let Some(font) = world.get_resource::<AssetMap<FontAssetKey>>() else { return };
+        let font = font.get(&FontAssetKey::Main);
+
+        let Some(mut text) = world.get_mut::<Text>(entity) else {
+            return;
+        };
+        for section in &mut text.sections {
+            section.style.color = color;
+            section.style.font = font.clone_weak();
+        }
     }
-}
+);
 
-impl Component for UiTextColor {
-    const STORAGE_TYPE: StorageType = StorageType::Table;
+/// Helper component to add the Ui root node to the propper target camera.
+#[derive(Component)]
+struct UiRoot;
 
-    fn register_component_hooks(hooks: &mut ComponentHooks) {
-        hooks.on_add(|mut world, entity, _id| {
-            // Color
-            let field = world
-                .get::<UiTextColor>(entity)
-                .cloned()
-                .unwrap_or_default()
-                .0;
-            let color = color_from_palette(&world, field);
-
-            // Font
-            let Some(font) = world.get_resource::<AssetMap<FontAssetKey>>() else { return };
-            let font = font.get(&FontAssetKey::Main);
-
-            let Some(mut text) = world.get_mut::<Text>(entity) else {
-                return;
-            };
-            for section in &mut text.sections {
-                section.style.color = color;
-                section.style.font = font.clone_weak();
-            }
-        });
+/// Iterates through all of the Ui roots and sets the target camera. Note that
+/// the `UiRoot` component will be removed after the target camera is appended
+/// so don't use it for queries. This is done to avoid running this system every
+/// frame and instead only do it when a root is added.
+fn add_target_camera_to_ui(
+    mut cmd: Commands,
+    roots: Query<Entity, With<UiRoot>>,
+    camera: Query<Entity, With<FinalCamera>>,
+) {
+    let camera = single!(camera);
+    for entity in &roots {
+        cmd.entity(entity)
+            .remove::<UiRoot>()
+            .insert(TargetCamera(camera));
     }
-}
-
-/// Converts from a named palette field to the corresponding color.
-fn color_from_palette(world: &DeferredWorld, field: &'static str) -> Color {
-    let palette = world
-        .get_resource::<GameOptions>()
-        .map(|data| data.palette)
-        .unwrap_or_default();
-    let Some(reflect) = palette.field(field) else { return css::RED.into() };
-    reflect
-        .downcast_ref::<Color>()
-        .cloned()
-        .unwrap_or(css::RED.into())
 }

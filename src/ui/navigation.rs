@@ -40,27 +40,29 @@ impl Component for NavSelected {
 
     fn register_component_hooks(hooks: &mut ComponentHooks) {
         hooks.on_add(|mut world, entity, _id| {
-            let color = world
+            let palette = world
                 .get_resource::<GameOptions>()
                 .map(|data| data.palette)
-                .unwrap_or_default()
-                .dark;
-            let Some(mut background) = world.get_mut::<BackgroundColor>(entity) else {
-                return;
+                .unwrap_or_default();
+            if let Some(mut background) = world.get_mut::<BackgroundColor>(entity) {
+                *background = palette.dark.into();
             };
-            *background = color.into();
+            if let Some(mut border) = world.get_mut::<BorderColor>(entity) {
+                *border = palette.primary.into();
+            };
         });
 
         hooks.on_remove(|mut world, entity, _id| {
-            let color = world
+            let palette = world
                 .get_resource::<GameOptions>()
                 .map(|data| data.palette)
-                .unwrap_or_default()
-                .primary;
-            let Some(mut background) = world.get_mut::<BackgroundColor>(entity) else {
-                return;
+                .unwrap_or_default();
+            if let Some(mut background) = world.get_mut::<BackgroundColor>(entity) {
+                *background = palette.primary.into();
             };
-            *background = color.into();
+            if let Some(mut border) = world.get_mut::<BorderColor>(entity) {
+                *border = palette.light.into();
+            };
         });
     }
 }

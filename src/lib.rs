@@ -12,7 +12,7 @@
 #[macro_use]
 extern crate macro_rules_attribute;
 
-use bevy::{prelude::*, window::WindowResolution};
+use bevy::prelude::*;
 
 pub mod assets;
 pub mod base;
@@ -39,15 +39,18 @@ impl Plugin for GamePlugin {
         let window_plugin = WindowPlugin {
             primary_window: Some(Window {
                 title: "Hello Bevy".into(),
-                resolution: WindowResolution::new(600., 600.),
-                resizable: false,
                 canvas: Some("#bevy".into()),
                 prevent_default_event_handling: false,
                 ..default()
             }),
             ..default()
         };
-        app.add_plugins(DefaultPlugins.set(window_plugin));
+        let image_plugin = if cfg!(feature = "pixel_perfect") {
+            ImagePlugin::default_nearest()
+        } else {
+            ImagePlugin::default()
+        };
+        app.add_plugins(DefaultPlugins.set(window_plugin).set(image_plugin));
 
         // Game plugins
         app.add_plugins((
@@ -57,5 +60,9 @@ impl Plugin for GamePlugin {
             input::plugin,
             ui::plugin,
         ));
+
+        // Debug plugins
+        #[cfg(feature = "inspector")]
+        app.add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::new());
     }
 }

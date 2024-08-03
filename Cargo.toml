@@ -22,6 +22,9 @@ release = ["common", "embedded"]
 common = []
 # Individual features
 embedded = ["include_dir"]
+pixel_perfect = ["deferred"]
+deferred = []
+inspector = ["bevy-inspector-egui"]
 
 [dependencies]
 # Bevy and plugins
@@ -32,6 +35,7 @@ bevy_mod_picking = { version = "0.20", default-features = false, features = [
 ] }
 # TODO: https://github.com/JoJoJet/bevy-trait-query/issues/59#issuecomment-2212516814
 bevy-trait-query = { git = "https://github.com/RobWalt/bevy-trait-query.git", branch = "bevy-0.14-partial-update" }
+bevy-inspector-egui = { version = "0.25", optional = true }
 
 # Local crates
 macros = { path = "macros" }
