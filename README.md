@@ -24,10 +24,6 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 
 ### runing locally 🌺
 
-this project is configured to use dynamic linking for debug builds and fast recompiling by default.
-in order to have the fastest compile, you may install [mold](https://github.com/rui314/mold) and use rust nightly (`rustup default nightly`).
-if you don't want some of these features, go to [.cargo/config](.cargo/config) and follow the instructions, or remove it to disable optimizations all together.
-
 to run a debug build use cargo:
 
 ```sh

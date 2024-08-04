@@ -1,8 +1,6 @@
 //! Bevy game template.
 //! It uses plugins and submodules to structure the code.
 
-// TODO: Code examples
-
 #![feature(path_add_extension)]
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
@@ -35,6 +33,17 @@ impl Plugin for GamePlugin {
         app.add_plugins(assets::embedded::plugin);
 
         // Default bevy plugins
+        let asset_plugin = AssetPlugin {
+            meta_check: bevy::asset::AssetMetaCheck::Never,
+            ..default()
+        };
+
+        let image_plugin = if cfg!(feature = "pixel_perfect") {
+            ImagePlugin::default_nearest()
+        } else {
+            ImagePlugin::default()
+        };
+
         let window_plugin = WindowPlugin {
             primary_window: Some(Window {
                 title: "Hello Bevy".into(),
@@ -44,12 +53,13 @@ impl Plugin for GamePlugin {
             }),
             ..default()
         };
-        let image_plugin = if cfg!(feature = "pixel_perfect") {
-            ImagePlugin::default_nearest()
-        } else {
-            ImagePlugin::default()
-        };
-        app.add_plugins(DefaultPlugins.set(window_plugin).set(image_plugin));
+
+        app.add_plugins(
+            DefaultPlugins
+                .set(asset_plugin)
+                .set(image_plugin)
+                .set(window_plugin),
+        );
 
         // Game plugins
         app.add_plugins((

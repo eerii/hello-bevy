@@ -2,9 +2,9 @@
 
 use crate::prelude::*;
 
-mod main;
-mod mappings;
-mod options;
+pub mod main;
+pub mod mappings;
+pub mod options;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_sub_state::<MenuState>()

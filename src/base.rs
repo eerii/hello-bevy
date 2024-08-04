@@ -2,10 +2,10 @@
 
 use crate::prelude::*;
 
-mod data;
-mod later;
-mod sets;
-mod states;
+pub mod data;
+pub mod later;
+pub mod sets;
+pub mod states;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_plugins((data::plugin, later::plugin, sets::plugin, states::plugin));
