@@ -16,7 +16,7 @@ pub mod prelude {
     pub use super::{
         data::{GameOptions, Persistent, SaveData},
         later::LaterCommandExt,
-        sets::PlaySet,
+        sets::{on_setup, PlaySet, SetupCommandExt},
         states::GameState,
     };
 }

@@ -1,7 +1,6 @@
 //! Ui navigation system that allows for mouse, keyboard and gamepad input.
 
 use bevy::ecs::component::{ComponentHooks, StorageType};
-use bevy_mod_picking::prelude::*;
 
 use crate::prelude::*;
 

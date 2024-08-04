@@ -21,10 +21,11 @@ dev = [
 release = ["common", "embedded"]
 common = []
 # Individual features
-embedded = ["include_dir"]
-pixel_perfect = ["deferred"]
 deferred = []
+embedded = ["include_dir"]
 inspector = ["bevy-inspector-egui"]
+pixel_perfect = ["deferred"]
+trace = ["release", "bevy/trace_tracy"]
 
 [dependencies]
 # Bevy and plugins
@@ -39,15 +40,16 @@ bevy-inspector-egui = { version = "0.25", optional = true }
 macros = { path = "macros" }
 
 # Other dependencies
+anyhow = { version = "1.0" }
 include_dir = { version = "0.7", optional = true }
 log = { version = "*", features = [
   "max_level_debug",
   "release_max_level_warn",
 ] }
 macro_rules_attribute = { version = "0.2" }
+rand = { version = "0.8" }
 serde = { version = "1.0", features = ["derive"] }
 toml = { version = "0.8" }
-anyhow = { version = "1.0" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-sys = { version = "0.3", features = ["Storage"] }

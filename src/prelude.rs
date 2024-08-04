@@ -2,7 +2,12 @@
 //! Includes modules from this crate and some redeclarations from dependencies.
 
 pub use anyhow::{Context, Result};
-pub use bevy::{color::palettes::css, prelude::*, utils::HashMap};
+pub use bevy::{
+    color::palettes::css,
+    prelude::*,
+    utils::HashMap,
+    window::{PrimaryWindow, WindowResized},
+};
 pub use macros::*;
 
 pub use crate::{

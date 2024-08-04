@@ -2,7 +2,6 @@
 //! It uses plugins and submodules to structure the code.
 
 // TODO: Code examples
-// TODO: Readme
 
 #![feature(path_add_extension)]
 #![allow(clippy::too_many_arguments)]

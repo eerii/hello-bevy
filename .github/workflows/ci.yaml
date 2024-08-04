@@ -30,6 +30,9 @@ jobs:
       - name: Cargo clippy
         run: cargo clippy --workspace --all-targets --all-features -- -Dwarnings --no-deps
 
+      - name: Cargo clippy (examples)
+        run: cargo clippy --examples -- -Dwarnings --no-deps
+
       - name: Cargo fmt
         run: cargo fmt --all -- --check
 

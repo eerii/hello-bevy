@@ -1,18 +1,15 @@
 //! Deferred rendering for the camera.
 
-use bevy::{
-    render::{
-        camera::RenderTarget,
-        render_resource::{
-            Extent3d,
-            TextureDescriptor,
-            TextureDimension,
-            TextureFormat,
-            TextureUsages,
-        },
-        view::RenderLayers,
+use bevy::render::{
+    camera::RenderTarget,
+    render_resource::{
+        Extent3d,
+        TextureDescriptor,
+        TextureDimension,
+        TextureFormat,
+        TextureUsages,
     },
-    window::WindowResized,
+    view::RenderLayers,
 };
 
 use crate::prelude::*;
@@ -45,10 +42,7 @@ fn init_canvas(
     mut cmd: Commands,
     mut camera: Query<(Entity, &mut Camera), With<GameCamera>>,
     mut images: ResMut<Assets<Image>>,
-    #[cfg(not(feature = "pixel_perfect"))] window: Query<
-        &Window,
-        With<bevy::window::PrimaryWindow>,
-    >,
+    #[cfg(not(feature = "pixel_perfect"))] window: Query<&Window, With<PrimaryWindow>>,
 ) {
     // Calculate the size of the canvas
     #[cfg(not(feature = "pixel_perfect"))]

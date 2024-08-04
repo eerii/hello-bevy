@@ -1,7 +1,6 @@
 //! Defines persistent data structures.
 //! For a more complete solution, look at <https://github.com/umut-sahin/bevy-persistent>
 
-use bevy::window::{PrimaryWindow, WindowResized};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::prelude::*;
