@@ -12,13 +12,11 @@ pub(super) fn plugin(app: &mut App) {
 /// paused.
 fn init(mut cmd: Commands, music_assets: Res<AssetMap<MusicAssetKey>>) {
     cmd.spawn((
-        AudioBundle {
-            source: music_assets.get(&MusicAssetKey::Ambient),
-            settings: PlaybackSettings {
-                mode: PlaybackMode::Loop,
-                paused: true,
-                ..default()
-            },
+        AudioPlayer(music_assets.get(&MusicAssetKey::Ambient)),
+        PlaybackSettings {
+            mode: PlaybackMode::Loop,
+            paused: true,
+            ..default()
         },
         // Here more complex logic might be useful to preserve play state and allow crossfades
         StateScoped(GameState::Play),

@@ -21,20 +21,15 @@ dev = [
 release = ["common", "embedded"]
 common = []
 # Individual features
-deferred = []
 embedded = ["include_dir"]
 inspector = ["bevy-inspector-egui"]
-pixel_perfect = ["deferred"]
 trace = ["release", "bevy/trace_tracy"]
 
 [dependencies]
 # Bevy and plugins
-bevy = { version = "0.14", features = ["serialize", "wayland"] }
-leafwing-input-manager = { git = "https://github.com/Leafwing-Studios/leafwing-input-manager" }
-bevy_mod_picking = { version = "0.20", default-features = false, features = [
-  "backend_bevy_ui",
-] }
-bevy-inspector-egui = { version = "0.25", optional = true }
+bevy = { version = "0.15", features = ["serialize", "wayland"] }
+bevy-inspector-egui = { version = "0.28", optional = true }
+leafwing-input-manager = "0.16"
 
 # Local crates
 macros = { path = "macros" }

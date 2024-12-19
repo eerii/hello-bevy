@@ -105,10 +105,14 @@
               platform = pkgs.makeRustPlatform { inherit (toolchain) cargo rustc; };
             in
             mkShell rec {
-              buildInputs = [
-                toolchain
-                platform.bindgenHook
-              ] ++ general-deps ++ optionals isLinux linux-deps ++ optionals isDarwin darwin-deps;
+              buildInputs =
+                [
+                  toolchain
+                  platform.bindgenHook
+                ]
+                ++ general-deps
+                ++ optionals isLinux linux-deps
+                ++ optionals isDarwin darwin-deps;
 
               RUST_SRC_PATH = "${toolchain}/lib/rustlib/src/rust/library";
               LD_LIBRARY_PATH = makeLibraryPath buildInputs;

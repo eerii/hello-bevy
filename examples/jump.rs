@@ -80,42 +80,35 @@ fn init(
 
     // Player
     cmd.spawn((
-        SpriteBundle {
-            texture: meta_assets.get(&MetaAssetKey::BevyLogo).clone_weak(),
-            transform: Transform::from_translation(Vec3::new(0., 0., 10.)),
-            sprite: Sprite {
-                custom_size: Some(PLAYER_SIZE),
-                ..default()
-            },
+        Sprite {
+            image: meta_assets.get(&MetaAssetKey::BevyLogo).clone_weak(),
+            custom_size: Some(PLAYER_SIZE),
             ..default()
         },
+        Transform::from_translation(Vec3::new(0., 0., 10.)),
         Player::default(),
     ));
 
     // Floor
     cmd.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                color: options.palette.dark,
-                custom_size: Some(Vec2::new(size.x, PLATFORM_SIZE.y * 2.)),
-                ..default()
-            },
-            transform: Transform::from_xyz(0., -size.y / 2. + PLATFORM_SIZE.y, 5.),
+        Sprite {
+            color: options.palette.dark,
+            custom_size: Some(Vec2::new(size.x, PLATFORM_SIZE.y * 2.)),
             ..default()
         },
+        Transform::from_xyz(0., -size.y / 2. + PLATFORM_SIZE.y, 5.),
         Platform,
     ));
 
     // Counter
     cmd.spawn((
-        Text2dBundle {
-            text: Text::from_section("0", TextStyle {
-                font: font_assets.get(&FontAssetKey::Main).clone_weak(),
-                font_size: 150.,
-                color: options.palette.light,
-            }),
+        Text2d::new("0"),
+        TextFont {
+            font: font_assets.get(&FontAssetKey::Main).clone_weak(),
+            font_size: 150.,
             ..default()
         },
+        TextColor(options.palette.light),
         Counter::default(),
         CameraFollow,
     ));
@@ -140,7 +133,7 @@ fn update_player(
     let size = single!(window).size();
 
     // Gravity
-    player.velocity.y += GRAVITY * time.delta_seconds();
+    player.velocity.y += GRAVITY * time.delta_secs();
 
     // Jump
     let mut jump_input = input.just_pressed(&Action::Act);
@@ -169,7 +162,7 @@ fn update_player(
     }
 
     // Update position based on velocity and loop around
-    trans.translation += player.velocity.extend(0.) * time.delta_seconds();
+    trans.translation += player.velocity.extend(0.) * time.delta_secs();
     trans.translation.x = (trans.translation.x + size.x / 2.).rem_euclid(size.x) - size.x / 2.;
 
     // Update max height
@@ -239,19 +232,16 @@ fn spawn_platforms(
         let x = (rng.gen::<f32>() - 0.5) * size.x;
 
         cmd.spawn((
-            SpriteBundle {
-                sprite: Sprite {
-                    color: options.palette.dark.lighter(rng.gen::<f32>() * 0.2 - 0.05),
-                    custom_size: Some(PLATFORM_SIZE),
-                    ..default()
-                },
-                transform: Transform::from_xyz(
-                    x.round(),
-                    data.last_platform as f32 * SPACE_BETWEEN_PLATFORMS as f32 - size.y / 2.,
-                    5.,
-                ),
+            Sprite {
+                color: options.palette.dark.lighter(rng.gen::<f32>() * 0.2 - 0.05),
+                custom_size: Some(PLATFORM_SIZE),
                 ..default()
             },
+            Transform::from_xyz(
+                x.round(),
+                data.last_platform as f32 * SPACE_BETWEEN_PLATFORMS as f32 - size.y / 2.,
+                5.,
+            ),
             Platform,
         ));
     }
@@ -268,14 +258,12 @@ fn update_camera(player: Query<&Player>, mut camera: Query<&mut Transform, With<
 }
 
 /// Updates the score counter
-fn update_counter(mut counter: Query<(&mut Counter, &mut Text)>, player: Query<&Player>) {
+fn update_counter(mut counter: Query<(&mut Counter, &mut Text2d)>, player: Query<&Player>) {
     let (mut counter, mut text) = single_mut!(counter);
     let player = single!(player);
 
     counter.0 = (player.max_height as u32 / SPACE_BETWEEN_PLATFORMS).saturating_sub(1);
-    if let Some(section) = text.sections.first_mut() {
-        section.value = counter.0.to_string();
-    }
+    text.0 = counter.0.to_string();
 }
 
 /// Checks if the player fell off the screen and transitions to the end state.

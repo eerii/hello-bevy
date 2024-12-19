@@ -16,7 +16,7 @@ pub use crate::{
     components::prelude::*,
     helpers::prelude::*,
     input::prelude::*,
-    ui::prelude::*,
+    // ui::prelude::*,
     GamePlugin,
 };
 

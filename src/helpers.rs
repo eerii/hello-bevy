@@ -99,7 +99,7 @@ pub fn color_from_palette(world: &DeferredWorld, field: &'static str) -> Color {
         .unwrap_or_default();
     let Some(reflect) = palette.field(field) else { return css::RED.into() };
     reflect
-        .downcast_ref::<Color>()
+        .try_downcast_ref::<Color>()
         .cloned()
         .unwrap_or(css::RED.into())
 }

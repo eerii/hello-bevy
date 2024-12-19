@@ -54,12 +54,12 @@ impl Action {
         input_map
             .insert(Action::Act, KeyCode::Space)
             .insert(Action::Act, KeyCode::Enter)
-            .insert(Action::Act, GamepadButtonType::South)
+            .insert(Action::Act, GamepadButton::South)
             .insert(Action::Act, MouseButton::Left)
             .insert(Action::Pause, KeyCode::Escape)
-            .insert(Action::Pause, GamepadButtonType::Start)
-            .insert_dual_axis(Action::Move, KeyboardVirtualDPad::WASD)
-            .insert_dual_axis(Action::Move, KeyboardVirtualDPad::ARROW_KEYS)
+            .insert(Action::Pause, GamepadButton::Start)
+            .insert_dual_axis(Action::Move, VirtualDPad::wasd())
+            .insert_dual_axis(Action::Move, VirtualDPad::arrow_keys())
             .insert_dual_axis(Action::Move, GamepadStick::LEFT);
         input_map
     }

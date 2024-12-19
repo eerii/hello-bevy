@@ -7,14 +7,14 @@ fn main() {
 
 fn plugin(app: &mut App) {
     app.add_event::<CollisionEvent>()
-        .add_systems(OnEnter(GameState::Play), init.run_if(run_once()))
+        .add_systems(OnEnter(GameState::Play), init.run_if(run_once))
         .add_systems(
             Update,
             (
                 update_velocity.in_set(PlaySet::Update),
                 on_collision
                     .in_set(PlaySet::ReadEvents)
-                    .run_if(on_event::<CollisionEvent>()),
+                    .run_if(on_event::<CollisionEvent>),
             ),
         );
 }
@@ -54,29 +54,25 @@ fn init(
         Vec2::new(200., -350.),
     ] {
         cmd.spawn((
-            SpriteBundle {
-                texture: meta_assets.get(&MetaAssetKey::BevyLogo).clone_weak(),
-                sprite: Sprite {
-                    custom_size: Some(Vec2::splat(96.)),
-                    ..default()
-                },
-                transform: Transform::from_translation(Vec3::new(0., 0., 1.)),
+            Sprite {
+                image: meta_assets.get(&MetaAssetKey::BevyLogo).clone_weak(),
+                custom_size: Some(Vec2::splat(96.)),
                 ..default()
             },
+            Transform::from_translation(Vec3::new(0., 0., 1.)),
             Velocity(velocity),
         ));
     }
 
     // Counter text
     cmd.spawn((
-        Text2dBundle {
-            text: Text::from_section("0", TextStyle {
-                font: font_assets.get(&FontAssetKey::Main).clone_weak(),
-                font_size: 192.,
-                color: options.palette.light,
-            }),
+        Text2d::new("0"),
+        TextFont {
+            font: font_assets.get(&FontAssetKey::Main).clone_weak(),
+            font_size: 192.,
             ..default()
         },
+        TextColor(options.palette.light),
         Counter(0),
     ));
 }
@@ -96,7 +92,7 @@ fn update_velocity(
     for (mut vel, mut trans, mut sprite) in objects.iter_mut() {
         // Update position based on velocity
         let t = &mut trans.translation;
-        *t += vel.0.extend(0.) * time.delta_seconds();
+        *t += vel.0.extend(0.) * time.delta_secs();
 
         // Calculate the sprite bound
         let obj_bound = Rect::from_center_size(
@@ -130,7 +126,7 @@ fn update_velocity(
 /// When there is a collision, increase the counder and play a bounce sound.
 fn on_collision(
     mut cmd: Commands,
-    mut counter: Query<(&mut Text, &mut Counter)>,
+    mut counter: Query<(&mut Text2d, &mut Counter)>,
     sound_assets: Res<AssetMap<SoundAssetKey>>,
     mut collision_reader: EventReader<CollisionEvent>,
 ) {
@@ -138,12 +134,11 @@ fn on_collision(
 
     for CollisionEvent in collision_reader.read() {
         counter.0 += 1;
-        text.sections[0].value = counter.0.to_string();
+        text.0 = counter.0.to_string();
 
-        cmd.spawn(AudioBundle {
-            source: sound_assets.get(&SoundAssetKey::Boing).clone_weak(),
-            settings: PlaybackSettings::DESPAWN,
-        });
+        cmd.spawn(AudioPlayer(
+            sound_assets.get(&SoundAssetKey::Boing).clone_weak(),
+        ));
     }
 }
 

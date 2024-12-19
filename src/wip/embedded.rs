@@ -67,6 +67,8 @@ impl AsyncSeek for DataReader {
     }
 }
 
+impl Reader for DataReader {}
+
 /// A wrapper around directories to read them
 struct DirReader(Vec<PathBuf>);
 
@@ -117,25 +119,25 @@ fn load_assets_rec(dir: &'static Dir, reader: &mut EmbeddedAssetReader) {
 // default reader for our own, automating the handling of the embedded://
 // namespace and allowing us to use the same code regardless of where the method
 impl AssetReader for EmbeddedAssetReader {
-    async fn read<'a>(&'a self, path: &'a Path) -> Result<Box<Reader<'a>>, AssetReaderError> {
+    async fn read<'a>(&'a self, path: &'a Path) -> Result<impl Reader + 'a, AssetReaderError> {
         if ASSET_DIR.contains(path) {
             return self
                 .loaded
                 .get(path)
-                .map(|b| -> Box<Reader> { Box::new(DataReader(b)) })
+                .map(|b| DataReader(b))
                 .ok_or_else(|| AssetReaderError::NotFound(path.to_path_buf()));
         }
         warn!("Asset read failed for '{}', using fallback", path.display());
         self.fallback.read(path).await
     }
 
-    async fn read_meta<'a>(&'a self, path: &'a Path) -> Result<Box<Reader<'a>>, AssetReaderError> {
+    async fn read_meta<'a>(&'a self, path: &'a Path) -> Result<impl Reader + 'a, AssetReaderError> {
         let meta_path = path.to_path_buf().with_added_extension(".meta");
         if ASSET_DIR.contains(&meta_path) {
             return self
                 .loaded
                 .get(&*meta_path)
-                .map(|b| -> Box<Reader> { Box::new(DataReader(b)) })
+                .map(|b| DataReader(b))
                 .ok_or_else(|| AssetReaderError::NotFound(path.to_path_buf()));
         }
         self.fallback.read(path).await

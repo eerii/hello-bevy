@@ -16,7 +16,7 @@ pub(super) fn plugin(app: &mut App) {
     app.insert_resource(SaveData::load())
         .insert_resource(GameOptions::load())
         .add_systems(OnEnter(GameState::Startup), init)
-        .add_systems(Update, on_resize.run_if(on_event::<WindowResized>()));
+        .add_systems(Update, on_resize.run_if(on_event::<WindowResized>));
 }
 
 // Resources

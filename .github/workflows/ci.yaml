@@ -19,13 +19,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install nix
-        uses: nixbuild/nix-quick-install-action@v28
+        uses: nixbuild/nix-quick-install-action@v29
 
       - name: Use nix flake
-        uses: nicknovitski/nix-develop@v1 
+        uses: nicknovitski/nix-develop@v1
 
       - name: Rust cache
-        uses: leafwing-studios/cargo-cache@v2 
+        uses: leafwing-studios/cargo-cache@v2
 
       - name: Cargo clippy
         run: cargo clippy --workspace --all-targets --all-features -- -Dwarnings --no-deps
@@ -42,10 +42,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4 
+        uses: actions/checkout@v4
 
       - name: Install nix
-        uses: nixbuild/nix-quick-install-action@v28
+        uses: nixbuild/nix-quick-install-action@v29
 
       - name: Run Taplo
         run: nix run nixpkgs#taplo fmt -- --check --diff
@@ -56,16 +56,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install nix
-        uses: nixbuild/nix-quick-install-action@v28
+        uses: nixbuild/nix-quick-install-action@v29
 
       - name: Use nix flake
         uses: nicknovitski/nix-develop@v1
 
       - name: Rust cache
-        uses: leafwing-studios/cargo-cache@v2 
+        uses: leafwing-studios/cargo-cache@v2
 
       - name: Cargo test
         run: cargo test --workspace
@@ -85,13 +85,13 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install nix
-        uses: nixbuild/nix-quick-install-action@v28
+        uses: nixbuild/nix-quick-install-action@v29
 
       - name: Use nix flake
-        uses: nicknovitski/nix-develop@v1 
+        uses: nicknovitski/nix-develop@v1
 
       - name: Rust cache
-        uses: leafwing-studios/cargo-cache@v2 
+        uses: leafwing-studios/cargo-cache@v2
 
       - name: Cargo test
         run: cargo test --workspace --release --no-default-features --features release

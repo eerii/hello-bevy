@@ -7,12 +7,12 @@ use std::{
     sync::{LazyLock, Mutex},
 };
 
-use bevy::reflect::{GetTypeRegistration, ReflectFromPtr};
+use bevy::reflect::{GetTypeRegistration, ReflectFromPtr, Typed};
 
 use crate::prelude::*;
 
-#[cfg(feature = "embedded")]
-pub mod embedded;
+//#[cfg(feature = "embedded")]
+// pub mod embedded;
 pub mod fonts;
 pub mod meta;
 pub mod music;
@@ -104,8 +104,8 @@ impl<K: AssetKey> AssetsLoaded for AssetMap<K> {
     }
 }
 
-/// Helpers
-/// ---
+// Helpers
+// ---
 
 /// Commodity function to create an asset map from a key in the app.
 ///
@@ -126,13 +126,13 @@ impl<K: AssetKey> AssetsLoaded for AssetMap<K> {
 /// ```
 pub trait AssetExt {
     /// Loads an asset key.
-    fn load_asset<K: AssetKey>(&mut self) -> &mut Self
+    fn load_asset<K: AssetKey + Typed>(&mut self) -> &mut Self
     where
         AssetMap<K>: FromWorld;
 }
 
 impl AssetExt for App {
-    fn load_asset<K: AssetKey>(&mut self) -> &mut Self
+    fn load_asset<K: AssetKey + Typed>(&mut self) -> &mut Self
     where
         AssetMap<K>: FromWorld,
     {
@@ -164,7 +164,8 @@ fn check_loaded(world: &mut World) {
         let mut next_state = world
             .get_resource_mut::<NextState<GameState>>()
             .expect("NextState should exist");
-        next_state.set(GameState::Menu);
+        // TODO: Rework menu
+        next_state.set(GameState::Play);
     }
 }
 

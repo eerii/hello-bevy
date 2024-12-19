@@ -2,6 +2,8 @@
 
 an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projects.
 
+**migration to bevy 0.15 and partial rewrite in progress. not everything is functional. use the previous branch instead**
+
 <p float="left">
   <img src="https://github.com/eerii/hello-bevy/assets/22449369/c5b7cdcd-20d7-44e4-8a56-3a4122cdb5d7" height="250px" />
   <img src="https://github.com/eerii/hello-bevy/assets/22449369/a3c6d2bb-7648-45da-9cb0-1257ee081a46" height="250px" />
@@ -10,7 +12,7 @@ an opinionated [bevy](https://github.com/bevyengine/bevy) template for my projec
 
 ### features 🌿
 
-- uses bevy 0.14
+- uses bevy 0.15
 - minimal and curated plugin support
 - fully featured accesible menu with keyboard, mouse and gamepad navigation
 - ci that checks errors and lint
@@ -79,7 +81,6 @@ this is heavily based on [TheBevyFlock/bevy_quickstart](https://github.com/TheBe
 this template intends to use as little external dependencies as possible to facilitate version updates and avoid bloat. that said, there are a few awesome community plugins that make everything as easy as possible.
 
 - [leafwing-input-manager](https://github.com/Leafwing-Studios/leafwing-input-manager): an awesome way of handling input from multiple sources and create simple bindings
-- [bevy_mod_picking](https://github.com/aevyrie/bevy_mod_picking): used to select things on the screen. only the ui picker is enabled by default, used for mouse navigation
 - [bevy-inspector-egui](https://github.com/jakobhellermann/bevy-inspector-egui): optional and only enabled when using the `inspector` feature. it provides a very useful world inspector
 
 ### license 📝

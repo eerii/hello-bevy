@@ -18,7 +18,7 @@ pub mod components;
 pub mod helpers;
 pub mod input;
 pub mod prelude;
-pub mod ui;
+// pub mod ui;
 
 /// The base plugin for the game. It recursively adds all of the plugins
 /// declared in submodules as well as the default plugin collection.
@@ -29,19 +29,13 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         // The embedded plugin, if enabled, must come before bevy's `AssetPlugin`
-        #[cfg(feature = "embedded")]
-        app.add_plugins(assets::embedded::plugin);
+        // #[cfg(feature = "embedded")]
+        // app.add_plugins(assets::embedded::plugin);
 
         // Default bevy plugins
         let asset_plugin = AssetPlugin {
             meta_check: bevy::asset::AssetMetaCheck::Never,
             ..default()
-        };
-
-        let image_plugin = if cfg!(feature = "pixel_perfect") {
-            ImagePlugin::default_nearest()
-        } else {
-            ImagePlugin::default()
         };
 
         let window_plugin = WindowPlugin {
@@ -54,12 +48,7 @@ impl Plugin for GamePlugin {
             ..default()
         };
 
-        app.add_plugins(
-            DefaultPlugins
-                .set(asset_plugin)
-                .set(image_plugin)
-                .set(window_plugin),
-        );
+        app.add_plugins(DefaultPlugins.set(asset_plugin).set(window_plugin));
 
         // Game plugins
         app.add_plugins((
@@ -67,7 +56,7 @@ impl Plugin for GamePlugin {
             base::plugin,
             components::plugin,
             input::plugin,
-            ui::plugin,
+            // ui::plugin,
         ));
 
         // Debug plugins
