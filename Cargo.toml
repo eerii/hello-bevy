@@ -21,18 +21,13 @@ dev = [
 release = ["common", "embedded"]
 common = []
 # Individual features
-embedded = ["include_dir"]
-inspector = ["bevy-inspector-egui"]
+embedded = ["bevy_embedded_assets"]
 trace = ["release", "bevy/trace_tracy"]
 
 [dependencies]
 # Bevy and plugins
 bevy = { version = "0.15", features = ["serialize", "wayland"] }
-bevy-inspector-egui = { version = "0.28", optional = true }
-leafwing-input-manager = "0.16"
-
-# Local crates
-macros = { path = "macros" }
+bevy_embedded_assets = { version = "0.12", optional = true }
 
 # Other dependencies
 anyhow = { version = "1.0" }

@@ -8,6 +8,7 @@ use crate::prelude::*;
 /// The directory where the persistent data should be saved in.
 const DATA_PATH: &str = ".data";
 
+/// Adds the persistent data and initializes the saving system.
 pub(super) fn plugin(app: &mut App) {
     #[cfg(not(target_arch = "wasm32"))]
     if let Err(e) = std::fs::create_dir_all(DATA_PATH) {
@@ -24,36 +25,29 @@ pub(super) fn plugin(app: &mut App) {
 
 /// Stores options that can be configured on the menu, related to accesibility
 /// and customization.
-#[derive(Reflect, Resource, Serialize, Deserialize)]
+#[derive(Reflect, Resource, Serialize, Deserialize, Persistent!)]
 pub struct GameOptions {
-    /// The user configurable color palette of the game.
-    pub palette: ColorPalette,
     /// If the window is allowed to resize
     pub resizable: bool,
     /// The last saved resolution of the window
     pub resolution: UVec2,
 }
 
-persistent!(GameOptions);
-
 impl Default for GameOptions {
     fn default() -> Self {
         Self {
-            palette: ColorPalette::default(),
             resizable: false,
-            resolution: UVec2::new(600, 600),
+            resolution: UVec2::new(800, 800),
         }
     }
 }
 
 /// Used to store information about the player, the level and game progress.
-#[derive(Reflect, Resource, Serialize, Deserialize, Default)]
+#[derive(Reflect, Resource, Serialize, Deserialize, Default, Persistent!)]
 pub struct SaveData {
     /// Placeholder.
     pub test: bool,
 }
-
-persistent!(SaveData);
 
 // Systems
 // ---
@@ -79,10 +73,26 @@ fn on_resize(mut resize_events: EventReader<WindowResized>, mut options: ResMut<
 // Helpers
 // ---
 
-// TODO: Look into macro_rules_attribute to derive this instead
+/// Declares a bevy resource that can serialize data locally and persist it
+/// between game restarts. Usable with derive.
+#[macro_export]
+macro_rules! Persistent {
+    (
+        $( #[$attr:meta] )*
+        $pub:vis
+        struct $i:ident { $($rest:tt)* }
+    ) => {
+        impl PersistentExt for $i {
+            #[inline]
+            fn path() -> &'static str {
+                stringify!($i)
+            }
+        }
+    };
+}
 
 /// Indicates that a `Resource` can be saved and loaded from disk.
-/// This is implemented automatically when using `persistent`.
+/// This is implemented automatically when using `Persistent!`.
 ///
 /// # Examples
 ///
@@ -90,11 +100,10 @@ fn on_resize(mut resize_events: EventReader<WindowResized>, mut options: ResMut<
 /// use game::prelude::*;
 /// use serde::{Deserialize, Serialize};
 ///
-/// #[derive(Reflect, Resource, Serialize, Deserialize, Default)]
+/// #[derive(Reflect, Resource, Serialize, Deserialize, Default, Persistent!)]
 /// pub struct SomeData {
 ///     pub test: bool,
 /// }
-/// persistent!(SomeData);
 ///
 /// // The persistent data can be accessed in any system.
 /// fn read(data: Res<SomeData>) {
@@ -112,9 +121,10 @@ fn on_resize(mut resize_events: EventReader<WindowResized>, mut options: ResMut<
 ///     data.persist();
 /// }
 /// ```
-pub trait Persistent: Resource + Serialize + DeserializeOwned + Default + TypePath {
+pub trait PersistentExt: Resource + Serialize + DeserializeOwned + Default + TypePath {
     /// Returns the path that this resource needs to write to.
     fn path() -> &'static str;
+
     /// Reads a resource from disk if it exists. If it doesn't it returns the
     /// default value.
     fn load() -> Self {
@@ -122,6 +132,7 @@ pub trait Persistent: Resource + Serialize + DeserializeOwned + Default + TypePa
         data.reload();
         data
     }
+
     /// Reads the saved value of this resource and overwrites its current value.
     fn reload(&mut self) {
         #[cfg(not(target_arch = "wasm32"))]
@@ -141,6 +152,7 @@ pub trait Persistent: Resource + Serialize + DeserializeOwned + Default + TypePa
             None => Self::default(),
         };
     }
+
     /// Serializes the data of this resource and saves it.
     fn persist(&self) -> Result<()> {
         let name = Self::type_path();
@@ -168,7 +180,7 @@ pub trait Persistent: Resource + Serialize + DeserializeOwned + Default + TypePa
                 .with_context(|| format!("Failed to save serialized data for {}", name))?;
         }
 
-        debug!("{} updated", name);
+        trace!("{} updated", name);
         Ok(())
     }
 
@@ -178,6 +190,7 @@ pub trait Persistent: Resource + Serialize + DeserializeOwned + Default + TypePa
         f(self);
         self.persist()
     }
+
     /// Returns the resource to its default value and saves it.
     fn reset(&mut self) -> Result<()> {
         *self = Self::default();

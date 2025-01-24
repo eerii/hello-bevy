@@ -1,7 +1,5 @@
 //! Background music for the game.
 
-use bevy::audio::PlaybackMode;
-
 use crate::prelude::*;
 
 pub(super) fn plugin(app: &mut App) {
@@ -9,16 +7,12 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 /// Plays background music when the game starts playing and stops when it is
-/// paused.
-fn init(mut cmd: Commands, music_assets: Res<AssetMap<MusicAssetKey>>) {
+/// paused. More complex logic might be useful to preserve play state and allow
+/// crossfades.
+fn init(mut cmd: Commands, assets: Res<AssetServer>) {
     cmd.spawn((
-        AudioPlayer(music_assets.get(&MusicAssetKey::Ambient)),
-        PlaybackSettings {
-            mode: PlaybackMode::Loop,
-            paused: true,
-            ..default()
-        },
-        // Here more complex logic might be useful to preserve play state and allow crossfades
+        AudioPlayer::new(assets.load("music/rain.ogg")),
+        PlaybackSettings::LOOP.paused(),
         StateScoped(GameState::Play),
     ));
 }

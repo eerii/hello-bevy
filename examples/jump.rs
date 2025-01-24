@@ -21,13 +21,13 @@ fn main() {
 }
 
 fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(GameState::Play), init.run_if(on_setup()))
+    app.add_systems(OnEnter(GameState::Play), init)
         .add_systems(
             Update,
             (
-                update_player.in_set(PlaySet::Update),
+                // update_player.in_set(PlaySet::Update),
                 (update_counter, update_camera).in_set(PlaySet::Animation),
-                (check_collision, spawn_platforms, check_game_over).after(update_player),
+                (check_collision, spawn_platforms, check_game_over), // .after(update_player),
             )
                 .run_if(in_state(GameState::Play)),
         )
@@ -72,102 +72,105 @@ fn init(
     mut cmd: Commands,
     window: Query<&Window, With<PrimaryWindow>>,
     mut camera: Query<(Entity, &mut Transform), With<GameCamera>>,
-    options: Res<GameOptions>,
-    meta_assets: Res<AssetMap<MetaAssetKey>>,
-    font_assets: Res<AssetMap<FontAssetKey>>,
+    assets: Res<AssetServer>,
 ) {
     let size = single!(window).size();
 
     // Player
     cmd.spawn((
         Sprite {
-            image: meta_assets.get(&MetaAssetKey::BevyLogo).clone_weak(),
+            image: assets.load("meta/bevy.png"),
             custom_size: Some(PLAYER_SIZE),
             ..default()
         },
         Transform::from_translation(Vec3::new(0., 0., 10.)),
         Player::default(),
+        StateScoped(GameState::Play),
     ));
 
     // Floor
     cmd.spawn((
         Sprite {
-            color: options.palette.dark,
+            color: css::ROYAL_BLUE.into(),
             custom_size: Some(Vec2::new(size.x, PLATFORM_SIZE.y * 2.)),
             ..default()
         },
         Transform::from_xyz(0., -size.y / 2. + PLATFORM_SIZE.y, 5.),
         Platform,
+        StateScoped(GameState::Play),
     ));
 
     // Counter
     cmd.spawn((
         Text2d::new("0"),
         TextFont {
-            font: font_assets.get(&FontAssetKey::Main).clone_weak(),
+            font: assets.load("fonts/sans.ttf"),
             font_size: 150.,
             ..default()
         },
-        TextColor(options.palette.light),
+        TextColor(css::WHITE.into()),
         Counter::default(),
         CameraFollow,
+        StateScoped(GameState::Play),
     ));
 
     // Adds a camera follow to the initial camera
     let (entity, mut trans) = single_mut!(camera);
-    cmd.entity(entity).insert(CameraFollow);
+    cmd.entity(entity)
+        .insert((CameraFollow, StateScoped(GameState::Play)));
     trans.translation.y = 0.;
 
     // Keeps track of the last platform generated
     cmd.insert_resource(ExampleData::default())
 }
 
-fn update_player(
-    time: Res<Time>,
-    input: Query<&ActionState<Action>>,
-    window: Query<&Window, With<PrimaryWindow>>,
-    mut player: Query<(&mut Player, &mut Transform)>,
-) {
-    let (mut player, mut trans) = single_mut!(player);
-    let input = single!(input);
-    let size = single!(window).size();
-
-    // Gravity
-    player.velocity.y += GRAVITY * time.delta_secs();
-
-    // Jump
-    let mut jump_input = input.just_pressed(&Action::Act);
-    if jump_input && !player.can_jump {
-        // Create a small time buffer for jump inputs
-        player.jump_buffer = Some(Timer::from_seconds(JUMP_BUFFER, TimerMode::Once));
-    }
-    if let Some(buffer) = player.jump_buffer.as_mut() {
-        if !buffer.tick(time.delta()).finished() {
-            jump_input = true;
-        }
-    };
-    if jump_input && player.can_jump {
-        player.velocity.y = JUMP_VEL;
-        player.can_jump = false;
-    }
-
-    // Move
-    let dir = input.clamped_axis_pair(&Action::Move).x;
-    if dir.abs() > 0.2 {
-        player.velocity.x = dir * MOVE_VEL;
-    } else if player.velocity.x.abs() > MOVE_CUTOFF {
-        player.velocity.x *= MOVE_FACTOR;
-    } else {
-        player.velocity.x = 0.;
-    }
-
-    // Update position based on velocity and loop around
-    trans.translation += player.velocity.extend(0.) * time.delta_secs();
-    trans.translation.x = (trans.translation.x + size.x / 2.).rem_euclid(size.x) - size.x / 2.;
-
-    // Update max height
-    player.max_height = player.max_height.max(trans.translation.y);
-}
+// fn update_player(
+//    time: Res<Time>,
+//    input: Query<&ActionState<Action>>,
+//    window: Query<&Window, With<PrimaryWindow>>,
+//    mut player: Query<(&mut Player, &mut Transform)>,
+//) {
+//    let (mut player, mut trans) = single_mut!(player);
+//    let input = single!(input);
+//    let size = single!(window).size();
+//
+//    // Gravity
+//    player.velocity.y += GRAVITY * time.delta_secs();
+//
+//    // Jump
+//    let mut jump_input = input.just_pressed(&Action::Act);
+//    if jump_input && !player.can_jump {
+//        // Create a small time buffer for jump inputs
+//        player.jump_buffer = Some(Timer::from_seconds(JUMP_BUFFER,
+// TimerMode::Once));    }
+//    if let Some(buffer) = player.jump_buffer.as_mut() {
+//        if !buffer.tick(time.delta()).finished() {
+//            jump_input = true;
+//        }
+//    };
+//    if jump_input && player.can_jump {
+//        player.velocity.y = JUMP_VEL;
+//        player.can_jump = false;
+//    }
+//
+//    // Move
+//    let dir = input.clamped_axis_pair(&Action::Move).x;
+//    if dir.abs() > 0.2 {
+//        player.velocity.x = dir * MOVE_VEL;
+//    } else if player.velocity.x.abs() > MOVE_CUTOFF {
+//        player.velocity.x *= MOVE_FACTOR;
+//    } else {
+//        player.velocity.x = 0.;
+//    }
+//
+//    // Update position based on velocity and loop around
+//    trans.translation += player.velocity.extend(0.) * time.delta_secs();
+//    trans.translation.x = (trans.translation.x + size.x /
+// 2.).rem_euclid(size.x) - size.x / 2.;
+//
+//    // Update max height
+//    player.max_height = player.max_height.max(trans.translation.y);
+//}
 
 /// Checks collision between the player and the platforms
 fn check_collision(
@@ -221,7 +224,6 @@ fn spawn_platforms(
     player: Query<&Player>,
     window: Query<&Window, With<PrimaryWindow>>,
     mut data: ResMut<ExampleData>,
-    options: Res<GameOptions>,
 ) {
     let mut rng = rand::thread_rng();
     let player = single!(player);
@@ -233,7 +235,9 @@ fn spawn_platforms(
 
         cmd.spawn((
             Sprite {
-                color: options.palette.dark.lighter(rng.gen::<f32>() * 0.2 - 0.05),
+                color: css::ROYAL_BLUE
+                    .lighter(rng.gen::<f32>() * 0.2 - 0.05)
+                    .into(),
                 custom_size: Some(PLATFORM_SIZE),
                 ..default()
             },
@@ -284,19 +288,6 @@ fn check_game_over(
 
 /// When entering the end state, reset the setup of the game so that init can
 /// run again and go back to the play state.
-/// We could do this automatically with the new `StateScoped`, which is very
-/// useful, but that takes away some flexibility. For example, going to the menu
-/// would delete the entities. A mixture of both could be possible and
-/// benefitial for larger games.
-fn reset(
-    mut cmd: Commands,
-    mut state: ResMut<NextState<GameState>>,
-    entities: Query<Entity, Or<(With<Player>, With<Counter>, With<Platform>)>>,
-) {
-    for entity in &entities {
-        cmd.entity(entity).despawn();
-    }
-
-    cmd.reset_setup();
+fn reset(mut state: ResMut<NextState<GameState>>) {
     state.set(GameState::Play);
 }

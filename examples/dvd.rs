@@ -41,12 +41,7 @@ struct CollisionEvent;
 // ---
 
 /// Spawn the initial objects.
-fn init(
-    mut cmd: Commands,
-    options: Res<GameOptions>,
-    meta_assets: Res<AssetMap<MetaAssetKey>>,
-    font_assets: Res<AssetMap<FontAssetKey>>,
-) {
+fn init(mut cmd: Commands, assets: Res<AssetServer>) {
     // Moving balls
     for velocity in [
         Vec2::new(300., 250.),
@@ -55,7 +50,7 @@ fn init(
     ] {
         cmd.spawn((
             Sprite {
-                image: meta_assets.get(&MetaAssetKey::BevyLogo).clone_weak(),
+                image: assets.load("meta/bevy.png"),
                 custom_size: Some(Vec2::splat(96.)),
                 ..default()
             },
@@ -68,11 +63,11 @@ fn init(
     cmd.spawn((
         Text2d::new("0"),
         TextFont {
-            font: font_assets.get(&FontAssetKey::Main).clone_weak(),
+            font: assets.load("fonts/sans.ttf"),
             font_size: 192.,
             ..default()
         },
-        TextColor(options.palette.light),
+        TextColor(css::WHITE.into()),
         Counter(0),
     ));
 }
@@ -127,7 +122,7 @@ fn update_velocity(
 fn on_collision(
     mut cmd: Commands,
     mut counter: Query<(&mut Text2d, &mut Counter)>,
-    sound_assets: Res<AssetMap<SoundAssetKey>>,
+    assets: Res<AssetServer>,
     mut collision_reader: EventReader<CollisionEvent>,
 ) {
     let (mut text, mut counter) = single_mut!(counter);
@@ -135,10 +130,7 @@ fn on_collision(
     for CollisionEvent in collision_reader.read() {
         counter.0 += 1;
         text.0 = counter.0.to_string();
-
-        cmd.spawn(AudioPlayer(
-            sound_assets.get(&SoundAssetKey::Boing).clone_weak(),
-        ));
+        cmd.spawn(AudioPlayer::new(assets.load("sound/boing.ogg")));
     }
 }
 

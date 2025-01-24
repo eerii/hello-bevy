@@ -23,14 +23,6 @@ pub struct FinalCamera;
 // ---
 
 /// Spawn the main cameras.
-fn init(mut cmd: Commands, options: Res<GameOptions>) {
-    cmd.spawn((
-        Camera2d,
-        Camera {
-            clear_color: ClearColorConfig::Custom(options.palette.darker),
-            ..default()
-        },
-        GameCamera,
-        FinalCamera,
-    ));
+fn init(mut cmd: Commands) {
+    cmd.spawn((Camera2d, GameCamera, FinalCamera));
 }

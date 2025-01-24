@@ -1,7 +1,6 @@
 //! Bevy game template.
 //! It uses plugins and submodules to structure the code.
 
-#![feature(path_add_extension)]
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::type_complexity)]
 #![warn(missing_docs)]
@@ -11,14 +10,11 @@ extern crate macro_rules_attribute;
 
 use bevy::prelude::*;
 
-pub mod assets;
-pub mod base;
 pub mod components;
-#[macro_use]
+pub mod data;
 pub mod helpers;
-pub mod input;
 pub mod prelude;
-// pub mod ui;
+pub mod states;
 
 /// The base plugin for the game. It recursively adds all of the plugins
 /// declared in submodules as well as the default plugin collection.
@@ -28,16 +24,6 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        // The embedded plugin, if enabled, must come before bevy's `AssetPlugin`
-        // #[cfg(feature = "embedded")]
-        // app.add_plugins(assets::embedded::plugin);
-
-        // Default bevy plugins
-        let asset_plugin = AssetPlugin {
-            meta_check: bevy::asset::AssetMetaCheck::Never,
-            ..default()
-        };
-
         let window_plugin = WindowPlugin {
             primary_window: Some(Window {
                 title: "Hello Bevy".into(),
@@ -48,19 +34,20 @@ impl Plugin for GamePlugin {
             ..default()
         };
 
-        app.add_plugins(DefaultPlugins.set(asset_plugin).set(window_plugin));
+        let log_plugin = bevy::log::LogPlugin {
+            filter: "warn,wgpu=error,game=debug".into(),
+            ..default()
+        };
 
-        // Game plugins
         app.add_plugins((
-            assets::plugin,
-            base::plugin,
+            DefaultPlugins.set(window_plugin).set(log_plugin),
             components::plugin,
-            input::plugin,
-            // ui::plugin,
+            data::plugin,
+            helpers::plugin,
+            states::plugin,
         ));
 
-        // Debug plugins
-        #[cfg(feature = "inspector")]
-        app.add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::new());
+        #[cfg(feature = "embedded")]
+        app.add_plugins(bevy_embedded_assets::EmbeddedAssetPlugin::default());
     }
 }
